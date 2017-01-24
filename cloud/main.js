@@ -48,10 +48,20 @@
  */
 
 //do I need to require app.js?
+// include the ./ before cloud!!!
 //require("./cloud/app.js");
 
 // Twilio Code
-require("./twilio.js");
+//require("./twilio.js");
+
+//imported from require('./cloud/twilio.js');
+
+var twilioAccountSid 	= process.env.TWILIO_ACCOUNT_SID;
+var twilioAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
+var twilioPort			= process.env.TWILIO_PORT || 1338;
+var twilioURL			= process.env.TWILIO_URL || '127.0.0.1';
+var twilioMount			= process.env.TWILIO_MOUNT || '/';
+var twilioSendingNumber	= process.env.TWILIO_PHONE_NUMBER;
 
 //////////////////////////////////////
 //
@@ -84,7 +94,7 @@ Parse.Cloud.define("barberIdForBarberFirstNameLastName", function(request, respo
 {
     //Parse.Cloud.useMasterKey();
     var pFirstName = request.params.firstName;
-    var pLastName  = request.params.lastName
+    var pLastName  = request.params.lastName;
 
     var query = new Parse.Query("Barbers");
     query.equalTo("firstName", pFirstName);
@@ -159,6 +169,69 @@ Parse.Cloud.define("barberIdForBarberName", function(request, response)
 
 ///////////////////////////////////////
 //
+// checkForUserWithEmailAddress
+//
+///////////////////////////////////////
+Parse.Cloud.define("checkForUserWithEmailAddress", function(request, response)
+{
+    var emailAddress = request.params.emailAddress;
+
+    conditionalLog('checkForUserWithEmailAddress called');
+    conditionalLog('with params:');
+    conditionalLog('emailAddress [' + emailAddress + ']');
+
+    if (emailAddress == null)
+    {
+    	emailAddress = "";
+    }
+
+    if ( emailAddress.length == 0 )
+    {
+        response.error("Must provide email Address");
+    }
+	else
+	{
+    	console.log('continuing...');
+
+		var User         = Parse.Object.extend("_User");
+		var userQuery    = new Parse.Query(User);
+		userQuery.equalTo("email", emailAddress);
+		userQuery.find(
+		{
+			useMasterKey: true,
+			success: function(result)
+			{
+				var returnJson		= "{}";
+
+				if ( result.length > 0 )
+				{
+					var foundUser 	= result[0];
+					var email 		= foundUser.email;
+					var phoneNumber	= foundUser.valueOf("phoneNumer");
+					var username	= foundUser.valueOf("username");
+
+					returnJson 		= "{ 'email': '" + email + "'," +
+										"'phoneNumber': '" + phoneNumber + "'," +
+										"'username': '" + username + "'," +
+										"'exists': " + true + " }";
+				}
+				else
+				{
+					returnJson		= "{ 'exists': " + false + " }";
+				}
+				response.success(returnJson);
+			},
+			error: function(queryError)
+			{
+				response.error(queryError);
+			}
+		});
+	}
+});
+
+
+///////////////////////////////////////
+//
 // userWithUserIdExists
 //
 ///////////////////////////////////////
@@ -170,36 +243,42 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
     console.log('with params:');
     console.log('userId [' + userId + ']');
 
-    if (userId != null && userId !== "")
+	if ( userId == null )
+	{
+		userId = "";
+	}
+
+    if ( userId.length == 0 )
     {
-        response.error("Must provide userId");
-        return;
+        response.error("Must provide a userID");
     }
+	else
+	{
+    	console.log('continuing...');
 
-    console.log('continuing...');
-
-    var User         = Parse.Object.extend("_User");
-    var userQuery    = new Parse.Query(User);
-    userQuery.equalTo("objectId", userId);
-    userQuery.count(
-    {
-        useMasterKey: true,
-        success: function(countResult)
-        {
-            if ( countResult > 0 )
-            {
-                response.success("true");
-            }
-            else
-            {
-                response.success("false");
-            }
-        },
-        error: function(countError)
-        {
-            response.error(countError);
-        }
-    });
+		var User         = Parse.Object.extend("_User");
+		var userQuery    = new Parse.Query(User);
+		userQuery.equalTo("objectId", userId);
+		userQuery.count(
+		{
+			useMasterKey: true,
+			success: function(countResult)
+			{
+				if ( countResult > 0 )
+				{
+					response.success("true");
+				}
+				else
+				{
+					response.success("false");
+				}
+			},
+			error: function(countError)
+			{
+				response.error(countError);
+			}
+		});
+	}
 });
 
 
@@ -595,7 +674,7 @@ Parse.Cloud.define("getUnreadMessageCount", function(request, response)
         success: function(results)
         {
             console.log("SUCCESS: ");
-            response.success(results.count);
+            response.success(results.length);
         },
         error: function(error)
         {
@@ -629,7 +708,7 @@ Parse.Cloud.define("getMessageCount", function(request, response)
         success: function(results)
         {
             console.log("SUCCESS: ");
-            response.success(results.count);
+            response.success(results.length);
         },
         error: function(error)
         {
@@ -661,12 +740,12 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            var allCount = results.count;
+            var allCount = results.length;
             var newCount = 0;
 
             var message = null;
 
-            for ( mIdx = 0; mIdx < results.count; mIdx += 1 )
+            for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
             {
                 message = results[mIdx];
                 if ( message.has("readAt") )
@@ -702,35 +781,35 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("loginUser", function(request, response)
 {
-    // Phone Number
-    var phoneNumber        = request.params.phoneNumber;
-    phoneNumber        = phoneNumber.replace(/\D/g, "");
+	// Phone Number
+	var phoneNumber			= request.params.phoneNumber;
+	phoneNumber				= phoneNumber.replace(/\D/g, "");
 
-    // Verification Code
-    var verificationCode     = request.params.verificationCode;
-    verificationCode     = verificationCode.replace(/\D/g, "");
+	// Verification Code
+	var verificationCode	= request.params.verificationCode;
+	verificationCode		= verificationCode.replace(/\D/g, "");
 
-    // User Service Token
-    var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+	// User Service Token
+	var userServiceToken    = process.env.USER_SERVICE_TOKEN;
 
-    if (!phoneNumber || phoneNumber.length != 10)
-    {
-        return response.error("Phone Number missing or invalid length");
-    }
+	if ( !phoneNumber || phoneNumber.length != 10 )
+	{
+		return response.error("Phone Number missing or invalid length");
+	}
 
-    if (!verificationCode || verificationCode.length < 4 || verificationCode.length > 6)
-    {
-        return response.error("Verification Code missing or invalid length");
-    }
+	if ( !verificationCode || verificationCode.length < 4 || verificationCode.length > 6 )
+	{
+		return response.error("Verification Code missing or invalid length");
+	}
 
-    Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
-    {
-        response.success(user.getSessionToken());
-    }
-    ,function (loginError)
-    {
-        response.error(loginError);
-    });
+	Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
+	{
+		response.success(user.getSessionToken());
+	}
+	,function (loginError)
+	{
+	response.error(loginError);
+	});
 });
 
 
@@ -1022,6 +1101,85 @@ Parse.Cloud.define("convertProductsCartToUserId", function(request, response)
 
 ///////////////////////////////////////
 //
+// resetVerificationCode
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCode", function(request, response)
+{
+    conditionalLog("Starting resetVerificationCode");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+
+    conditionalLog("emailAddress [" + emailAddress + "]");
+    conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    var User  = Parse.Object.extend("_User");
+    var query = new Parse.Query(User);
+
+	if ( emailAddress.length == 0 || phoneNumber.length < 10 )
+	{
+		response.error("Invalid email address or phone number");
+	}
+	else
+	{
+		query.equalTo("username", phoneNumber);
+		query.equalTo("email", emailAddress);
+		query.find(
+		{
+			useMasterKey: true,
+			success: function(results)
+			{
+				conditionalLog("query successful.");
+				conditionalLog(results.length + " users found");
+
+				if ( results.length == 0 )
+				{
+					conditionalLog("No users found to reset");
+					response.success( "{ 'description' : 'No users found to reset' }" );
+				}
+				else
+				{
+					conditionalLog("reset first user");
+
+					var firstUser = results[0];
+
+					var userServiceToken = process.env.USER_SERVICE_TOKEN;
+					var random  = randomNumberWithNumberOfDigits(5);
+
+					var newPassword = userServiceToken + "-" + random;
+
+					firstUser.set("password", newPassword);
+					firstUser.set("gbAssist","RESET");
+					firstUser.save(null,
+					{
+						useMasterKey: true,
+						success: function(savedUser)
+						{
+							conditionalLog("User Verification Code Reset.");
+							response.success(random);
+						},
+						error: function(saveError)
+						{
+							conditionalLog("unable to save user");
+							conditionalLog(saveError);
+							response.error("Save was not successful: " + saveError);
+						}
+					});
+				}
+			},
+			error: function(queryError)
+			{
+				conditionalLog("Query find not successful! " + queryError);
+				response.error("Query find not successful: " + queryError);
+			}
+		});
+	}
+});
+
+
+///////////////////////////////////////
+//
 // convertUsernameToPhoneNumber
 //
 ///////////////////////////////////////
@@ -1096,7 +1254,8 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
 
                 var random  = randomNumberWithNumberOfDigits(5);
 
-                firstUser.set("gbAssist","CONVERTED")
+				firstUser.set("verificationCode", random);
+                firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
                 {
                     useMasterKey: true,
@@ -1109,7 +1268,7 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                                           "', 'lastName'     : '" + lastName         +
                                           "', 'staffId'      : '" + staffId          +
                                           "', 'username'     : '" + username         +
-                                          "', 'confirmation' : '" + verification     +
+                                          "', 'confirmation' : '" + random           +
                                           "', 'transaction'  : '" + userServiceToken +
                                           "', 'description'  : 'confirmed' }";
 
@@ -1148,7 +1307,7 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
     console.log("Starting resetUserToVersionOne");
 
     var emailAddress     = request.params.emailAddress;
-    var hashed			 = request.params.hashed
+    var hashed			 = request.params.hashed;
     var phoneNumber      = request.params.phoneNumber;
 
     console.log("emailAddress [" + emailAddress + "]");
@@ -1211,7 +1370,7 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
 
                 var random  = randomNumberWithNumberOfDigits(5);
 
-                firstUser.set("gbAssist","CONVERTED")
+                firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
                 {
                     useMasterKey: true,
@@ -1224,7 +1383,7 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
                                           "', 'lastName'     : '" + lastName         +
                                           "', 'staffId'      : '" + staffId          +
                                           "', 'username'     : '" + username         +
-                                          "', 'confirmation' : '" + verification     +
+                                          "', 'confirmation' : '" + random            +
                                           "', 'transaction'  : '" + userServiceToken +
                                           "', 'description'  : 'confirmed' }";
 
@@ -1255,9 +1414,9 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getVerificationCode", function(request, response)
 {
-    var verification     = randomNumberWithNumberOfDigits(5);
-    var token         = process.env.USER_SERVICE_TOKEN;
-    var newPassword        = token + "-" + verification;
+    var verification		= randomNumberWithNumberOfDigits(5);
+    var token         		= process.env.USER_SERVICE_TOKEN;
+    var newPassword			= token + "-" + verification;
 
     response.success(newPassword);
 });
@@ -1289,7 +1448,7 @@ Parse.Cloud.define("createMessageForUser", function(request, response)
 
     console.log('createMessageForUser called');
     console.log('with params:');
-    console.log('senderID [' + msgSenderId + '], receiverID [' + msgReceiverID + '], title [' + msgTitle + '], subtitle [' + msgSubtitle + '], body [' + msgBody + ']');
+    console.log('senderID [' + msgSenderID + '], receiverID [' + msgReceiverID + '], title [' + msgTitle + '], subtitle [' + msgSubtitle + '], body [' + msgBody + ']');
 
     Parse.Cloud.run("userWithUserIdExists",
     {
@@ -1348,7 +1507,7 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
 
     console.log('saveMessageForUserThenNotify called');
     console.log('with params:');
-    console.log('senderID [' + pSenderId + '], receiverID [' + pReceiverID + '], title [' + pMsgTitle + '], subtitle [' + pMsgSubtitle + '], body [' + pMsgBody + ']');
+    console.log('senderID [' + pSenderID + '], receiverID [' + pReceiverID + '], title [' + pMsgTitle + '], subtitle [' + pMsgSubtitle + '], body [' + pMsgBody + ']');
 
     Parse.Cloud.run("createMessageForUser",
     {
@@ -1367,7 +1526,7 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
                 // Create User Query
                 var User            = Parse.Object.extend("_User");
                 var userQuery        = new Parse.Query(User);
-                userQuery.equalTo("objectId", receiverId);
+                userQuery.equalTo("objectId", pReceiverID);
 
                 //maybe:var pushQuery = new Parse.Query(Parse.Installation);
                 var Installation    = Parse.Object.extend("_Installation");
@@ -1390,9 +1549,9 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
                         category : categoryId,
                         alert:
                         {
-                            title:        msgTitle,
-                            subtitle:    msgSubtitle,
-                            body:        msgBody
+                            title:        pMsgTitle,
+                            subtitle:    pMsgSubtitle,
+                            body:        pMsgBody
                         },
                         badge: badgeNumber,
                         sound : soundName
@@ -1463,10 +1622,193 @@ function randomNumberWithNumberOfDigits(numDigits)
 ///////////////////////////////////////
 function conditionalLog(logText)
 {
-    var doLog = True; //env.process.DEBUG_LOG || True;
+    var doLog = process.env.DEBUG_LOG || True;
 
-    if ( doLog == True || doLog == "True" )
+    if ( doLog == true || doLog == "True" )
     {
         console.log(logText);
     }
 }
+
+
+///////////////////////////////////////
+//
+// sendVerificationCodeBySmsToPhoneNumber
+//
+///////////////////////////////////////
+function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
+{
+	console.log('sendVerificationCodeBySmsToPhoneNumber()');
+	console.log('phoneNumber: ' + phoneNumber + ' vCode [' + verificationCode + ']');
+
+	var tAccountSid 	= process.env.TWILIO_ACCOUNT_SID;
+	var tAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
+	var tSendingNumber	= process.env.TWILIO_PHONE_NUMBER;
+	var twilio	= require('twilio')(tAccountSid,tAccountToken);
+
+	var tas = tAccountSid.substring(1,5);
+	var tat = tAccountToken.substring(1,5);
+
+	console.log('account sid starts ' + tas);
+	console.log('account token starts ' + tat);
+	console.log('from phone ' + tSendingNumber);
+
+	var message	= 'Your Verification Code for the Barbershop Deluxe App is ' + verificationCode + '.';
+
+	var toNumber = '';
+	if ( phoneNumber.length == 10 )
+	{
+		toNumber = '+1' + phoneNumber;
+	}
+	else if ( phoneNumber.length == 11 )
+	{
+		toNumber = '+' + phoneNumber;
+	}
+	else
+	{
+		toNumber = phoneNumber;
+	}
+	console.log('about to send');
+
+    twilio.sendMessage(
+    {
+        to: toNumber,
+        from: tSendingNumber,
+        body: message
+
+    }, function(error, responseData)
+    {
+        if (error)
+        {
+        	console.log('error sending twilio message:');
+            console.log(error);
+        }
+        else
+        {
+            response.success(responseData);
+        }
+    });
+}
+
+///////////////////////////////////////
+//
+// Twilio Functions
+//
+///////////////////////////////////////
+
+// Non Parse functions can be found in twilio.js
+
+///////////////////////////////////////
+//
+// sendVerificationCodeToUserWithPhoneNumberEmailAddress
+//
+///////////////////////////////////////
+Parse.Cloud.define('sendVerificationCodeToUserWithPhoneNumberEmailAddress', function(request, response)
+{
+	var theUser		= request.user;
+
+	if ( theUser == null )
+	{
+		var emailAddress 	= request.params.emailAddress;
+		var phoneNumber  	= request.params.phoneNumber;
+
+		console.log('emailAddress [' + emailAddress + ']');
+		console.log('phoneNumber [' + phoneNumber + ']');
+
+		var User = Parse.Object.extend('_User');
+		var query = new Parse.Query(User);
+
+		query.equalTo('username',phoneNumber);
+		query.equalTo('email',emailAddress);
+		console.log('starting query');
+		query.find(
+		{
+			useMasterKey: true,
+			success: function(results)
+			{
+				if ( results.length > 0 )
+				{
+					console.log('I have a user');
+					var qUser		= results[0];
+					var password	= qUser.get('password');
+					console.log('pass length is ');
+					console.log(password.length.toString);
+					//conditionalLog('pass length is ' + password.length.toString);
+					var code		= password.substring(-5);
+					console.log('I have a code ');
+					conditionalLog(code);
+					sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+					response.success(true);
+				}
+				else
+				{
+					conditionalLog('I do not have a user');
+					response.success(false);
+				}
+			},
+			error: function(queryError)
+			{
+				console.log('error with query:');
+				console.log(queryError);
+				response.error(queryError);
+			}
+		});
+	}
+	else
+	{
+		console.log('user was in request');
+		var password	= theUser.get('password');
+		var code		= password.substring(-5);
+		sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+		response.success(true);
+	}
+});
+
+
+///////////////////////////////////////
+//
+// sendSMS
+//
+///////////////////////////////////////
+Parse.Cloud.define('sendSMS', function(request, response)
+{
+	//Parse.Cloud.useMasterKey();
+
+	console.log('sendSMS with:');
+    console.log('toNumber: ' + request.params.toNumber);
+    console.log('message: ' + request.params.message);
+	console.log('from: ' + twilioSendingNumber);
+
+	var tas = twilioAccountSid.substring(1,5);
+	var tat = twilioAccountToken.substring(1,5);
+
+	console.log('account sid starts ' + tas);
+	console.log('account token starts ' + tat);
+
+    var twilio	= require('twilio')(twilioAccountSid,twilioAccountToken);
+	var to 		= request.params.toNumber;
+	var message	= request.params.message;
+
+    twilio.sendMessage(
+    {
+        to: to,
+        from: twilioSendingNumber,
+        body: message
+
+    }, function(error, responseData)
+    {
+        if (error)
+        {
+        	console.log('error with sendSMS:');
+        	console.log(error);
+            response.error(error);
+        }
+        else
+        {
+        	console.log('success with sendSMS:');
+        	console.log(responseData);
+            response.success(responseData);
+        }
+    });
+});
+
