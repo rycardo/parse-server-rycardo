@@ -73,12 +73,16 @@ var api = new ParseServer(
                 production:     true
             }
         ]
-    }
+    },
     liveQuery:
     {
-        classNames: ["Messages"] // List of classes to support for query subscriptions
+        classNames:
+        [
+            "Messages"
+        ]
     }
 });
+// Above, List of classes to support for query subscriptions (liveQuery)
 
 // App Init
 var app = express();
@@ -100,7 +104,8 @@ app.use(mountPath, api);
 // no path - Parse default
 //
 // Parse Server plays nicely with the rest of your web routes
-app.get('/', function(request, response) {
+app.get('/', function(request, response)
+{
   response.status(200).send('I am dreaming of sailing through a Norwegian fjord.');
 });
 
