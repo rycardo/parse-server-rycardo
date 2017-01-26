@@ -100,9 +100,8 @@ app.use(mountPath, api);
 // no path - Parse default
 //
 // Parse Server plays nicely with the rest of your web routes
-app.get("/", function(request, response)
-{
-    response.status(200).send("I am not really dreaming of being a website, instead I am dreaming of sailing through a Norwegian fjord.");
+app.get('/', function(request, response) {
+  response.status(200).send('I am dreaming of sailing through a Norwegian fjord.');
 });
 
 
