@@ -80,7 +80,7 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    response.success("Up, Plateau, Valid");
+    response.success("Up, Fjord, Valid");
 });
 
 
