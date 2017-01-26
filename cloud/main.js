@@ -55,12 +55,12 @@
 
 //imported from require('twilio.js');
 
-var twilioAccountSid 	= process.env.TWILIO_ACCOUNT_SID;
-var twilioAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
-var twilioPort			= process.env.TWILIO_PORT || 1338;
-var twilioURL			= process.env.TWILIO_URL || '127.0.0.1';
-var twilioMount			= process.env.TWILIO_MOUNT || '/';
-var twilioSendingNumber	= process.env.TWILIO_PHONE_NUMBER;
+var twilioAccountSid        = process.env.TWILIO_ACCOUNT_SID;
+var twilioAccountToken      = process.env.TWILIO_ACCOUNT_TOKEN;
+var twilioPort              = process.env.TWILIO_PORT || 1338;
+var twilioURL               = process.env.TWILIO_URL || '127.0.0.1';
+var twilioMount             = process.env.TWILIO_MOUNT || '/';
+var twilioSendingNumber     = process.env.TWILIO_PHONE_NUMBER;
 
 //////////////////////////////////////
 //
@@ -358,7 +358,7 @@ Parse.Cloud.define("doesMessageToUserWithNoRepeatHashExist", function(request, r
     query.equalTo("noRepeat", request.params.noRepeat);
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             if ( results.length == 0 )
@@ -391,7 +391,7 @@ Parse.Cloud.define("nameForUserWithObjectId", function(request, response)
     var query = new Parse.Query(User);
     query.get(request.params.objectId,
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(object)
         {
             // object is an instance of Parse.Object.
@@ -431,7 +431,7 @@ Parse.Cloud.define("serviceIdForBarberNameAndServiceName", function(request, res
     query.equalTo("serviceName", request.params.serviceName);
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             if ( results.length == 1 )
@@ -488,7 +488,7 @@ Parse.Cloud.define("serviceIdForServiceIdReplacement", function(request, respons
     query.equalTo("isActive", false);
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             if ( results.length == 0 )
@@ -521,7 +521,7 @@ Parse.Cloud.define("servicesForBarberId", function(request, response)
     query.equalTo("id", request.params.barber);
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             var relation = results[0].get("services");
@@ -561,7 +561,7 @@ Parse.Cloud.define("incrementNewAppointmentTally", function(request, response)
 
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             var resultObject = results[0];
@@ -600,7 +600,7 @@ Parse.Cloud.define("getUnreadMessageCount", function(request, response)
 
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             console.log("SUCCESS: ");
@@ -711,35 +711,35 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("loginUser", function(request, response)
 {
-	// Phone Number
-	var phoneNumber			= request.params.phoneNumber;
-	phoneNumber				= phoneNumber.replace(/\D/g, "");
+    // Phone Number
+    var phoneNumber            = request.params.phoneNumber;
+    phoneNumber                = phoneNumber.replace(/\D/g, "");
 
-	// Verification Code
-	var verificationCode	= request.params.verificationCode;
-	verificationCode		= verificationCode.replace(/\D/g, "");
+    // Verification Code
+    var verificationCode    = request.params.verificationCode;
+    verificationCode        = verificationCode.replace(/\D/g, "");
 
-	// User Service Token
-	var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+    // User Service Token
+    var userServiceToken    = process.env.USER_SERVICE_TOKEN;
 
-	if ( !phoneNumber || phoneNumber.length != 10 )
-	{
-		return response.error("Phone Number missing or invalid length");
-	}
+    if ( !phoneNumber || phoneNumber.length != 10 )
+    {
+        return response.error("Phone Number missing or invalid length");
+    }
 
-	if ( !verificationCode || verificationCode.length < 4 || verificationCode.length > 6 )
-	{
-		return response.error("Verification Code missing or invalid length");
-	}
+    if ( !verificationCode || verificationCode.length < 4 || verificationCode.length > 6 )
+    {
+        return response.error("Verification Code missing or invalid length");
+    }
 
-	Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
-	{
-		response.success(user.getSessionToken());
-	}
-	,function (loginError)
-	{
-	response.error(loginError);
-	});
+    Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
+    {
+        response.success(user.getSessionToken());
+    }
+    ,function (loginError)
+    {
+    response.error(loginError);
+    });
 });
 
 
@@ -1071,9 +1071,9 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
                 var userServiceToken = process.env.USER_SERVICE_TOKEN;
                 var random  = randomNumberWithNumberOfDigits(5);
 
-				var newPassword = userServiceToken + "-" + random;
+                var newPassword = userServiceToken + "-" + random;
 
-				firstUser.set("password", newPassword);
+                firstUser.set("password", newPassword);
                 firstUser.set("gbAssist","RESET");
                 firstUser.save(null,
                 {
@@ -1177,7 +1177,7 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
 
                 var random  = randomNumberWithNumberOfDigits(5);
 
-				firstUser.set("verificationCode", random);
+                firstUser.set("verificationCode", random);
                 firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
                 {
@@ -1230,7 +1230,7 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
     console.log("Starting resetUserToVersionOne");
 
     var emailAddress     = request.params.emailAddress;
-    var hashed			 = request.params.hashed;
+    var hashed             = request.params.hashed;
     var phoneNumber      = request.params.phoneNumber;
 
     console.log("emailAddress [" + emailAddress + "]");
@@ -1337,9 +1337,9 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getVerificationCode", function(request, response)
 {
-    var verification		= randomNumberWithNumberOfDigits(5);
-    var token         		= process.env.USER_SERVICE_TOKEN;
-    var newPassword			= token + "-" + verification;
+    var verification        = randomNumberWithNumberOfDigits(5);
+    var token                 = process.env.USER_SERVICE_TOKEN;
+    var newPassword            = token + "-" + verification;
 
     response.success(newPassword);
 });
@@ -1561,37 +1561,37 @@ function conditionalLog(logText)
 ///////////////////////////////////////
 function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
 {
-	console.log('sendVerificationCodeBySmsToPhoneNumber()');
-	console.log('phoneNumber: ' + phoneNumber + ' vCode [' + verificationCode + ']');
+    console.log('sendVerificationCodeBySmsToPhoneNumber()');
+    console.log('phoneNumber: ' + phoneNumber + ' vCode [' + verificationCode + ']');
 
-	var tAccountSid 	= process.env.TWILIO_ACCOUNT_SID;
-	var tAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
-	var tSendingNumber	= process.env.TWILIO_PHONE_NUMBER;
-	var twilio	= require('twilio')(tAccountSid,tAccountToken);
+    var tAccountSid     = process.env.TWILIO_ACCOUNT_SID;
+    var tAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
+    var tSendingNumber    = process.env.TWILIO_PHONE_NUMBER;
+    var twilio    = require('twilio')(tAccountSid,tAccountToken);
 
-	var tas = tAccountSid.substring(1,5);
-	var tat = tAccountToken.substring(1,5);
+    var tas = tAccountSid.substring(1,5);
+    var tat = tAccountToken.substring(1,5);
 
-	console.log('account sid starts ' + tas);
-	console.log('account token starts ' + tat);
-	console.log('from phone ' + tSendingNumber);
+    console.log('account sid starts ' + tas);
+    console.log('account token starts ' + tat);
+    console.log('from phone ' + tSendingNumber);
 
-	var message	= 'Your Verification Code for the Barbershop Deluxe App is ' + verificationCode + '.';
+    var message    = 'Your Verification Code for the Barbershop Deluxe App is ' + verificationCode + '.';
 
-	var toNumber = '';
-	if ( phoneNumber.length == 10 )
-	{
-		toNumber = '+1' + phoneNumber;
-	}
-	else if ( phoneNumber.length == 11 )
-	{
-		toNumber = '+' + phoneNumber;
-	}
-	else
-	{
-		toNumber = phoneNumber;
-	}
-	console.log('about to send');
+    var toNumber = '';
+    if ( phoneNumber.length == 10 )
+    {
+        toNumber = '+1' + phoneNumber;
+    }
+    else if ( phoneNumber.length == 11 )
+    {
+        toNumber = '+' + phoneNumber;
+    }
+    else
+    {
+        toNumber = phoneNumber;
+    }
+    console.log('about to send');
 
     twilio.sendMessage(
     {
@@ -1603,7 +1603,7 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
     {
         if (error)
         {
-        	console.log('error sending twilio message:');
+            console.log('error sending twilio message:');
             console.log(error);
         }
         else
@@ -1628,63 +1628,63 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
 ///////////////////////////////////////
 Parse.Cloud.define('sendVerificationCodeToUserWithPhoneNumberEmailAddress', function(request, response)
 {
-	var theUser		= request.user;
+    var theUser        = request.user;
 
-	if ( theUser == null )
-	{
-		var emailAddress 	= request.params.emailAddress;
-		var phoneNumber  	= request.params.phoneNumber;
+    if ( theUser == null )
+    {
+        var emailAddress     = request.params.emailAddress;
+        var phoneNumber      = request.params.phoneNumber;
 
-		console.log('emailAddress [' + emailAddress + ']');
-		console.log('phoneNumber [' + phoneNumber + ']');
+        console.log('emailAddress [' + emailAddress + ']');
+        console.log('phoneNumber [' + phoneNumber + ']');
 
-		var User = Parse.Object.extend('_User');
-		var query = new Parse.Query(User);
+        var User = Parse.Object.extend('_User');
+        var query = new Parse.Query(User);
 
-		query.equalTo('username',phoneNumber);
-		query.equalTo('email',emailAddress);
-		console.log('starting query');
-		query.find(
-		{
-			useMasterKey: true,
-			success: function(results)
-			{
-				if ( results.length > 0 )
-				{
-					console.log('I have a user');
-					var qUser		= results[0];
-					var password	= qUser.get('password');
-					console.log('pass length is ');
-					console.log(password.length.toString);
-					//conditionalLog('pass length is ' + password.length.toString);
-					var code		= password.substring(-5);
-					console.log('I have a code ');
-					conditionalLog(code);
-					sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
-					response.success(true);
-				}
-				else
-				{
-					conditionalLog('I do not have a user');
-					response.success(false);
-				}
-			},
-			error: function(queryError)
-			{
-				console.log('error with query:');
-				console.log(queryError);
-				response.error(queryError);
-			}
-		});
-	}
-	else
-	{
-		console.log('user was in request');
-		var password	= theUser.get('password');
-		var code		= password.substring(-5);
-		sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
-		response.success(true);
-	}
+        query.equalTo('username',phoneNumber);
+        query.equalTo('email',emailAddress);
+        console.log('starting query');
+        query.find(
+        {
+            useMasterKey: true,
+            success: function(results)
+            {
+                if ( results.length > 0 )
+                {
+                    console.log('I have a user');
+                    var qUser        = results[0];
+                    var password    = qUser.get('password');
+                    console.log('pass length is ');
+                    console.log(password.length.toString);
+                    //conditionalLog('pass length is ' + password.length.toString);
+                    var code        = password.substring(-5);
+                    console.log('I have a code ');
+                    conditionalLog(code);
+                    sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+                    response.success(true);
+                }
+                else
+                {
+                    conditionalLog('I do not have a user');
+                    response.success(false);
+                }
+            },
+            error: function(queryError)
+            {
+                console.log('error with query:');
+                console.log(queryError);
+                response.error(queryError);
+            }
+        });
+    }
+    else
+    {
+        console.log('user was in request');
+        var password    = theUser.get('password');
+        var code        = password.substring(-5);
+        sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+        response.success(true);
+    }
 });
 
 
@@ -1695,22 +1695,22 @@ Parse.Cloud.define('sendVerificationCodeToUserWithPhoneNumberEmailAddress', func
 ///////////////////////////////////////
 Parse.Cloud.define('sendSMS', function(request, response)
 {
-	//Parse.Cloud.useMasterKey();
+    //Parse.Cloud.useMasterKey();
 
-	console.log('sendSMS with:');
+    console.log('sendSMS with:');
     console.log('toNumber: ' + request.params.toNumber);
     console.log('message: ' + request.params.message);
-	console.log('from: ' + twilioSendingNumber);
+    console.log('from: ' + twilioSendingNumber);
 
-	var tas = twilioAccountSid.substring(1,5);
-	var tat = twilioAccountToken.substring(1,5);
+    var tas = twilioAccountSid.substring(1,5);
+    var tat = twilioAccountToken.substring(1,5);
 
-	console.log('account sid starts ' + tas);
-	console.log('account token starts ' + tat);
+    console.log('account sid starts ' + tas);
+    console.log('account token starts ' + tat);
 
-    var twilio	= require('twilio')(twilioAccountSid,twilioAccountToken);
-	var to 		= request.params.toNumber;
-	var message	= request.params.message;
+    var twilio    = require('twilio')(twilioAccountSid,twilioAccountToken);
+    var to         = request.params.toNumber;
+    var message    = request.params.message;
 
     twilio.sendMessage(
     {
@@ -1722,14 +1722,14 @@ Parse.Cloud.define('sendSMS', function(request, response)
     {
         if (error)
         {
-        	console.log('error with sendSMS:');
-        	console.log(error);
+            console.log('error with sendSMS:');
+            console.log(error);
             response.error(error);
         }
         else
         {
-        	console.log('success with sendSMS:');
-        	console.log(responseData);
+            console.log('success with sendSMS:');
+            console.log(responseData);
             response.success(responseData);
         }
     });
