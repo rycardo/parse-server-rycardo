@@ -101,7 +101,7 @@ app.use(mountPath, api);
 //
 // Parse Server plays nicely with the rest of your web routes
 app.get('/', function(request, response) {
-  response.status(200).send('I am not really dreaming of being a website, instead I am dreaming of sailing through a Norwegian fjord.');
+  response.status(200).send('I am dreaming of sailing through a Norwegian fjord.');
 });
 
 
