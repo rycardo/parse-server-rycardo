@@ -183,7 +183,7 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
     conditionalLog("with params:");
     conditionalLog("userId [" + userId + "]");
 
-    if (userId !== null && userId !== "")
+    if (userId === null || userId === "")
     {
         response.error("Must provide userId");
         return;
