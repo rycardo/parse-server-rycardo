@@ -201,11 +201,11 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
         {
             if ( countResult > 0 )
             {
-                response.success("true");
+                response.success(true);
             }
             else
             {
-                response.success("false");
+                response.success(false);
             }
         },
         error: function(countError)
@@ -719,8 +719,8 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            var allCount = results.length;
-            var newCount = 0;
+            var allMessagesCount = results.length;
+            var newMessagesCount = 0;
 
             var message = null;
 
@@ -733,13 +733,14 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
                 }
                 else
                 {
-                    newCount += 1;
+                    newMessagesCount += 1;
                 }
             }
-            conditionalLog("messages count: " + allCount.toString() );
-            conditionalLog("unread count:   " + newCount.toString() );
+            conditionalLog("messages count: " + allMessagesCount.toString() );
+            conditionalLog("unread count:   " + newMessagesCount.toString() );
             conditionalLog("SUCCESS");
-            var theResult = "{'allCount': " + allCount + ",'newCount': " + newCount + "}";
+
+            var theResult = { allCount: allMessagesCount, newCount: newMessagesCount };
 
             response.success(theResult);
         },
@@ -1117,7 +1118,11 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
             if ( results.length === 0 )
             {
                 conditionalLog("No users found to reset");
-                response.success( "{ 'description' : 'No users found to reset' }" );
+
+                var theDesc   = "No users found to reset";
+                var theResult = { description: theDesc };
+
+                response.success(theResult);
             }
             else
             {
@@ -1191,7 +1196,7 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
             conditionalLog("find with email address in username was successful.");
             conditionalLog(results.length + " records found");
 
-            if ( results.length == 0 )
+            if ( results.length === 0 )
             {
                 conditionalLog("No records found to convert");
                 response.success( "{ 'description' : 'No records found to convert' }" );
@@ -1208,26 +1213,26 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                 //var messaging    = firstUser.get("allowsMessages");
                 //var barberName     = firstUser.get("barberName");
                 var emailAddress= firstUser.get("email");
-                var firstName     = firstUser.get("firstName");
+                var userFirstName  = firstUser.get("firstName");
                 //var friends    = firstUser.get("friendsRelation");
                 var installoids = firstUser.get("installoids");
                 //var isStaff    = firstUser.get("isStaffMember");
-                var lastName     = firstUser.get("lastName");
+                var userLastName     = firstUser.get("lastName");
                 //var lastSeen    = firstUser.get("lastSeen");
                 //var phoneNumber    = firstUser.get("phoneNumber");
-                var staffId    = firstUser.get("staffID");
+                var userStaffId    = firstUser.get("staffID");
                 //var userId     = firstUser.get("id");
-                var username    = firstUser.get("username");
+                var theUsername    = firstUser.get("username");
                 //var userRole    = firstUser.get("userRole);
 
                 conditionalLog("Can update user:");
 
                 conditionalLog("email:      " + emailAddress);
-                conditionalLog("firstName:  " + firstName);
+                conditionalLog("firstName:  " + userFirstName);
                 conditionalLog("installoids:" + installoids);
-                conditionalLog("lastName:   " + lastName);
-                conditionalLog("staffId:    " + staffId);
-                conditionalLog("username:   " + username);
+                conditionalLog("lastName:   " + userLastName);
+                conditionalLog("staffId:    " + userStaffId);
+                conditionalLog("username:   " + theUsername);
 
                 var userServiceToken = process.env.USER_SERVICE_TOKEN;
 
@@ -1243,15 +1248,15 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                     success: function(savedUser)
                     {
                         conditionalLog("User saved CONVERTED.");
-                        var userResponse = "{ 'email'        : '" + emailAddress     +
-                                          "', 'firstName'    : '" + firstName        +
-                                          "', 'installoids'  : '" + installoids      +
-                                          "', 'lastName'     : '" + lastName         +
-                                          "', 'staffId'      : '" + staffId          +
-                                          "', 'username'     : '" + username         +
-                                          "', 'confirmation' : '" + random           +
-                                          "', 'transaction'  : '" + userServiceToken +
-                                          "', 'description'  : 'confirmed' }";
+                        var userResponse = { email : emailAddress,
+                                             firstName : userFirstName,
+                                             installoids : installoids,
+                                             lastName : userLastName,
+                                             staffId : userStaffId,
+                                             username : theUsername,
+                                             confirmation : random,
+                                             transaction : userServiceToken,
+                                             description : 'confirmed' };
 
                         response.success(userResponse);
                     },
@@ -1310,7 +1315,9 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
             if ( results.length === 0 )
             {
                 conditionalLog("No records found to convert");
-                response.success( "{ 'description' : 'No records found to convert' }" );
+                var theResult = { description : "No records found to convert" };
+
+                response.success(theResult);
             }
             else
             {
@@ -1324,26 +1331,26 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
                 //var messaging    = firstUser.get("allowsMessages");
                 //var barberName     = firstUser.get("barberName");
                 var emailAddress= firstUser.get("email");
-                var firstName     = firstUser.get("firstName");
+                var userFirstName     = firstUser.get("firstName");
                 //var friends    = firstUser.get("friendsRelation");
                 var installoids = firstUser.get("installoids");
                 //var isStaff    = firstUser.get("isStaffMember");
-                var lastName     = firstUser.get("lastName");
+                var userLastName     = firstUser.get("lastName");
                 //var lastSeen    = firstUser.get("lastSeen");
                 //var phoneNumber    = firstUser.get("phoneNumber");
-                var staffId    = firstUser.get("staffID");
+                var userStaffId    = firstUser.get("staffID");
                 //var userId     = firstUser.get("id");
-                var username    = firstUser.get("username");
+                var theUsername    = firstUser.get("username");
                 //var userRole    = firstUser.get("userRole);
 
                 conditionalLog("Can update user:");
 
                 conditionalLog("email:      " + emailAddress);
-                conditionalLog("firstName:  " + firstName);
+                conditionalLog("firstName:  " + userFirstName);
                 conditionalLog("installoids:" + installoids);
-                conditionalLog("lastName:   " + lastName);
-                conditionalLog("staffId:    " + staffId);
-                conditionalLog("username:   " + username);
+                conditionalLog("lastName:   " + userLastName);
+                conditionalLog("staffId:    " + userStaffId);
+                conditionalLog("username:   " + theUsername);
 
                 var userServiceToken = process.env.USER_SERVICE_TOKEN;
 
@@ -1358,15 +1365,16 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
                     success: function(savedUser)
                     {
                         conditionalLog("User saved CONVERTED.");
-                        var userResponse = "{ 'email'        : '" + emailAddress     +
-                                          "', 'firstName'    : '" + firstName        +
-                                          "', 'installoids'  : '" + installoids      +
-                                          "', 'lastName'     : '" + lastName         +
-                                          "', 'staffId'      : '" + staffId          +
-                                          "', 'username'     : '" + username         +
-                                          "', 'confirmation' : '" + random            +
-                                          "', 'transaction'  : '" + userServiceToken +
-                                          "', 'description'  : 'confirmed' }";
+
+                        var userResponse = { email : emailAddress,
+                                             firstName : userFirstName,
+                                             installoids : installoids,
+                                             lastName : userLastName,
+                                             staffId : userStaffId,
+                                             username : theUsername,
+                                             confirmation : random,
+                                             transaction : userServiceToken,
+                                             description : "confirmed" };
 
                         response.success(userResponse);
                     },
