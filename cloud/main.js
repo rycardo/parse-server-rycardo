@@ -675,6 +675,31 @@ Parse.Cloud.define("getMessageCount", function(request, response)
 
 ///////////////////////////////////////
 //
+// getTestDictionary
+//
+///////////////////////////////////////
+Parse.Cloud.define("getTestDictionary", function(request, response)
+{
+    conditionalLog("getTestDictionary");
+
+    var theString   = "This is a string";
+    var theNumber   = 420;
+    var theStringArray = ["A","B","C","D"];
+    var theNumberArray = [1,2,3,4,5];
+    var trueEh = false;
+
+    conditionalLog("Just before creating dictionary");
+
+    var theResult = { aString: theString, aNumber: theNumber, anArray: theStringArray, secondArray: theNumberArray, aBool: trueEh };
+
+    conditionalLog("Just after creating dictionary");
+
+    response.success(theResult);
+});
+
+
+///////////////////////////////////////
+//
 // getMessagesCount
 //
 ///////////////////////////////////////
