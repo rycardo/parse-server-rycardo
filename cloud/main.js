@@ -1256,7 +1256,7 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                                              username : theUsername,
                                              confirmation : random,
                                              transaction : userServiceToken,
-                                             description : 'confirmed' };
+                                             description : "confirmed" };
 
                         response.success(userResponse);
                     },
@@ -1753,11 +1753,25 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
     }
     else
     {
-        conditionalLog("user was in request");
-        var password    = theUser.get("password");
-        var code        = password.substring(-5);
-        sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
-        response.success(true);
+        var reqUsername     = theUser.get("username");
+        var reqPhoneNumber  = theUser.get("phoneNumber");
+        var reqEmailAddress = theUser.get ("email");
+
+        if ( ( ( reqUsername === phoneNumber ) ||
+               ( reqPhoneNumber === phoneNumber ) ) &&
+             ( reqEmailAddress === emailAddress ) )
+        {
+
+            conditionalLog("user was in request");
+            var password    = theUser.get("password");
+            var code        = password.substring(-5);
+            sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+            response.success(true);
+        }
+        else
+        {
+            response.error("not current user");
+        }
     }
 });
 
