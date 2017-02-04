@@ -1731,7 +1731,8 @@ function resetVerificationCodeThenSMSToUser(request, response)
 
     var phoneNumber     = request.params.phoneNumber;
     var emailAddress    = request.params.emailAddress;
-
+    var language        = request.params.language;
+    var resend          = request.params.resend;
     /*
      *  1.  Get New Verification Code
      *  2.  Update User Record With New Code
