@@ -271,6 +271,38 @@ Parse.Cloud.define("getUserWithId", function(request, response)
 });
 
 
+
+
+///////////////////////////////////////
+//
+// getUserIdForUserWithPhoneNumberEmailAddress
+//
+///////////////////////////////////////
+Parse.Cloud.define("getUserIdForUserWithPhoneNumberEmailAddress", function(request, response)
+{
+    // Get User's objectId (aka UserId)
+    var User            = Parse.Object.extend("_User");
+    var userQuery       = new Parse.Query(User);
+    userQuery.equalTo("username", request.params.phoneNumber);
+    userQuery.equalTo("email", request.params.emailAddress);
+    userQuery.find(
+    {
+        useMasterKey: true,
+        success: function(userResult)
+        {
+            var foundUser = userResult[0];
+            response.success(foundUser.objectId);
+        },
+        error: function(userError)
+        {
+            conditionalLog("user query error");
+            conditionalLog(userError);
+            response.error(userError);
+        }
+    });
+});
+
+
 ///////////////////////////////////////
 //
 // canReplyToUserWithId
@@ -1619,7 +1651,7 @@ function randomNumberWithNumberOfDigits(numDigits)
 ///////////////////////////////////////
 function conditionalLog(logText)
 {
-    var doLog = process.env.DEBUG_LOG || True;
+    var doLog = process.env.DEBUG_LOG || true;
 
     if ( doLog === true || doLog === "True" )
     {
@@ -1683,6 +1715,65 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
         else
         {
             response.success(responseData);
+        }
+    });
+}
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeThenSMSToUser
+//
+///////////////////////////////////////
+function resetVerificationCodeThenSMSToUser(request, response)
+{
+    conditionalLog("resetVerificationCodeThenSMSToUser()");
+
+    var phoneNumber     = request.params.phoneNumber;
+    var emailAddress    = request.params.emailAddress;
+
+    /*
+     *  1.  Get New Verification Code
+     *  2.  Update User Record With New Code
+     *  3.  Send User new code
+     *  4.  User logs in
+     */
+
+    Parse.Cloud.run("resetVerificationCode",
+    {
+        email:          emailAddress,
+        phoneNumber:    phoneNumber
+    },
+    {
+        useMasterKey: true,
+        success: function(resetResult)
+        {
+            var message = "Your Barbershop Deluxe app Verification Code is " + resetResult;
+            var from    = twilioSendingNumber;
+
+            Parse.Cloud.run("sendSMS",
+            {
+                toNumber :  phoneNumber,
+                from:       twilioSendingNumber,
+                message:    message
+            },
+            {
+                success: function(sendResult)
+                {
+                    response.success(true);
+                },
+                error: function(errorResult)
+                {
+                    conditionalLog("Error sending message");
+                    conditionalLog(errorResult);
+                    response.error(errorResult);
+                }
+            });
+        },
+        error: function(errorResult)
+        {
+            conditionalLog("Unable to reset code");
+            conditionalLog(errorResult);
         }
     });
 }
@@ -1796,9 +1887,9 @@ Parse.Cloud.define("sendSMS", function(request, response)
     conditionalLog("account sid starts " + tas);
     conditionalLog("account token starts " + tat);
 
-    var twilio    = require("twilio")(twilioAccountSid,twilioAccountToken);
-    var to         = request.params.toNumber;
-    var message    = request.params.message;
+    var twilio      = require("twilio")(twilioAccountSid,twilioAccountToken);
+    var to          = request.params.toNumber;
+    var message     = request.params.message;
 
     twilio.sendMessage(
     {
