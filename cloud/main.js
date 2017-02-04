@@ -1786,6 +1786,18 @@ function resetVerificationCodeThenSMSToUser(request, response)
 
 // Non Parse functions can be found in twilio.js
 
+
+///////////////////////////////////////
+//
+// getTwilioPhoneNumber
+//
+///////////////////////////////////////
+Parse.Cloud.define("getTwilioPhoneNumber", function(request, response)
+{
+    conditionalLog("getTwilioPhoneNumber");
+
+    response.success(twilioSendingNumber);
+});
 ///////////////////////////////////////
 //
 // sendVerificationCodeToUserWithPhoneNumberEmailAddress
