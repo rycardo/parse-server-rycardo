@@ -1739,6 +1739,12 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
     var emailAddress    = request.params.emailAddress;
     var language        = request.params.language;
     var resend          = request.params.resend;
+
+    conditionalLog("phoneNumber [" + phoneNumber + "]");
+    conditionalLog("emailAddress [" + emailAddress + "]");
+    conditionalLog("language [" + language + "]");
+    conditionalLog("resend [" + resend + "]");
+
     /*
      *  1.  Get New Verification Code
      *  2.  Update User Record With New Code
