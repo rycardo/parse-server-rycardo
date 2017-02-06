@@ -1754,7 +1754,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
 
     Parse.Cloud.run("resetVerificationCode",
     {
-        email:          emailAddress,
+        emailAddress:   emailAddress,
         phoneNumber:    phoneNumber
     },
     {
