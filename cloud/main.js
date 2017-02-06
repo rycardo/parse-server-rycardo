@@ -1178,6 +1178,7 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
                         conditionalLog("REMOVE THESE THREE LINES");
                         conditionalLog(random);
                         conditionalLog("REMOVE THESE THREE LINES");
+                        //var theResult = { verificationCode: random };
                         response.success(random);
                     },
                     error: function(saveError)
@@ -1732,6 +1733,8 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
 {
     conditionalLog("resetVerificationCodeThenSMSToUser()");
 
+    var os = require('os');
+
     var phoneNumber     = request.params.phoneNumber;
     var emailAddress    = request.params.emailAddress;
     var language        = request.params.language;
@@ -1752,7 +1755,8 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
         useMasterKey: true,
         success: function(resetResult)
         {
-            var message = "Your Barbershop Deluxe app Verification Code is " + resetResult;
+            var verificationCode = JSON.parse(resetResult);
+            var message = "Your Barbershop Deluxe app Verification Code is" + os.EOL + verificationCode + os.EOL + "You may be able to tap this link:" + os.EOL + "fourxq.barbershop://vc=" + verificationCode;
             var from    = twilioSendingNumber;
 
             Parse.Cloud.run("sendSMS",
