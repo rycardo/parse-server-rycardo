@@ -1154,7 +1154,7 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
                 var theDesc   = "No users found to reset";
                 var theResult = { description: theDesc };
 
-                response.success(theResult);
+                response.error(theResult);
             }
             else
             {
@@ -1175,6 +1175,9 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
                     success: function(savedUser)
                     {
                         conditionalLog("User Verification Code Reset.");
+                        conditionalLog("REMOVE THESE THREE LINES");
+                        conditionalLog(random);
+                        conditionalLog("REMOVE THESE THREE LINES");
                         response.success(random);
                     },
                     error: function(saveError)
