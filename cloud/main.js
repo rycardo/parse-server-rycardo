@@ -1777,7 +1777,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
             conditionalLog(errorResult);
         }
     });
-}
+});
 
 ///////////////////////////////////////
 //
