@@ -1725,7 +1725,7 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
 // resetVerificationCodeThenSMSToUser
 //
 ///////////////////////////////////////
-function resetVerificationCodeThenSMSToUser(request, response)
+Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, response)
 {
     conditionalLog("resetVerificationCodeThenSMSToUser()");
 
