@@ -1812,8 +1812,9 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     var first           = currentUser.get("firstName");
     var last            = currentUser.get("lastName");
     var username        = currentUser.get("username");
+    var userId          = currentUser.objectId;
 
-    conditionalLog("Checking " + first + " " + last + " (" + username + ")");
+    conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
 
     if ( ( currentUser === null ) ||
          ( roleName === null    ) ||
@@ -1833,14 +1834,22 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
             conditionalLog("Have role '" + roleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
-            //relationQuery.get(currentUser.objectId,
-            relationQuery.exists("objectId");
-            relationQuery.find(
+            relationQuery.equalTo("objectId", currentUser.objectId,
+            relationQuery.count(
             {
                 useMasterKey: true,
-                success: function(userResult)
+                success: function(userCount)
                 {
-                    var theResult = { roleCount : userResult.length };
+                    var theResult = {};
+
+                    if ( userCount === 1 )
+                    {
+                        theResult = { belongs: true };
+                    }
+                    else
+                    {
+                        theResult = { belongs : false };
+                    }
                     response.success(theResult);
                 },
                 error: function(userError)
