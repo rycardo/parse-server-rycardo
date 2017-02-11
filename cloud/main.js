@@ -1848,7 +1848,6 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
                     response.error(userError);
                 }
             });
-            */
         },
         error: function(roleError)
         {
