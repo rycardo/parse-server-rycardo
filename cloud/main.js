@@ -1792,6 +1792,63 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
     });
 });
 
+
+///////////////////////////////////////
+//
+// ROLES AND PERMISSIONS
+//
+///////////////////////////////////////
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeThenSMSToUser
+//
+///////////////////////////////////////
+Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, response)
+{
+    conditionalLog("doesCurrentUserBelongToRoleWithRoleName");
+
+    var roleName        = request.params.roleName;
+    var currentUser     = request.user;
+
+    if ( ( currentUser === null ) ||
+         ( roleName === null    ) ||
+         ( roleName.length === 0  ) )
+    {
+        response.error("missing user and or roleName");
+    }
+    var Role = Parse.Object.extend("_Role");
+    //new Parse.Query(Parse.Role);
+
+    var roleQuery = new Parse.Query(Role);
+    roleQuery.equalTo("name", roleName);
+    roleQuery.first(
+    {
+        useMasterKey: true,
+        success: function(roleObject)
+        {
+            var relationQuery = roleObject.relation("users").query();
+            relationQuery.get(currentUser.objectId,
+            {
+                useMasterKey: true,
+                success: function(userResult)
+                {
+                    response.success(true);
+                },
+                error: function(userError)
+                {
+                    response.success(false);
+                }
+            });
+        },
+        error: function(roleError)
+        {
+            response.error(roleError);
+        }
+    });
+});
+
 ///////////////////////////////////////
 //
 // Twilio Functions
