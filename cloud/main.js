@@ -1175,9 +1175,6 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
                     success: function(savedUser)
                     {
                         conditionalLog("User Verification Code Reset.");
-                        conditionalLog("REMOVE THESE THREE LINES");
-                        conditionalLog(random);
-                        conditionalLog("REMOVE THESE THREE LINES");
                         //var theResult = { verificationCode: random };
                         response.success(random);
                     },
@@ -1802,7 +1799,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
 
 ///////////////////////////////////////
 //
-// resetVerificationCodeThenSMSToUser
+// doesCurrentUserBelongToRoleWithRoleName
 //
 ///////////////////////////////////////
 Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, response)
@@ -1811,6 +1808,12 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
 
     var roleName        = request.params.roleName;
     var currentUser     = request.user;
+
+    var first           = currentUser.get("firstName");
+    var last            = currentUser.get("lastName");
+    var username        = currentUser.get("username");
+
+    conditionalLog("Checking " + first + " " + last + " (" + username + ")");
 
     if ( ( currentUser === null ) ||
          ( roleName === null    ) ||
@@ -1822,27 +1825,33 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     //new Parse.Query(Parse.Role);
 
     var roleQuery = new Parse.Query(Role);
-    roleQuery.equalTo("name", roleName);
-    roleQuery.first(
+    //roleQuery.equalTo("name", roleName);
+    //roleQuery.first(
+    roleQuery.exists("name");
+    roleQuery.find(
     {
         useMasterKey: true,
         success: function(roleObject)
         {
+            var count = roleObject.length;
+            var theResult = { roleCount : count };
+            response.success(theResult);
+        },
+            /*
             var relationQuery = roleObject.relation("users").query();
             relationQuery.get(currentUser.objectId,
             {
                 useMasterKey: true,
                 success: function(userResult)
                 {
-                    var theResult = { belongs: true };
-                    response.success(theResult);
+                    response.success(true);
                 },
                 error: function(userError)
                 {
-                    var theResult = { belongs: false }
-                    response.success(theResult);
+                    response.error(userError);
                 }
             });
+            */
         },
         error: function(roleError)
         {
