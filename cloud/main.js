@@ -1834,11 +1834,13 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
                 useMasterKey: true,
                 success: function(userResult)
                 {
-                    response.success(true);
+                    var theResult = { belongs: true };
+                    response.success(theResult);
                 },
                 error: function(userError)
                 {
-                    response.success(false);
+                    var theResult = { belongs: false }
+                    response.success(theResult);
                 }
             });
         },
