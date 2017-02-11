@@ -1821,31 +1821,27 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     {
         response.error("missing user and or roleName");
     }
-    var Role = Parse.Object.extend("_Role");
-    //new Parse.Query(Parse.Role);
-
-    var roleQuery = new Parse.Query(Role);
+    var Role        = Parse.Object.extend("_Role");
+    var roleQuery   = new Parse.Query(Role);
     roleQuery.equalTo("name", roleName);
-    //roleQuery.first(
-    /* Below Section Temporary */
-    //roleQuery.exists("name");
-    roleQuery.find(
+    roleQuery.first(
     {
         useMasterKey: true,
         success: function(roleObject)
         {
-            var count = roleObject.length;
-            var theResult = { roleCount : count };
-            response.success(theResult);
-    /* Above Section Temporary */
-            /*
+            var roleName = roleObject.get("name");
+            conditionalLog("Have role '" + roleName + "'");
+
             var relationQuery = roleObject.relation("users").query();
-            relationQuery.get(currentUser.objectId,
+            //relationQuery.get(currentUser.objectId,
+            relationQuery.exists("objectId");
+            relationQuery.find(
             {
                 useMasterKey: true,
                 success: function(userResult)
                 {
-                    response.success(true);
+                    var theResult = { roleCount : userResult.length };
+                    response.success(theResult);
                 },
                 error: function(userError)
                 {
