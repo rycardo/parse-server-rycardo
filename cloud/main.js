@@ -1827,6 +1827,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     var roleQuery = new Parse.Query(Role);
     //roleQuery.equalTo("name", roleName);
     //roleQuery.first(
+    /* Below Section Temporary */
     roleQuery.exists("name");
     roleQuery.find(
     {
@@ -1836,7 +1837,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
             var count = roleObject.length;
             var theResult = { roleCount : count };
             response.success(theResult);
-        },
+    /* Above Section Temporary */
             /*
             var relationQuery = roleObject.relation("users").query();
             relationQuery.get(currentUser.objectId,
