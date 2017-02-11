@@ -1825,10 +1825,10 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     //new Parse.Query(Parse.Role);
 
     var roleQuery = new Parse.Query(Role);
-    //roleQuery.equalTo("name", roleName);
+    roleQuery.equalTo("name", roleName);
     //roleQuery.first(
     /* Below Section Temporary */
-    roleQuery.exists("name");
+    //roleQuery.exists("name");
     roleQuery.find(
     {
         useMasterKey: true,
