@@ -1837,22 +1837,22 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                 var userObjectId    = request.user.objectId;
                 conditionalLog("request.user.objectId :" + userObjectId);
 
-                if ( userObjectId === null ) || ( userObjectId === "" )
+                if ( ( userObjectId === null ) || ( userObjectId === "" ) )
                 {
-                    userObjectId    = request.user.get("objectId");;
+                    userObjectId    = request.user.get("objectId");
                     conditionalLog("request.user.get('objectId') :" + userObjectId);
 
-                    if ( userObjectId === null ) || ( userObjectId === "" )
+                    if ( ( userObjectId === null ) || ( userObjectId === "" ) )
                     {
                         userObjectId = request.user.get("_id");
                         conditionalLog("request.user.get('_id') :" + userObjectId);
 
-                        if ( userObjectId === null ) || ( userObjectId === "" )
+                        if ( ( userObjectId === null ) || ( userObjectId === "" ) )
                         {
                             userObjectId = request.user.get("id");
                             conditionalLog("request.user.get('id') :" + userObjectId);
 
-                            if ( userObjectId = null ) || ( userObjectId === "" )
+                            if ( ( userObjectId = null ) || ( userObjectId === "" ) )
                             {
                                 conditionalLog("user object id still not obtained!");
                                 response.error("no user object id");
