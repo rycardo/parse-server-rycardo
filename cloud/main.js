@@ -1813,14 +1813,19 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
     var username        = currentUser.get("username");
 
     conditionalLog("Checking "+ first + " " + last + " (" + username + ")");
+    conditionalLog("request.user:");
+    conditionalLog(request.user);
+    conditionalLog("currentUser:");
+    conditionalLog(currentUser);
 
     if ( currentUser === null )
     {
         response.error("missing user");
     }
 
-    var Role        = Parse.Object.extend("_Role");
-    var roleQuery   = new Parse.Query(Role);
+    //var Role        = Parse.Object.extend("_Role");
+    //var roleQuery   = new Parse.Query(Role);
+    var roleQuery = new Parse.Query(Parse.Role);
     roleQuery.exists("name");
     roleQuery.find(
     {
