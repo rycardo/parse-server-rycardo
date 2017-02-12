@@ -1853,37 +1853,14 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                     },
                     error       : function(userError)
                     {
-                        conditionalLog("User Error:");
-                        conditionalLog(userError);
+                        conditionalLog("User does not belong to role " + roleName);
+                        //conditionalLog(userError);
                     }
                 });
-                /*
-                relationQuery.equalTo("objectId", userId);
-                relationQuery.count(
-                {
-                    useMasterKey: true,
-                    success     : function(userCount)
-                    {
-                        if ( userCount === 1 )
-                        {
-                            belongsToRoleNames.push(roleName);
-                        }
-                    },
-                    error: function(userError)
-                    {
-                        console.log("User Error:");
-                        console.log(userError);
-                        response.error(userError);
-                    }
-                });
-                */
             }
 
             conditionalLog("User belongs to:");
-            belongsToRoleNames.forEach(function(roleName)
-            {
-                conditionalLog(roleName);
-            });
+            conditionalLog(belongsToRoleNames);
             response.success(belongsToRoleNames);
         },
         error: function(roleError)
