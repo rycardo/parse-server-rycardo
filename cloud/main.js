@@ -1811,9 +1811,8 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
     var first           = currentUser.get("firstName");
     var last            = currentUser.get("lastName");
     var username        = currentUser.get("username");
-    var userId          = currentUser.objectId;
 
-    conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
+    conditionalLog("Checking "+ first + " " + last + " (" + username + ")");
 
     if ( currentUser === null )
     {
@@ -1835,7 +1834,7 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                 var roleObject  = roleResults[rIdx];
                 var roleName    = roleObject.get("name");
 
-                conditionalLog("Checking role '" + roleName + "'");
+                conditionalLog("Checking role '" + roleName + "' for '" + currentUser.objectId);
 
                 var relationQuery = roleObject.relation("users").query();
                 relationQuery.equalTo("objectId", currentUser.objectId);
