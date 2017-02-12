@@ -1799,6 +1799,180 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
 
 ///////////////////////////////////////
 //
+// getRoleNamesForCurrentUser
+//
+///////////////////////////////////////
+Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
+{
+    conditionalLog("getRoleNamesForCurrentUser");
+
+    var currentUser     = request.user;
+
+    var first           = currentUser.get("firstName");
+    var last            = currentUser.get("lastName");
+    var username        = currentUser.get("username");
+    var userId          = currentUser.objectId;
+
+    conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
+
+    if ( currentUser === null )
+    {
+        response.error("missing user");
+    }
+
+    var Role        = Parse.Object.extend("_Role");
+    var roleQuery   = new Parse.Query(Role);
+    roleQuery.exists("name");
+    roleQuery.find(
+    {
+        useMasterKey: true,
+        success: function(roleResults)
+        {
+            var belongsToRoleNames = [];
+
+            for ( rIdx = 0; rIdx < roleResults.length; rIdx += 1 )
+            {
+                var roleObject  = roleResults[rIdx];
+                var roleName    = roleObject.get("name");
+
+                conditionalLog("Checking role '" + roleName + "'");
+
+                var relationQuery = roleObject.relation("users").query();
+                relationQuery.equalTo("objectId", currentUser.objectId);
+                relationQuery.count(
+                {
+                    useMasterKey: true,
+                    success     : function(userCount)
+                    {
+                        if ( userCount === 1 )
+                        {
+                            belongsToRoleNames.push(roleName);
+                        }
+                    },
+                    error: function(userError)
+                    {
+                        console.log("User Error:");
+                        console.log(userError);
+                        response.error(userError);
+                    }
+                });
+            }
+
+            conditionalLog("User belongs to:");
+            belongsToRoleNames.forEach(function(roleName)
+            {
+                conditionalLog(roleName);
+            });
+            response.success(belongsToRoleNames);
+        },
+        error: function(roleError)
+        {
+            console.log("RoleError:");
+            console.log(roleError);
+            response.error(roleError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// afterSave
+//
+///////////////////////////////////////
+/*
+Parse.Cloud.afterSave(Parse.User, function(request, response)
+{
+    var user = request.user;
+    query = new Parse.Query(Parse.Role);
+    query.equalTo("name", "Alpha");
+    query.first().then(function(object) {
+        object.relation("users").add(user);
+        return object.save();
+    }).then(function() {
+        query = new Parse.Query(Parse.Role);
+        query.equalTo("name", "Free");
+        return query.first();
+    }).then(function(object) {
+        object.relation("users").add(user);
+        return object.save();
+    }).then(function() {
+        response.success("The user has been authorized.");
+    }, function(error) {
+        response.error("error: " + error.message);
+    });
+});
+*/
+
+Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, response)
+{
+    conditionalLog("addCurrentUserToRoleWithRoleName");
+
+    var roleName        = request.params.roleName;
+    var currentUser     = request.user;
+
+    var first           = currentUser.get("firstName");
+    var last            = currentUser.get("lastName");
+    var username        = currentUser.get("username");
+    var userId          = currentUser.objectId;
+
+    conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
+
+    if ( ( currentUser === null ) ||
+         ( roleName === null    ) ||
+         ( roleName.length === 0  ) )
+    {
+        response.error("missing user and or roleName");
+    }
+
+    var Role        = Parse.Object.extend("_Role");
+    var roleQuery   = new Parse.Query(Role);
+    roleQuery.equalTo("name", roleName);
+    roleQuery.first(
+    {
+        useMasterKey: true,
+        success: function(roleObject)
+        {
+            var roleName = roleObject.get("name");
+            conditionalLog("Have role '" + roleName + "'");
+
+            var relationQuery = roleObject.relation("users").query();
+            relationQuery.equalTo("objectId", currentUser.objectId);
+            relationQuery.count(
+            {
+                useMasterKey: true,
+                success: function(userCount)
+                {
+                    var theResult = {};
+
+                    if ( userCount === 1 )
+                    {
+                        theResult = { belongs: true };
+                    }
+                    else
+                    {
+                        roleObject.getUsers().add(currentUser);
+                        roleObject.save();
+                        theResult = { belongs : false, added : true };
+                    }
+                    response.success(theResult);
+                },
+                error: function(userError)
+                {
+                    response.error(userError);
+                }
+            });
+        },
+        error: function(roleError)
+        {
+            response.error(roleError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
 // doesCurrentUserBelongToRoleWithRoleName
 //
 ///////////////////////////////////////
@@ -1834,7 +2008,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
             conditionalLog("Have role '" + roleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
-            relationQuery.equalTo("objectId", currentUser.objectId,
+            relationQuery.equalTo("objectId", currentUser.objectId);
             relationQuery.count(
             {
                 useMasterKey: true,
