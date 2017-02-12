@@ -1730,7 +1730,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
 {
     conditionalLog("resetVerificationCodeThenSMSToUser()");
 
-    var os = require('os');
+    var os = require("os");
 
     var phoneNumber     = request.params.phoneNumber;
     var emailAddress    = request.params.emailAddress;
@@ -1812,15 +1812,10 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
     var last            = currentUser.get("lastName");
     var username        = currentUser.get("username");
 
-    var userId          = currentUser.id;
+    var userId          = request.user.id;
 
-    conditionalLog("Checking "+ first + " " + last + " (" + username + ")");
-    conditionalLog("request.user:");
-    conditionalLog(request.user);
-    conditionalLog("currentUser:");
-    conditionalLog(currentUser);
-
-    if ( currentUser === null )
+    conditionalLog("Checking [" + userId + "] " + first + " " + last + " (" + username + ")");
+    if ( ( currentUser === null ) || ( currentUser === undefined ) )
     {
         response.error("missing user");
     }
@@ -1841,44 +1836,29 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                 var roleObject      = roleResults[rIdx];
                 var roleName        = roleObject.get("name");
 
-                var userObjectId    = request.user.objectId;
-                conditionalLog("request.user.objectId :" + userObjectId);
-
-                if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
-                {
-                    userObjectId    = request.user.get("objectId");
-                    conditionalLog("request.user.get('objectId') :" + userObjectId);
-
-                    if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
-                    {
-                        userObjectId = request.user.get("_id");
-                        conditionalLog("request.user.get('_id') :" + userObjectId);
-
-                        if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
-                        {
-                            userObjectId = request.user.get("id");
-                            conditionalLog("request.user.get('id') :" + userObjectId);
-
-                            if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
-                            {
-                                //conditionalLog("user object id still not obtained!");
-                                //response.error("no user object id");
-
-                                userObjectId = request.user.id;
-                                conditionalLog("request.user.id :" + userObjectId );
-                                if ( ( userObjectId = null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
-                                {
-                                    conditionalLog("user object id still not obtained!");
-                                    response.error("no user object id");
-                                }
-                            }
-                        }
-                    }
-                }
-                conditionalLog("Checking role '" + roleName + "' for '" + userObjectId + "'");
+                conditionalLog("Checking role '" + roleName + "' for '" + userId + "'");
 
                 var relationQuery = roleObject.relation("users").query();
-                relationQuery.equalTo("objectId", userObjectId);
+                relationQuery.get(userId,
+                {
+                    useMasterKey: true,
+                    success     : function(userResult)
+                    {
+                        conditionalLog("User belongs to role " + roleName);
+
+                        belongsToRoleNames.push(roleName);
+
+                        conditionalLog("Belongs to these roles:");
+                        conditionalLog(belongsToRoleNames);
+                    },
+                    error       : function(userError)
+                    {
+                        conditionalLog("User Error:");
+                        conditionalLog(userError);
+                    }
+                });
+                /*
+                relationQuery.equalTo("objectId", userId);
                 relationQuery.count(
                 {
                     useMasterKey: true,
@@ -1896,6 +1876,7 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                         response.error(userError);
                     }
                 });
+                */
             }
 
             conditionalLog("User belongs to:");
