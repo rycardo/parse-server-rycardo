@@ -1831,13 +1831,39 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
 
             for ( rIdx = 0; rIdx < roleResults.length; rIdx += 1 )
             {
-                var roleObject  = roleResults[rIdx];
-                var roleName    = roleObject.get("name");
+                var roleObject      = roleResults[rIdx];
+                var roleName        = roleObject.get("name");
 
-                conditionalLog("Checking role '" + roleName + "' for '" + currentUser.objectId);
+                var userObjectId    = request.user.objectId;
+                conditionalLog("request.user.objectId :" + userObjectId);
+
+                if ( userObjectId === null ) || ( userObjectId === "" )
+                {
+                    userObjectId    = request.user.get("objectId");;
+                    conditionalLog("request.user.get('objectId') :" + userObjectId);
+
+                    if ( userObjectId === null ) || ( userObjectId === "" )
+                    {
+                        userObjectId = request.user.get("_id");
+                        conditionalLog("request.user.get('_id') :" + userObjectId);
+
+                        if ( userObjectId === null ) || ( userObjectId === "" )
+                        {
+                            userObjectId = request.user.get("id");
+                            conditionalLog("request.user.get('id') :" + userObjectId);
+
+                            if ( userObjectId = null ) || ( userObjectId === "" )
+                            {
+                                conditionalLog("user object id still not obtained!");
+                                response.error("no user object id");
+                            }
+                        }
+                    }
+                }
+                conditionalLog("Checking role '" + roleName + "' for '" + userObjectId + "'");
 
                 var relationQuery = roleObject.relation("users").query();
-                relationQuery.equalTo("objectId", currentUser.objectId);
+                relationQuery.equalTo("objectId", userObjectId);
                 relationQuery.count(
                 {
                     useMasterKey: true,
