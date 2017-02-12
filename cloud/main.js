@@ -1812,6 +1812,8 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
     var last            = currentUser.get("lastName");
     var username        = currentUser.get("username");
 
+    var userId          = currentUser.id;
+
     conditionalLog("Checking "+ first + " " + last + " (" + username + ")");
     conditionalLog("request.user:");
     conditionalLog(request.user);
@@ -1842,25 +1844,33 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                 var userObjectId    = request.user.objectId;
                 conditionalLog("request.user.objectId :" + userObjectId);
 
-                if ( ( userObjectId === null ) || ( userObjectId === "" ) )
+                if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
                 {
                     userObjectId    = request.user.get("objectId");
                     conditionalLog("request.user.get('objectId') :" + userObjectId);
 
-                    if ( ( userObjectId === null ) || ( userObjectId === "" ) )
+                    if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
                     {
                         userObjectId = request.user.get("_id");
                         conditionalLog("request.user.get('_id') :" + userObjectId);
 
-                        if ( ( userObjectId === null ) || ( userObjectId === "" ) )
+                        if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
                         {
                             userObjectId = request.user.get("id");
                             conditionalLog("request.user.get('id') :" + userObjectId);
 
-                            if ( ( userObjectId = null ) || ( userObjectId === "" ) )
+                            if ( ( userObjectId === null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
                             {
-                                conditionalLog("user object id still not obtained!");
-                                response.error("no user object id");
+                                //conditionalLog("user object id still not obtained!");
+                                //response.error("no user object id");
+
+                                userObjectId = request.user.id;
+                                conditionalLog("request.user.id :" + userObjectId );
+                                if ( ( userObjectId = null ) || ( userObjectId === "" ) || ( userObjectId === undefined ) )
+                                {
+                                    conditionalLog("user object id still not obtained!");
+                                    response.error("no user object id");
+                                }
                             }
                         }
                     }
