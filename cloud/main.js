@@ -291,7 +291,8 @@ Parse.Cloud.define("getUserIdForUserWithPhoneNumberEmailAddress", function(reque
         success: function(userResult)
         {
             var foundUser = userResult[0];
-            response.success(foundUser.objectId);
+            response.success(foundUser.id);
+            // above was foundUser.objectId
         },
         error: function(userError)
         {
@@ -1912,7 +1913,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
     var first           = currentUser.get("firstName");
     var last            = currentUser.get("lastName");
     var username        = currentUser.get("username");
-    var userId          = currentUser.objectId;
+    var userId          = currentUser.id;
 
     conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
 
@@ -1935,7 +1936,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
             conditionalLog("Have role '" + roleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
-            relationQuery.equalTo("objectId", currentUser.objectId);
+            relationQuery.equalTo("objectId", currentUser.id);
             relationQuery.count(
             {
                 useMasterKey: true,
@@ -1984,7 +1985,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     var first           = currentUser.get("firstName");
     var last            = currentUser.get("lastName");
     var username        = currentUser.get("username");
-    var userId          = currentUser.objectId;
+    var userId          = currentUser.id;
 
     conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
 
@@ -2006,27 +2007,23 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
             conditionalLog("Have role '" + roleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
-            relationQuery.equalTo("objectId", currentUser.objectId);
-            relationQuery.count(
+
+            var relationQuery = roleObject.relation("users").query();
+            relationQuery.get(userId,
             {
                 useMasterKey: true,
-                success: function(userCount)
+                success     : function(userResult)
                 {
-                    var theResult = {};
+                    conditionalLog("User belongs to role " + roleName);
 
-                    if ( userCount === 1 )
-                    {
-                        theResult = { belongs: true };
-                    }
-                    else
-                    {
-                        theResult = { belongs : false };
-                    }
+                    var theResult = { belongs: true };
                     response.success(theResult);
                 },
-                error: function(userError)
+                error       : function(userError)
                 {
-                    response.error(userError);
+                    conditionalLog("User does not belong to role " + roleName);
+                    var theResult = { belongs: false };
+                    response.success(theResult);
                 }
             });
         },
