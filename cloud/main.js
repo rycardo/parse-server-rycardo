@@ -322,10 +322,16 @@ Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", functio
         useMasterKey: true,
         success: function(userResult)
         {
-            var foundUser = userResult[0];
-            var theResult = { userId : foundUser.id , username : foundUser.get("username") };
-            response.success(theResult);
-            // above was foundUser.objectId
+            if ( userResult.length == 0 )
+            {
+                response.error("No User Found");
+            }
+            else
+            {
+                var foundUser = userResult[0];
+                var theResult = { userId : foundUser.id , username : foundUser.get("username") };
+                response.success(theResult);
+            }
         },
         error: function(userError)
         {
