@@ -306,6 +306,39 @@ Parse.Cloud.define("getUserIdForUserWithPhoneNumberEmailAddress", function(reque
 
 ///////////////////////////////////////
 //
+// getUsernameForUserWithPhoneNumberEmailAddress
+//
+///////////////////////////////////////
+Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", function(request, response)
+{
+    // Get User's objectId (aka UserId)
+    //var User            = Parse.Object.extend("_User");
+    //var userQuery       = new Parse.Query(User);
+    var userQuery         = new Parse.Query(Parse.User);
+    userQuery.equalTo("phoneNumber", request.params.phoneNumber);
+    userQuery.equalTo("email", request.params.emailAddress);
+    userQuery.find(
+    {
+        useMasterKey: true,
+        success: function(userResult)
+        {
+            var foundUser = userResult[0];
+            var theResult = { userId : foundUser.id , username : foundUser.get("username") };
+            response.success(theResult);
+            // above was foundUser.objectId
+        },
+        error: function(userError)
+        {
+            conditionalLog("user query error");
+            conditionalLog(userError);
+            response.error(userError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
 // canReplyToUserWithId
 //
 ///////////////////////////////////////
