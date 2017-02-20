@@ -1799,7 +1799,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
         success: function(resetResult)
         {
             var verificationCode = JSON.parse(resetResult);
-            var message = "Your Barbershop Deluxe app Verification Code is" + os.EOL + verificationCode + os.EOL + "You may be able to tap this link:" + os.EOL + "fourxq.barbershop://vc=" + verificationCode;
+            var message = "Your Barbershop Deluxe app verification code is" + os.EOL + verificationCode + os.EOL + "You may be able to tap this link:" + os.EOL + "fourxq.barbershop://verify?code=" + verificationCode;
             var from    = twilioSendingNumber;
 
             Parse.Cloud.run("sendSMS",
