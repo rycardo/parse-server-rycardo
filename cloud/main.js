@@ -306,7 +306,7 @@ Parse.Cloud.define("getUserIdForUserWithPhoneNumberEmailAddress", function(reque
 
 ///////////////////////////////////////
 //
-// getUsernameForUserWithPhoneNumberEmailAddress
+// getUsernameAndIdForUserWithPhoneNumberEmailAddress
 //
 ///////////////////////////////////////
 Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", function(request, response)
@@ -314,23 +314,57 @@ Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", functio
     // Get User's objectId (aka UserId)
     //var User            = Parse.Object.extend("_User");
     //var userQuery       = new Parse.Query(User);
-    var userQuery         = new Parse.Query(Parse.User);
-    userQuery.equalTo("phoneNumber", request.params.phoneNumber);
+    var phoneNumber     = request.params.phoneNumber;
+
+    var userQuery       = new Parse.Query(Parse.User);
     userQuery.equalTo("email", request.params.emailAddress);
     userQuery.find(
     {
         useMasterKey: true,
-        success: function(userResult)
+        success: function(userResults)
         {
-            if ( userResult.length == 0 )
+            if ( userResults.length === 0 )
             {
-                response.error("No User Found");
+                response.error("No User Found With Email Address");
             }
             else
             {
-                var foundUser = userResult[0];
-                var theResult = { userId : foundUser.id , username : foundUser.get("username") };
-                response.success(theResult);
+                var thisUser    = null;
+
+                for ( uIdx = 0; uIdx < userResults.length; uIdx += 1 )
+                {
+                    var theResult   = null;
+
+                    thisUser        = userResults[uIdx];
+                    var thisPhone   = thisUser.get("phoneNumber");
+                    if  ( thisPhone === phoneNumber )
+                    {
+                        theResult = {
+                                      userId : thisUser.id,
+                                      username : thisUser.get("username"),
+                                      samePhone: true,
+                                      phoneEmpty: false
+                                    };
+                        response.success(theResult);
+                    }
+                    else
+                    {
+                        if ( ( thisPhone === undefined ) || ( thisPhone.length === 0 ) || ( thisPhone === null ) )
+                        {
+                            theResult = {
+                                          userId : thisUser.id,
+                                          username : thisUser.get("username"),
+                                          samePhone: false,
+                                          phoneEmpty: true
+                                        };
+                            response.success(theResult);
+                        }
+                        else
+                        {
+                            response.error("User Found With Unmatched Phone Number");
+                        }
+                    }
+                }
             }
         },
         error: function(userError)
@@ -432,8 +466,8 @@ Parse.Cloud.define("doesMessageToUserWithNoRepeatHashExist", function(request, r
 {
     //Parse.Cloud.useMasterKey();
 
-    var userId = request.params.userId;
-    var nrHash = request.params.noRepeat;
+    //var userId = request.params.userId;
+    //var nrHash = request.params.noRepeat;
 
     var query = new Parse.Query("Messages");
     query.equalTo("userID", request.params.userId);
@@ -801,7 +835,7 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
                 message = results[mIdx];
                 if ( message.has("readAt") )
                 {
-                    // not new
+                    conditionalLog("not new");
                 }
                 else
                 {
@@ -963,7 +997,7 @@ Parse.Cloud.define("convertMessagesFromDeviceRecipientToUserReceiver", function(
                     results[mIdx].save();
                 }
                 var count        = results.length;
-                var countStr    = count.toString();
+                var countStr     = count.toString();
                 var reply        = "converted " + countStr + " messages";
                 response.success(reply);
             }
@@ -988,7 +1022,7 @@ Parse.Cloud.define("convertMessagesFromUserRecipientToUserReceiver", function(re
     //Parse.Cloud.useMasterKey();
     //
     // All Messages
-    var installId    = request.params.installId;
+    //var installId    = request.params.installId;
     var userId        = request.params.userId;
 
     var query        = new Parse.Query("Messages");
@@ -1045,7 +1079,7 @@ Parse.Cloud.define("convertMessagesFromUserUserToUserReceiver", function(request
     //Parse.Cloud.useMasterKey();
     //
     // All Messages
-    var installId    = request.params.installId;
+    //var installId    = request.params.installId;
     var userId        = request.params.userId;
 
     var query        = new Parse.Query("Messages");
@@ -1281,39 +1315,31 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                 // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
                 // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
                 // email, userRole (pointer)
-                var firstUser = results[0];
 
-                //var messaging    = firstUser.get("allowsMessages");
-                //var barberName     = firstUser.get("barberName");
-                var emailAddress= firstUser.get("email");
-                var userFirstName  = firstUser.get("firstName");
-                //var friends    = firstUser.get("friendsRelation");
-                var installoids = firstUser.get("installoids");
-                //var isStaff    = firstUser.get("isStaffMember");
-                var userLastName     = firstUser.get("lastName");
-                //var lastSeen    = firstUser.get("lastSeen");
-                //var phoneNumber    = firstUser.get("phoneNumber");
-                var userStaffId    = firstUser.get("staffID");
-                //var userId     = firstUser.get("id");
-                var theUsername    = firstUser.get("username");
-                //var userRole    = firstUser.get("userRole);
+                var firstUser       = results[0];
+                var fuEmailAddress  = firstUser.get("email");
+                var fuUserFirstName = firstUser.get("firstName");
+                var fuInstalloids   = firstUser.get("installoids");
+                var fuUserLastName  = firstUser.get("lastName");
+                var fuUserStaffId   = firstUser.get("staffID");
+                var fuTheUsername   = firstUser.get("username");
 
                 conditionalLog("Can update user:");
 
-                conditionalLog("email:      " + emailAddress);
-                conditionalLog("firstName:  " + userFirstName);
-                conditionalLog("installoids:" + installoids);
-                conditionalLog("lastName:   " + userLastName);
-                conditionalLog("staffId:    " + userStaffId);
-                conditionalLog("username:   " + theUsername);
+                conditionalLog("email:      " + fuEmailAddress);
+                conditionalLog("firstName:  " + fuUserFirstName);
+                conditionalLog("installoids:" + fuInstalloids);
+                conditionalLog("lastName:   " + fuUserLastName);
+                conditionalLog("staffId:    " + fuUserStaffId);
+                conditionalLog("username:   " + fuTheUsername);
 
-                var userServiceToken = process.env.USER_SERVICE_TOKEN;
+                var userServiceToken    = process.env.USER_SERVICE_TOKEN;
 
                 conditionalLog("token length: " + userServiceToken.length);
 
                 var random  = randomNumberWithNumberOfDigits(5);
 
-                firstUser.set("verificationCode", random);
+                //firstUser.set("verificationCode", random);
                 firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
                 {
@@ -1321,12 +1347,12 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                     success: function(savedUser)
                     {
                         conditionalLog("User saved CONVERTED.");
-                        var userResponse = { email : emailAddress,
-                                             firstName : userFirstName,
-                                             installoids : installoids,
-                                             lastName : userLastName,
-                                             staffId : userStaffId,
-                                             username : theUsername,
+                        var userResponse = { email : fuEmailAddress,
+                                             firstName : fuUserFirstName,
+                                             installoids : fuInstalloids,
+                                             lastName : fuUserLastName,
+                                             staffId : fuUserStaffId,
+                                             username : fuTheUsername,
                                              confirmation : random,
                                              transaction : userServiceToken,
                                              description : "confirmed" };
@@ -1364,19 +1390,14 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
     // above your success: lines.
 
     conditionalLog("Starting resetUserToVersionOne");
-
-    var emailAddress     = request.params.emailAddress;
-    var hashed             = request.params.hashed;
-    var phoneNumber      = request.params.phoneNumber;
-
-    conditionalLog("emailAddress [" + emailAddress + "]");
-    conditionalLog("phoneNumber [" + phoneNumber + "]");
+    conditionalLog("emailAddress [" + request.params.emailAddress + "]");
+    conditionalLog("phoneNumber [" + request.params.phoneNumber + "]");
 
     var User  = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
 
-    query.equalTo("username", phoneNumber);
-    query.equalTo("", emailAddress);
+    query.equalTo("username", request.params.phoneNumber);
+    query.equalTo("", request.params.emailAddress);
     query.find(
     {
         useMasterKey: true,
@@ -1401,20 +1422,12 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
                 // email, userRole (pointer)
                 var firstUser = results[0];
 
-                //var messaging    = firstUser.get("allowsMessages");
-                //var barberName     = firstUser.get("barberName");
-                var emailAddress= firstUser.get("email");
-                var userFirstName     = firstUser.get("firstName");
-                //var friends    = firstUser.get("friendsRelation");
-                var installoids = firstUser.get("installoids");
-                //var isStaff    = firstUser.get("isStaffMember");
-                var userLastName     = firstUser.get("lastName");
-                //var lastSeen    = firstUser.get("lastSeen");
-                //var phoneNumber    = firstUser.get("phoneNumber");
-                var userStaffId    = firstUser.get("staffID");
-                //var userId     = firstUser.get("id");
-                var theUsername    = firstUser.get("username");
-                //var userRole    = firstUser.get("userRole);
+                var emailAddress    = firstUser.get("email");
+                var userFirstName   = firstUser.get("firstName");
+                var installoids     = firstUser.get("installoids");
+                var userLastName    = firstUser.get("lastName");
+                var userStaffId     = firstUser.get("staffID");
+                var theUsername     = firstUser.get("username");
 
                 conditionalLog("Can update user:");
 
@@ -1569,7 +1582,7 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
     var pMsgSubtitle    = request.params.subtitle;
     var pMsgBody        = request.params.body;
 
-    var receivingUser    = null;
+    //var receivingUser    = null;
 
     conditionalLog("saveMessageForUserThenNotify called");
     conditionalLog("with params:");
@@ -1672,7 +1685,7 @@ function randomNumberWithNumberOfDigits(numDigits)
 {
     var num = "";
 
-    for(d = 0; d < numDigits; d += 1)
+    for( d = 0; d < numDigits; d += 1 )
     {
         var min = 0;
         var max = 9;
@@ -1800,7 +1813,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
         {
             var verificationCode = JSON.parse(resetResult);
             var message = "Your Barbershop Deluxe app verification code is" + os.EOL + verificationCode + os.EOL + "You may be able to tap this link:" + os.EOL + "fourxq.barbershop://verify?code=" + verificationCode;
-            var from    = twilioSendingNumber;
+            //var from    = twilioSendingNumber;
 
             Parse.Cloud.run("sendSMS",
             {
@@ -1971,8 +1984,8 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
         useMasterKey: true,
         success: function(roleObject)
         {
-            var roleName = roleObject.get("name");
-            conditionalLog("Have role '" + roleName + "'");
+            var fRoleName = roleObject.get("name");
+            conditionalLog("Have role '" + fRoleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
             relationQuery.equalTo("objectId", currentUser.id);
@@ -2046,8 +2059,6 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
             conditionalLog("Have role '" + roleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
-
-            var relationQuery = roleObject.relation("users").query();
             relationQuery.get(userId,
             {
                 useMasterKey: true,
@@ -2102,20 +2113,22 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
 {
     var theUser        = request.user;
 
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+
+    conditionalLog("emailAddress [" + emailAddress + "]");
+    conditionalLog("phoneNumber [" + phoneNumber + "]");
+
     if ( theUser === null )
     {
-        var emailAddress     = request.params.emailAddress;
-        var phoneNumber      = request.params.phoneNumber;
-
-        conditionalLog("emailAddress [" + emailAddress + "]");
-        conditionalLog("phoneNumber [" + phoneNumber + "]");
-
         var User = Parse.Object.extend("_User");
         var query = new Parse.Query(User);
 
         query.equalTo("username",phoneNumber);
         query.equalTo("email",emailAddress);
+
         conditionalLog("starting query");
+
         query.find(
         {
             useMasterKey: true,
