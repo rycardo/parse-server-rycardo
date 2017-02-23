@@ -136,7 +136,7 @@ app.get("/", function(request, response)
     }
     else
     {
-        theResponse = "I dreamed of being an app back end system, and look at me now. You should follow your dreams.";
+        theResponse = "I dreamed of being an app back end system, and look at me now. You should follow your dreams as well.";
     }
 
     response.status(200).send(theResponse);
