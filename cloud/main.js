@@ -80,7 +80,22 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    response.success("Up, Fjord, Valid");
+    var theRelease      = null;
+    var hrv             = process.env.HEROKU_RELEASE_VERSION;
+
+    if ( ( hrv === undefined ) || ( hrv === null ) )
+    {
+        theRelease      = "";
+    }
+    else
+    {
+        theRelease      = "XQ" + hrv.toUpperCase() + "4";
+    }
+    var theNickname     = process.env.SERVER_NICKNAME;
+
+    var theResponse     = "Up, " + theNickname + ", Valid, " + theRelease;
+
+    response.success(theResponse);
 });
 
 

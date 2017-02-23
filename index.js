@@ -104,9 +104,42 @@ app.use(mountPath, api);
 // no path - Parse default
 //
 // Parse Server plays nicely with the rest of your web routes
-app.get('/', function(request, response)
+app.get("/", function(request, response)
 {
-  response.status(200).send('I am dreaming of sailing through a Norwegian fjord.');
+    var theRelease      = null;
+    var hrv             = process.env.HEROKU_RELEASE_VERSION;
+    var nickname        = process.env.SERVER_NICKNAME;
+
+    if ( ( hrv === undefined ) || ( hrv === null ) )
+    {
+        theRelease      = "XQ0000";
+    }
+    else
+    {
+        theRelease      = "XQ" + hrv.toUpperCase() + "4";
+    }
+
+    if ( ( nickname === undefined ) || ( nickname === null ) )
+    {
+        nickname        = "";
+    }
+
+    var theResponse;
+
+    if ( nickname === "Fjord" )
+    {
+        theResponse = "I am dreaming of sailing through a Norwegian fjord. (" + theRelease + ")";
+    }
+    else if ( nickname === "Plateau" )
+    {
+        theResponse = "I am dreaming of reaching the plateau of silence. (" + theRelease + ")";
+    }
+    else
+    {
+        theResponse = "I dreamed of being an app back end system, and look at me now. You should follow your dreams.";
+    }
+
+    response.status(200).send(theResponse);
 });
 
 
