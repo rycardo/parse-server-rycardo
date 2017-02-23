@@ -315,56 +315,82 @@ Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", functio
     //var User            = Parse.Object.extend("_User");
     //var userQuery       = new Parse.Query(User);
     var phoneNumber     = request.params.phoneNumber;
+    var emailAddress    = request.params.emailAddress;
 
-    var userQuery       = new Parse.Query(Parse.User);
-    userQuery.equalTo("email", request.params.emailAddress);
-    userQuery.find(
+    var phoneQuery      = new Parse.Query(Parse.User);
+    phoneQuery.equalTo("phoneNumber", request.params.phoneNumber);
+
+    var emailQuery      = new Parse.Query(Parse.User);
+    emailQuery.equalTo("email", request.params.emailAddress);
+
+    var orQuery         = Parse.Query.or(phoneQuery, emailQuery);
+    orQuery.find(
     {
         useMasterKey: true,
         success: function(userResults)
         {
+            var theResult   = null;
+
             if ( userResults.length === 0 )
             {
-                response.error("No User Found With Email Address");
+                theResult =
+                {
+                    userCount : 0,
+                    foundPhoneNumber : false,
+                    foundEmailAddress : false,
+                    matchedBoth : false,
+                    description : "No user found with passed phoneNumber or passed emailAddress"
+                };
+                response.success(theResult);
             }
             else
             {
-                var thisUser    = null;
+                var foundPhone  = false;
+                var foundEmail  = false;
+                var count       = userResults.length;
 
                 for ( uIdx = 0; uIdx < userResults.length; uIdx += 1 )
                 {
-                    var theResult   = null;
-
-                    thisUser        = userResults[uIdx];
+                    var thisUser    = userResults[uIdx];
                     var thisPhone   = thisUser.get("phoneNumber");
-                    if  ( thisPhone === phoneNumber )
+                    var thisEmail   = thisUser.get("email");
+
+                    if ( ( thisEmail === request.params.emailAddress ) &&
+                         ( thisPhone === request.params.phoneNumber  ) )
                     {
-                        theResult = {
-                                      userId : thisUser.id,
-                                      username : thisUser.get("username"),
-                                      samePhone: true,
-                                      phoneEmpty: false
-                                    };
+                        theResult   =
+                        {
+                            userCount : count,
+                            foundPhoneNumber : true,
+                            foundEmailAddress : true,
+                            matchedBoth : true,
+                            description : "Found user with passed phoneNumber and passed emailAddress",
+                            username : thisUser.get("username"),
+                            userId : thisUser.id
+                        };
+
                         response.success(theResult);
                     }
-                    else
+                    else if ( thisEmail === request.params.emailAddress )
                     {
-                        if ( ( thisPhone === undefined ) || ( thisPhone.length === 0 ) || ( thisPhone === null ) )
-                        {
-                            theResult = {
-                                          userId : thisUser.id,
-                                          username : thisUser.get("username"),
-                                          samePhone: false,
-                                          phoneEmpty: true
-                                        };
-                            response.success(theResult);
-                        }
-                        else
-                        {
-                            response.error("User Found With Unmatched Phone Number");
-                        }
+                        foundEmail = true;
                     }
+                    else if ( thisPhone === request.params.phoneNumber )
+                    {
+                        foundPhone = true;
+                    }
+                // End of For Loop
                 }
+
+                theResult =
+                {
+                    userCount : count,
+                    foundPhoneNumber : foundPhone,
+                    foundEmailAddress : foundEmail,
+                    matchedBoth : false,
+                    description: "No user found with both passed phoneNumber and passed emailAddress"
+                };
+                response.success(theResult);
             }
         },
         error: function(userError)
