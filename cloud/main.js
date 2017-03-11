@@ -2127,13 +2127,15 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
 
 Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 {
-    if ( ( request.params.firstName.length == 0    ) ||
-         ( request.params.lastName.length == 0     ) ||
-         ( request.params.emailAddress.length == 0 ) ||
-         ( request.params.phoneNumber.length == 0  ) ||
-         ( request.params.title.length       == 0  ) ||
-         ( request.params.subtitle.length    == 0  ) ||
-         ( request.params.body.length        == 0  ) )
+    conditionalLog("Send Push 1");
+
+    if ( ( request.params.firstName.length === 0    ) ||
+         ( request.params.lastName.length === 0     ) ||
+         ( request.params.emailAddress.length === 0 ) ||
+         ( request.params.phoneNumber.length === 0  ) ||
+         ( request.params.title.length       === 0  ) ||
+         ( request.params.subtitle.length    === 0  ) ||
+         ( request.params.body.length        === 0  ) )
     {
         var theResult =
             {
@@ -2143,16 +2145,22 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
         response.error(theResult);
     }
 
+    conditionalLog("Send Push 2");
+
     var phoneNumber     = request.params.phoneNumber;
 
     var userQuery       = Parse.Query(Parse.User);
     userQuery.equalTo("phoneNumber", request.params.phoneNumber);
     userQuery.equalTo("email", request.params.emailAddress);
 
+    conditionalLog("Send Push 3");
+
     var pushQuery       = Parse.Query(Parse.Installation);
     pushQuery.include("currentUser");
     pushQuery.matchesQuery("currentUser", userQuery);
     pushQuery.equalTo("userId", "4QdhsyAE6f");
+
+    conditionalLog("Send Push 4");
 
     var pushData =
     {
@@ -2170,9 +2178,29 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
                 "subtitle" : request.params.subtitle,
                 "body": request.params.body
             },
+            "badge" : 1,
             "sound" : "timbre3.caf"
         }
     };
+
+    conditionalLog("Send Push 5");
+
+    //TODO: Remove Next
+    pushData =
+    {
+        "aps" :
+        {
+            "content-available" : 1,
+            "content-updates" :
+            [
+                "silent-update_parse_local_datastore",
+                "silent-update_json_data"
+            ],
+            "badge" : 4
+        }
+    };
+
+    conditionalLog("Send Push 6");
 
     Parse.Push.send(
     {
@@ -2183,6 +2211,9 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
     {
         success: function (pushResult)
         {
+            conditionalLog("Send Push Success:");
+            conditionalLog(pushResult);
+
             var theResult =
             {
                 success: true,
@@ -2192,6 +2223,9 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
         },
         error: function (pushError)
         {
+            conditionalLog("Send Push Error");
+            conditionalLog(pushError);
+
             var theResult =
             {
                 success: false,
