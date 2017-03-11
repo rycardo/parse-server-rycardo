@@ -2125,6 +2125,33 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     });
 });
 
+
+///////////////////////////////////////
+//
+// sendPushMessageToUserWithInfo
+//
+// Required Parameters:
+//
+// firstName        The first name of the user receiving the push
+// lastName         The last name of the user receiving the push
+// emailAddress     The email address of user receiving the push
+// phoneNumber      The phone number of the user receiving the push
+//
+// title            The title of the push
+// subtitle         The subtitle of the push
+// body             The body of the push
+//
+// Result:
+//
+// Successful:
+// success          true
+// result           the number of devices the push sent to
+//
+// Error:
+// success          false
+// error            the error from the server
+//
+///////////////////////////////////////
 Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 {
     conditionalLog("Send Push 1");
@@ -2215,10 +2242,13 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
             conditionalLog("Send Push Success:");
             conditionalLog(pushResult);
 
+            var devCount = pushResult["result"];
+
+            conditionalLog("Push sent to " + devCount.toString() + " device(s).");
             var theResult =
             {
                 success: true,
-                result: pushResult
+                count: devCount
             };
             response.success(theResult);
         },
