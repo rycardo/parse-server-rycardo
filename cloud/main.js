@@ -2130,18 +2130,21 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
 //
 // sendPushMessageToUserWithInfo
 //
-// Required Parameters:
+// REQUIRED PARAMETERS:
 //
-// firstName        The first name of the user receiving the push
-// lastName         The last name of the user receiving the push
-// emailAddress     The email address of user receiving the push
-// phoneNumber      The phone number of the user receiving the push
+// firstName            The first name of the user receiving the push
+// lastName             The last name of the user receiving the push
+// emailAddress         The email address of user receiving the push
+// phoneNumber          The phone number of the user receiving the push
 //
-// title            The title of the push
-// subtitle         The subtitle of the push
-// body             The body of the push
+// title                The title of the push
+// subtitle             The subtitle of the push
+// body                 The body of the push
 //
-// Result:
+// categoryIdentifier   This indicates which action buttons should be shown
+//                      with the push.
+//
+// RESULT:
 //
 // Successful:
 // success          true
@@ -2162,12 +2165,13 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
          ( request.params.phoneNumber.length === 0  ) ||
          ( request.params.title.length       === 0  ) ||
          ( request.params.subtitle.length    === 0  ) ||
-         ( request.params.body.length        === 0  ) )
+         ( request.params.body.length        === 0  ) ||
+         ( request.params.categoryIdentifier === 0  ) )
     {
         var theResult =
             {
-                success: false,
-                error: "missing one or more required parameters"
+                code: 4001,
+                message: "missing one or more required parameters"
             };
         response.error(theResult);
     }
@@ -2193,41 +2197,20 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
     {
         "aps" :
         {
-            "content-available" : 1,
-            "content-updates" :
-            [
-                "silent-update_parse_local_datastore",
-                "silent-update_json_data"
-            ],
+            "category" : request.params.categoryIdentifier,
             "alert" :
             {
                 "title" : request.params.title,
                 "subtitle" : request.params.subtitle,
                 "body": request.params.body
             },
-            "badge" : 1,
+            "badge" : 3,
             "sound" : "timbre3.caf"
-        }
+        },
+        "badge" : "Increment"
     };
 
     conditionalLog("Send Push 5");
-
-    //TODO: Remove Next
-    pushData =
-    {
-        "aps" :
-        {
-            "content-available" : 1,
-            "content-updates" :
-            [
-                "silent-update_parse_local_datastore",
-                "silent-update_json_data"
-            ],
-            "badge" : 4
-        },
-        "badge" : 7
-    };
-
     conditionalLog("Send Push 6");
 
     Parse.Push.send(
@@ -2242,13 +2225,13 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
             conditionalLog("Send Push Success:");
             conditionalLog(pushResult);
 
-            var devCount = pushResult["result"];
+            var theResult = pushResult["result"];
 
-            conditionalLog("Push sent to " + devCount.toString() + " device(s).");
+            conditionalLog("Push Sent (" + theResult.toString() + ")");
             var theResult =
             {
                 success: true,
-                count: devCount
+                result: theResult
             };
             response.success(theResult);
         },
