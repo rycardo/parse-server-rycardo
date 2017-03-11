@@ -2204,11 +2204,11 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 
     Parse.Push.send(
     {
-        useMasterKey: true,
         where: pushQuery,
         data: pushData
     },
     {
+        useMasterKey: true,
         success: function (pushResult)
         {
             conditionalLog("Send Push Success:");
