@@ -2149,13 +2149,13 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 
     var phoneNumber     = request.params.phoneNumber;
 
-    var userQuery       = Parse.Query(Parse.User);
+    var userQuery       = new Parse.Query(Parse.User);
     userQuery.equalTo("phoneNumber", request.params.phoneNumber);
     userQuery.equalTo("email", request.params.emailAddress);
 
     conditionalLog("Send Push 3");
 
-    var pushQuery       = Parse.Query(Parse.Installation);
+    var pushQuery       = new Parse.Query(Parse.Installation);
     pushQuery.include("currentUser");
     pushQuery.matchesQuery("currentUser", userQuery);
     pushQuery.equalTo("userId", "4QdhsyAE6f");
