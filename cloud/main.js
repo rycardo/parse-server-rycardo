@@ -2197,7 +2197,8 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
                 "silent-update_json_data"
             ],
             "badge" : 4
-        }
+        },
+        "badge" : 7
     };
 
     conditionalLog("Send Push 6");
