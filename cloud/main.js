@@ -2125,6 +2125,85 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     });
 });
 
+Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
+{
+    if ( ( request.params.firstName.length == 0    ) ||
+         ( request.params.lastName.length == 0     ) ||
+         ( request.params.emailAddress.length == 0 ) ||
+         ( request.params.phoneNumber.length == 0  ) ||
+         ( request.params.title.length       == 0  ) ||
+         ( request.params.subtitle.length    == 0  ) ||
+         ( request.params.body.length        == 0  ) )
+    {
+        var theResult =
+            {
+                success: false,
+                error: "missing one or more required parameters"
+            };
+        response.error(theResult);
+    }
+
+    var phoneNumber     = request.params.phoneNumber;
+
+    var userQuery       = Parse.Query(Parse.User);
+    userQuery.equalTo("phoneNumber", request.params.phoneNumber);
+    userQuery.equalTo("email", request.params.emailAddress);
+
+    var pushQuery       = Parse.Query(Parse.Installation);
+    pushQuery.include("currentUser");
+    pushQuery.matchesQuery("currentUser", userQuery);
+    pushQuery.equalTo("userId", "4QdhsyAE6f");
+
+    var pushData =
+    {
+        "aps" :
+        {
+            "content-available" : 1,
+            "content-updates" :
+            [
+                "silent-update_parse_local_datastore",
+                "silent-update_json_data"
+            ],
+            "alert" :
+            {
+                "title" : request.params.title,
+                "subtitle" : request.params.subtitle,
+                "body": request.params.body
+            },
+            "sound" : "timbre3.caf"
+        }
+    };
+
+    Parse.Push.send(
+    {
+        useMasterKey: true,
+        where: pushQuery,
+        data: pushData
+    },
+    {
+        success: function (pushResult)
+        {
+            var theResult =
+            {
+                success: true,
+                result: pushResult
+            };
+            response.success(theResult);
+        },
+        error: function (pushError)
+        {
+            var theResult =
+            {
+                success: false,
+                error: pushError
+            };
+            response.error(theResult);
+        }
+    });
+});
+
+
+
 ///////////////////////////////////////
 //
 // Twilio Functions
