@@ -2165,8 +2165,7 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
          ( request.params.phoneNumber.length === 0  ) ||
          ( request.params.title.length       === 0  ) ||
          ( request.params.subtitle.length    === 0  ) ||
-         ( request.params.body.length        === 0  ) ||
-         ( request.params.categoryIdentifier === 0  ) )
+         ( request.params.body.length        === 0  ) )
     {
         var theResult =
             {
@@ -2193,11 +2192,18 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 
     conditionalLog("Send Push 4");
 
+    var categoryIdentifier = "ca.4xq.Barbershop8.Notification-Interface-Message.notification";
+
+    if ( request.params.categoryIdentifier.length > 0 )
+    {
+        categoryIdentifier = request.params.categoryIdentifier;
+    }
+
     var pushData =
     {
         "aps" :
         {
-            "category" : request.params.categoryIdentifier,
+            "category" : categoryIdentifier,
             "alert" :
             {
                 "title" : request.params.title,
