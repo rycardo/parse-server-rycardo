@@ -1330,7 +1330,7 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
 
     var emailAddress     = request.params.emailAddress;
     var phoneNumber      = request.params.phoneNumber;
-    var passHash         = requst.params.hashed;
+    var passHash         = request.params.hashed;
 
     if ( ( emailAddress.length === 0 ) ||
          ( phoneNumber.length === 0  ) ||
