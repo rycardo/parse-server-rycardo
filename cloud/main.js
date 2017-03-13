@@ -1314,6 +1314,122 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
 
 ///////////////////////////////////////
 //
+// convertUsernameToBackToEmail
+// Allows the app to convert again
+// This should only be necesasary for me testing.
+//
+///////////////////////////////////////
+Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
+{
+    //Parse.Cloud.useMasterKey();
+    // depreciated, add:
+    // useMasterKey: true,
+    // above your success: lines.
+
+    conditionalLog("Starting convertUsernameBackToEmail");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+    var passHash         = requst.params.hashed;
+
+    if ( ( emailAddress.length === 0 ) ||
+         ( phoneNumber.length === 0  ) ||
+         ( passHash.length === 0 ) )
+    {
+        response.error("missing information");
+    }
+
+    conditionalLog("emailAddress [" + emailAddress + "]");
+    conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            conditionalLog("find with phone number in username was successful.");
+            conditionalLog(results.length + " records found");
+
+            if ( results.length === 0 )
+            {
+                conditionalLog("No records found to convert");
+                var theResponse =
+                    {
+                        'description' : 'No records found to convert'
+                    };
+                response.success(theResponse);
+            }
+            else
+            {
+                conditionalLog("convert only first user, remove the remaining");
+                // Create New User copying from first
+                // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
+                // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
+                // email, userRole (pointer)
+
+                var firstUser       = results[0];
+                var fuEmailAddress  = firstUser.get("email");
+                var fuUserFirstName = firstUser.get("firstName");
+                var fuInstalloids   = firstUser.get("installoids");
+                var fuUserLastName  = firstUser.get("lastName");
+                var fuUserStaffId   = firstUser.get("staffID");
+                var fuTheUsername   = firstUser.get("username");
+
+                conditionalLog("Can update user:");
+
+                conditionalLog("email:      " + fuEmailAddress);
+                conditionalLog("firstName:  " + fuUserFirstName);
+                conditionalLog("installoids:" + fuInstalloids);
+                conditionalLog("lastName:   " + fuUserLastName);
+                conditionalLog("staffId:    " + fuUserStaffId);
+                conditionalLog("username:   " + fuTheUsername);
+
+                //firstUser.set("verificationCode", random);
+                firstUser.set("gbAssist","REVERTED");
+                firstUser.set("username", emailAddress);
+                firstUser.set("password", passHash);
+                firstUser.save(null,
+                {
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        conditionalLog("User saved CONVERTED.");
+                        var userResponse = { email : fuEmailAddress,
+                                             firstName : fuUserFirstName,
+                                             installoids : fuInstalloids,
+                                             lastName : fuUserLastName,
+                                             staffId : fuUserStaffId,
+                                             username : fuTheUsername,
+                                             confirmation : random,
+                                             transaction : userServiceToken,
+                                             description : "confirmed" };
+
+                        response.success(userResponse);
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error("Save was not successful: " + saveError);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful! " + queryError);
+            response.error("Query find not successful: " + queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
 // convertUsernameToPhoneNumber
 //
 ///////////////////////////////////////
