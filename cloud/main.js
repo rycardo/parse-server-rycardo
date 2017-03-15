@@ -1367,11 +1367,14 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 conditionalLog("vVC-1");
 
                 var tokenLength      = userToken.length;
-                conditionalLog("token length is " + tokenLength.toString());
+
+                conditionalLog("the token's length is:");
+                conditionalLog(tokenLength);
 
                 var idx              = firstUser.password.search(userToken);
 
-                conditionalLog("user index is " + idx.toString());
+                conditionalLog("user index is:");
+                conditionalLog(idx);
 
                 if ( idx === -1 )
                 {
@@ -1384,7 +1387,8 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 else
                 {
                     idx             = (idx + tokenLength);
-                    conditionalLog("New User Index is " + idx.toString());
+                    conditionalLog("New User Index is:");
+                    conditionalLog(idx);
 
                     var code        = firstUser.password.substr(idx);
 
