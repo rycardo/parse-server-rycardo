@@ -1360,18 +1360,27 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
             {
                 conditionalLog("verify first user");
 
-                var firstUser        = results[0];
+                var firstUser           = results[0];
 
-                var userToken        = process.env.USER_SERVICE_TOKEN;
+                var userToken           = process.env.USER_SERVICE_TOKEN;
 
                 conditionalLog("vVC-1");
 
-                var tokenLength      = userToken.length;
+                var tokenLength         = userToken.length;
 
                 conditionalLog("the token's length is:");
                 conditionalLog(tokenLength.toString());
 
-                var idx              = firstUser.password.search(userToken);
+                conditionalLog("vVC-1.1");
+
+                var fup                 = firstUser.get("password");
+
+                conditionalLog("vVC-1.2");
+
+                conditionalLog("fup length is:");
+                conditionalLog(fup.length.toString());
+
+                var idx                 = fup.search(userToken);
 
                 conditionalLog("user index is:");
                 conditionalLog(idx.toString());
