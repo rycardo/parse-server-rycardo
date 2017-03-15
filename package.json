@@ -9,11 +9,12 @@
   },
   "license": "MIT",
   "dependencies": {
-    "express": "~4.11.x",
+    "express": "~4.14.1",
     "kerberos": "~0.0.x",
-    "mongodb": "~2.1.18",
-    "parse": "~1.8.0",
-    "parse-server": "~2.2.18",
+    "mailgun": "*",
+    "mongodb": ">=2.2.1",
+    "parse": "~1.9.2",
+    "parse-server": ">=2.3.6",
     "twilio": "^2.11.1"
   },
   "scripts": {
