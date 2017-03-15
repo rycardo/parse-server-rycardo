@@ -1378,6 +1378,8 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
 
                 if ( idx === -1 )
                 {
+                    conditionalLog("vVC-2");
+
                     theDesc          = "User Token not found.";
                     theResult        = { description : theDesc };
 
@@ -1386,6 +1388,8 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 }
                 else
                 {
+                    conditionalLog("vVC-3");
+
                     idx             = (idx + tokenLength);
                     conditionalLog("New User Index is:");
                     conditionalLog(idx.toString());
