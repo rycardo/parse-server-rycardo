@@ -1314,7 +1314,7 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
 
 ///////////////////////////////////////
 //
-// resetVerificationCode
+// verifyVerificationCode
 //
 ///////////////////////////////////////
 Parse.Cloud.define("verifyVerificationCode", function(request, response)
@@ -1352,7 +1352,7 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 conditionalLog("No users found to verify");
 
                 theDesc             = "No users found to verify";
-                theResult           = { "description" : theDesc };
+                theResult           = { description : theDesc };
 
                 response.error(theResult);
             }
@@ -1360,17 +1360,23 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
             {
                 conditionalLog("verify first user");
 
-                var firstUser = results[0];
+                var firstUser        = results[0];
 
-                var userToken = process.env.USER_SERVICE_TOKEN;
+                var userToken        = process.env.USER_SERVICE_TOKEN;
+
+                conditionalLog("vVC-1");
+
                 var tokenLength      = userToken.length;
+                conditionalLog("token length is " + tokenLength.toString);
 
                 var idx              = firstUser.password.search(userToken);
+
+                conditionalLog("user index is " + idx.toString);
 
                 if ( idx === -1 )
                 {
                     theDesc          = "User Token not found.";
-                    theResult        = { "description" : theDesc };
+                    theResult        = { description : theDesc };
 
                     conditionalLog(theDesc);
                     response.error(theResult);
@@ -1389,9 +1395,10 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                     var isValid     = ( verificationCode === code );
 
                     theDesc         = "Verification Successful";
-                    theResult       = { "description" : theDesc,
-                                        "valid" : isValid
+                    theResult       = { description : theDesc,
+                                        valid : isValid
                                       };
+
                     response.success(theResult);
                 }
             }
