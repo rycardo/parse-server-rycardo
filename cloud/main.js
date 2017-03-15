@@ -1314,6 +1314,100 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
 
 ///////////////////////////////////////
 //
+// resetVerificationCode
+//
+///////////////////////////////////////
+Parse.Cloud.define("verifyVerificationCode", function(request, response)
+{
+    conditionalLog("Starting verifyVerificationCode");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+    var verificationCode = request.params.verificationCode;
+
+    var mask             = "XXXXXXXX";
+    mask                 = mask.substr(0,verificationCode.length);
+
+    conditionalLog("emailAddress     [" + emailAddress + "]");
+    conditionalLog("phoneNumber      [" + phoneNumber + "]");
+    conditionalLog("verificationCode [" + mask + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            conditionalLog("query successful.");
+            conditionalLog(results.length + " users found");
+
+            var theDesc;
+            var theResult;
+
+            if ( results.length === 0 )
+            {
+                conditionalLog("No users found to verify");
+
+                theDesc             = "No users found to verify";
+                theResult           = { "description" : theDesc };
+
+                response.error(theResult);
+            }
+            else
+            {
+                conditionalLog("verify first user");
+
+                var firstUser = results[0];
+
+                var userToken = process.env.USER_SERVICE_TOKEN;
+                var tokenLength      = userToken.length;
+
+                var idx              = firstUser.password.search(userToken);
+
+                if ( idx === -1 )
+                {
+                    theDesc          = "User Token not found.";
+                    theResult        = { "description" : theDesc };
+
+                    conditionalLog(theDesc);
+                    response.error(theResult);
+                }
+                else
+                {
+                    idx             = (idx + tokenLength);
+
+
+                    var code        = firstUser.password.substr(idx);
+
+                    conditionalLog("REMOVE THESE LINES");
+                    conditionalLog("error code [" + code + "]");
+                    conditionalLog("REMOVE THESE LINES");
+
+                    var isValid     = ( verificationCode === code );
+
+                    theDesc         = "Verification Successful";
+                    theResult       = { "description" : theDesc,
+                                        "valid" : isValid
+                                      };
+                    response.success(theResult);
+                }
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful!");
+            console.log(queryError);
+            response.error(queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
 // convertUsernameToBackToEmail
 // Allows the app to convert again
 // This should only be necesasary for me testing.
