@@ -1249,8 +1249,7 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
     conditionalLog("emailAddress [" + emailAddress + "]");
     conditionalLog("phoneNumber [" + phoneNumber + "]");
 
-    var User  = Parse.Object.extend("_User");
-    var query = new Parse.Query(User);
+    var query = new Parse.Query(Parse.User);
 
     query.equalTo("username", phoneNumber);
     query.equalTo("email", emailAddress);
@@ -1298,6 +1297,160 @@ Parse.Cloud.define("resetVerificationCode", function(request, response)
                         console.log("unable to save user");
                         console.log(saveError);
                         response.error("Save was not successful: " + saveError);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful! ");
+            console.log(queryError);
+            response.error("Query find not successful: " + queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeStepOne
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCodeStepOne", function(request, response)
+{
+    conditionalLog("Starting resetVerificationCodeStepOne");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+
+    conditionalLog("emailAddress [" + emailAddress + "]");
+    conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            conditionalLog("query successful.");
+            conditionalLog(results.length + " users found");
+
+            if ( results.length === 0 )
+            {
+                conditionalLog("No users found to reset");
+
+                var theDesc   = "No users found to reset";
+                response.error(theDesc);
+            }
+            else
+            {
+                conditionalLog("reset first user");
+
+                var firstUser = results[0];
+
+                var vcode  = randomNumberWithNumberOfDigits(5);
+
+                firstUser.set("verificationCode", vcode);
+                firstUser.set("gbAssist","RESET1");
+                firstUser.save(null,
+                {
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        conditionalLog("User Verification Code Saved.");
+                        // Send Text
+                        sendVerificationCodeBySmsToPhoneNumber(vcode, phoneNumber);
+                        var theResult = { success : true };
+                        response.success(theResult);
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error(saveError);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful! ");
+            console.log(queryError);
+            response.error("Query find not successful: " + queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeStepTwo
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCodeStepTwo", function(request, response)
+{
+    conditionalLog("Starting resetVerificationCode");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+    var verificationCode = request.params.verificationCode;
+
+    conditionalLog("emailAddress [" + emailAddress + "]");
+    conditionalLog("phoneNumber [" + phoneNumber + "]");
+    conditionalLog("verificationCode [" + verificationCode + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.equalTo("verificationCode", verificationCode);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            conditionalLog("query successful.");
+            conditionalLog(results.length + " users found");
+
+            if ( results.length === 0 )
+            {
+                conditionalLog("No users found to reset");
+
+                var theDesc   = "No users found to reset";
+                var theResult = { description: theDesc };
+
+                response.error(theResult);
+            }
+            else
+            {
+                conditionalLog("reset first user");
+
+                var firstUser           = results[0];
+
+                var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+                var newPassword         = userServiceToken + "-" + verificationCode;
+
+                firstUser.set("password", newPassword);
+                firstUser.set("gbAssist","RESET");
+                firstUser.set("verificationCode","");
+
+                firstUser.save(null,
+                {
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        conditionalLog("User Verification Reset Finished.");
+                        var theResult = { success: true };
+                        response.success(theResult);
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error(saveError);
                     }
                 });
             }
@@ -1378,7 +1531,9 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 conditionalLog("vVC-1.2");
 
                 conditionalLog("fup length is:");
-                conditionalLog(fup.length.toString());
+                var fl  = fup.length;
+
+                conditionalLog(count(fup).toString());
 
                 var idx                 = fup.search(userToken);
 
@@ -1764,9 +1919,9 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getVerificationCode", function(request, response)
 {
-    var verification        = randomNumberWithNumberOfDigits(5);
-    var token                 = process.env.USER_SERVICE_TOKEN;
-    var newPassword            = token + "-" + verification;
+    var verification    = randomNumberWithNumberOfDigits(5);
+    var token           = process.env.USER_SERVICE_TOKEN;
+    var newPassword     = token + "-" + verification;
 
     response.success(newPassword);
 });
@@ -1994,15 +2149,15 @@ function conditionalLog(logText)
 // sendVerificationCodeBySmsToPhoneNumber
 //
 ///////////////////////////////////////
-function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
+function sendVerificationCodeBySmsToPhoneNumber(verificationCode, phoneNumber)
 {
     conditionalLog("sendVerificationCodeBySmsToPhoneNumber()");
     conditionalLog("phoneNumber: " + phoneNumber + " vCode [" + verificationCode + "]");
 
     var tAccountSid     = process.env.TWILIO_ACCOUNT_SID;
-    var tAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
-    var tSendingNumber    = process.env.TWILIO_PHONE_NUMBER;
-    var twilio    = require("twilio")(tAccountSid,tAccountToken);
+    var tAccountToken   = process.env.TWILIO_ACCOUNT_TOKEN;
+    var tSendingNumber  = process.env.TWILIO_PHONE_NUMBER;
+    var twilio          = require("twilio")(tAccountSid,tAccountToken);
 
     var tas = tAccountSid.substring(1,5);
     var tat = tAccountToken.substring(1,5);
@@ -2011,7 +2166,7 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
     conditionalLog("account token starts " + tat);
     conditionalLog("from phone " + tSendingNumber);
 
-    var message    = "Your Verification Code for the Barbershop Deluxe App is " + verificationCode + ".";
+    var message = "Your Verification Code for the Barbershop Deluxe app is " + os.EOL + verificationCode + os.EOL + "You may be able to tap this link: " + os.EOL + "fourxq.barbershop://verify?code=" + verificationCode;
 
     var toNumber = "";
     if ( phoneNumber.length === 10 )
@@ -2040,9 +2195,13 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode,phoneNumber)
         {
             console.log("error sending twilio message:");
             console.log(error);
+            response.error(error);
         }
         else
         {
+            conditionalLog("New Verification Code Sent");
+            conditionalLog(responseData);
+
             response.success(responseData);
         }
     });
@@ -2529,8 +2688,7 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
 
     if ( theUser === null )
     {
-        var User = Parse.Object.extend("_User");
-        var query = new Parse.Query(User);
+        var query = new Parse.Query(Parse.User);
 
         query.equalTo("username",phoneNumber);
         query.equalTo("email",emailAddress);
@@ -2546,15 +2704,27 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
                 {
                     conditionalLog("I have a user");
                     var qUser        = results[0];
+
+                    conditionalLog(user.username);
+
                     var password    = qUser.get("password");
+
                     conditionalLog("pass length is ");
                     conditionalLog(password.length.toString);
-                    //conditionalLog("pass length is " + password.length.toString);
-                    var code        = password.substring(-5);
-                    conditionalLog("I have a code ");
-                    conditionalLog(code);
-                    sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
-                    response.success(true);
+
+                    if ( password.length > 0 )
+                    {
+                        var code        = password.substring(-5);
+                        conditionalLog("I have a code ");
+                        conditionalLog(code);
+                        sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+                        response.success(true);
+                    }
+                    else
+                    {
+                        response.error("no code-check cloud P L E 0");
+
+                    }
                 }
                 else
                 {
