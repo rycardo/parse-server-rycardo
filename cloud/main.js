@@ -1363,8 +1363,7 @@ Parse.Cloud.define("resetVerificationCodeStepOne", function(request, response)
                         conditionalLog("User Verification Code Saved.");
                         // Send Text
                         sendVerificationCodeBySmsToPhoneNumber(vcode, phoneNumber);
-                        var theResult = { success : true };
-                        response.success(theResult);
+                        response.success(true);
                     },
                     error: function(saveError)
                     {
