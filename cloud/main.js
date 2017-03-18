@@ -51,13 +51,13 @@
  * Includes
  */
 // Barbers and Services
-require("./cloud/barber.js");
+require("./barber.js");
 
 // Sending Texts
-require("./cloud/twilio.js");
+require("./twilio.js");
 
 // Users and User Related
-require("./cloud/user.js");
+require("./user.js");
 
 
 // Twilio Code
