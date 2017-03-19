@@ -212,7 +212,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 var foundUser       = null;
                 var userVersion     = 0;
 
-                for ( uIdx = 0; uIdx < count(usersResults); uIdx = (uIdx + 1) )
+                for ( uIdx = 0; uIdx < usersResults.length; uIdx = (uIdx + 1) )
                 {
                     // Loop through matching users (should only be 0, 1, or 2)
                     var thisUser    = usersResults[uIdx];
@@ -991,7 +991,7 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 conditionalLog("fup length is:");
                 var fl  = fup.length;
 
-                conditionalLog(count(fup).toString());
+                conditionalLog(fup.length.toString());
 
                 var idx                 = fup.search(userToken);
 
