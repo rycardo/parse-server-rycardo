@@ -223,7 +223,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 {
                     // Loop through matching users (should only be 0, 1, or 2)
                     var thisUser    = usersResults[uIdx];
-                    var tuUsername  = thisUser.username;
+                    var tuUsername  = thisUser.get("username");
                     var tuFirstname = thisUser.get("firstName");
                     var tuLastName  = thisUser.get("lastName");
 
