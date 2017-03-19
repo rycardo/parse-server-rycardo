@@ -51,7 +51,7 @@
  * Includes
  */
 // Constants
-require("./const.js");
+const CONST = require("./const.js");
 
 // internal/private functions
 require("./funcs.js")();
@@ -120,6 +120,45 @@ Parse.Cloud.define("status", function(request, response)
     response.success(theResponse);
 });
 
+
+///////////////////////////////////////
+//
+// testConstants
+//
+///////////////////////////////////////
+Parse.Cloud.define("testConstants", function(request, response)
+{
+    conditionalLog("1");
+
+    try
+    {
+        var theCreate   = ACTION_USER_CREATE;
+
+        conditionalLog("2");
+
+        var theVerify   = ACTION_USER_VERIFY;
+
+        conditionalLog("3");
+    }
+    catch (e)
+    {
+        conditionalLog("4");
+
+        var theCreate   = ACTION_USER_ERROR;
+
+        conditionalLog("5");
+
+        var theVerify   = ACTION_USER_UNKNOWN;
+
+        response.error(theVerify|theCreate);
+    }
+    finally
+    {
+        conditionalLog("6");
+
+        response.success(theVerify|theCreate);
+    }
+});
 
 ///////////////////////////////////////
 //
