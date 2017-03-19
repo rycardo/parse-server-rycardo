@@ -276,9 +276,13 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
 
                 if ( foundUser !== null )
                 {
+                    conditionalLog("Have a user");
+
                     if ( userVersion === 1 )
                     {
                         // User found, with email address as username
+                        conditionalLog("Version 1 User");
+
                         theResult   = {
                                         action : ( ACTION_USER_CONVERT | ACTION_USER_VERIFY ),
                                         description : "Found user matching email address, first, and last names, verify and convert."
@@ -288,6 +292,8 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                     else if ( userVersion === 2 )
                     {
                         // User found, with phone number as username
+                        conditionalLog("Version 2 User");
+
                         if ( verificationCode.length > 0 )
                         {
                             conditionalLog("Have a Verification Code");
@@ -323,6 +329,8 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         else
                         {
                             // No Verification Code
+                            conditionalLog("No Verification Code");
+
                             theResult   = {
                                             action : ( ACTION_USER_VERIFY ),
                                             description: "Verify User"
@@ -335,6 +343,8 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 {
                     // No User Found,
                     // Think I can advise to createResult
+                    conditionalLog("No User Found");
+
                     theResult   = {
                                     action: ( ACTION_USER_CREATE ),
                                     description: "No User Found"
