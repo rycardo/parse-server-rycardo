@@ -132,17 +132,18 @@ Parse.Cloud.define("testConstants", function(request, response)
 
     try
     {
-        var theCreate   = ACTION_USER_CREATE;
+        var theCreate   = CONST.ACTION_USER_CREATE;
 
         conditionalLog("2");
 
-        var theVerify   = ACTION_USER_VERIFY;
+        var theVerify   = CONST.ACTION_USER_VERIFY;
 
         conditionalLog("3");
     }
     catch (e)
     {
         conditionalLog("4");
+        conditionalLog(e);
 
         var theCreate   = ACTION_USER_ERROR;
 
