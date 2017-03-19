@@ -1,4 +1,4 @@
-require("./const.js");
+const {CONST} = require("./const.js");
 require("./funcs.js")();
 
 ///////////////////////////////////////
@@ -18,7 +18,7 @@ require("./funcs.js")();
 // description  A description (non-static text) of action
 // error        If a non-fatal error happened, it may be included
 //
-// sessionToken is include when USER_ACTION_LOGGED_IN
+// sessionToken is include when CONST.ACTION_USER_LOGGED_IN
 ///////////////////////////////////////
 Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
 {
@@ -86,7 +86,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 conditionalLog("Convert User to Version 2");
 
                 theResult   = {
-                                action : ( ACTION_USER_CONVERT ),
+                                action : ( CONST.ACTION_USER_CONVERT ),
                                 description: "Convert user to version 2"
                               };
             }
@@ -97,7 +97,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 conditionalLog("Convert User after Verifying");
 
                 theResult   = {
-                                action : ( ACTION_USER_CONVERT | ACTION_USER_VERIFY ),
+                                action : ( CONST.ACTION_USER_CONVERT | CONST.ACTION_USER_VERIFY ),
                                 description: "Convert user to version 1; Verify user"
                               };
             }
@@ -127,7 +127,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         {
                             // Was able to login with the passed verification code, so have the correct user
                             theResult   = {
-                                            action : ( ACTION_USER_ACTIVE | ACTION_USER_LOGGED_IN ),
+                                            action : ( CONST.ACTION_USER_ACTIVE | CONST.ACTION_USER_LOGGED_IN ),
                                             description : "Current User Verified",
                                             sessionToken : tempUser.getSessionToken()
                                           };
@@ -137,7 +137,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         {
                             // The login failed. Check error to see why.
                             theResult   = {
-                                            action: ( ACTION_USER_VERIFY ),
+                                            action: ( CONST.ACTION_USER_VERIFY ),
                                             description: "Verify User"
                                           };
                             response.success(theResult);
@@ -148,7 +148,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 {
                     // No Verification Code
                     theResult   = {
-                                    action : ( ACTION_USER_VERIFY ),
+                                    action : ( CONST.ACTION_USER_VERIFY ),
                                     description: "Verify User"
                                   };
                     response.success(theResult);
@@ -158,7 +158,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
             {
                 // First and Last Names don't match
                 theResult   = {
-                                action : ( ACTION_USER_VERIFY ),
+                                action : ( CONST.ACTION_USER_VERIFY ),
                                 description: "Verify User"
                               };
                 response.success(theResult);
@@ -197,7 +197,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 conditionalLog("or S 1.1");
 
                 theResult   = {
-                                action : ( ACTION_USER_CREATE ),
+                                action : ( CONST.ACTION_USER_CREATE ),
                                 description : "No user found with username as email address or phone number"
                               };
                 conditionalLog("or S 1.2");
@@ -284,7 +284,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         conditionalLog("Version 1 User");
 
                         theResult   = {
-                                        action : ( ACTION_USER_CONVERT | ACTION_USER_VERIFY ),
+                                        action : ( CONST.ACTION_USER_CONVERT | CONST.ACTION_USER_VERIFY ),
                                         description : "Found user matching email address, first, and last names, verify and convert."
                                       };
                         response.success(theResult);
@@ -308,7 +308,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                                 {
                                     // Was able to login with the passed verification code, so have the correct user
                                     theResult   = {
-                                                    action : ( ACTION_USER_LOGGED_IN ),
+                                                    action : ( CONST.ACTION_USER_LOGGED_IN ),
                                                     description : "Current User Verified",
                                                     sessionToken : tempUser.getSessionToken()
                                                   };
@@ -318,7 +318,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                                 {
                                     // The login failed. Check error to see why.
                                     theResult   = {
-                                                    action: ( ACTION_USER_VERIFY ),
+                                                    action: ( CONST.ACTION_USER_VERIFY ),
                                                     description: "Verify User",
                                                     error: tempError
                                                   };
@@ -332,7 +332,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                             conditionalLog("No Verification Code");
 
                             theResult   = {
-                                            action : ( ACTION_USER_VERIFY ),
+                                            action : ( CONST.ACTION_USER_VERIFY ),
                                             description: "Verify User"
                                           };
                             response.success(theResult);
@@ -346,7 +346,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                     conditionalLog("No User Found");
 
                     theResult   = {
-                                    action: ( ACTION_USER_CREATE ),
+                                    action: ( CONST.ACTION_USER_CREATE ),
                                     description: "No User Found"
                                   };
                     response.success(theResult);
