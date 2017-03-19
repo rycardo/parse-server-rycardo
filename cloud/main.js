@@ -139,25 +139,19 @@ Parse.Cloud.define("testConstants", function(request, response)
         var theVerify   = CONST.ACTION_USER_VERIFY;
 
         conditionalLog("3");
+
+        response.success(theVerify|theCreate);
     }
     catch (e)
     {
         conditionalLog("4");
         conditionalLog(e);
 
-        var theCreate   = ACTION_USER_ERROR;
-
-        conditionalLog("5");
-
-        var theVerify   = ACTION_USER_UNKNOWN;
-
-        response.error(theVerify|theCreate);
+        response.error(e);
     }
     finally
     {
-        conditionalLog("6");
-
-        response.success(theVerify|theCreate);
+        // Nothing here
     }
 });
 
