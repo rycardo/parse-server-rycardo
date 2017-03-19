@@ -43,12 +43,16 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
         response.error("Missing Required Parameters.");
     }
 
+    conditionalLog("1");
+
     var verificationCode    = "";
     if ( request.params.verificationCode.length > 0 )
     {
         verificationCode    = request.params.verificationCode;
         verificationCode    = verificationCode.replace(/\D/g, "");
     }
+
+    conditionalLog("2");
 
     var pmPhoneNumber       = request.params.phoneNumber;
     pmPhoneNumber           = pmPhoneNumber.replace(/\D/g, "");
@@ -58,6 +62,8 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
     var pmLastName          = request.params.lastName;
 
     var theResult           = {};
+
+    conditionalLog("3");
 
     if ( request.user )
     {
@@ -160,6 +166,8 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
         }
     }
 
+    conditionalLog("4");
+
     // Either
     // No Current User Passed
     // Or Current User Doesn't Match Passed Info
@@ -168,8 +176,12 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
     var phoneQuery          = new Parse.Query(Parse.User);
     phoneQuery.equalTo("phoneNumber", pmPhoneNumber);
 
+    conditionalLog("5");
+
     var emailQuery          = new Parse.Query(Parse.User);
     emailQuery.equalTo("email", pmEmailAddress);
+
+    conditionalLog("6");
 
     var orQuery             = Parse.Query.or(phoneQuery, emailQuery);
     orQuery.find(
@@ -177,17 +189,26 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
         useMasterKey: true,
         success: function(usersResults)
         {
+            conditionalLog("or S 1");
+
             if ( usersResults.length === 0 )
             {
+                conditionalLog("or S 1.1");
+
                 theResult   = {
                                 action : ( ACTION_USER_CREATE ),
                                 description : "No user found with username as email address or phone number"
                               };
+                conditionalLog("or S 1.2");
+
                 response.success(theResult);
             }
             else
             {
                 // query found one or more users
+
+                conditionalLog("or S 2");
+
                 var foundUser       = null;
                 var userVersion     = 0;
 
@@ -199,13 +220,18 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                     var tuFirstname = thisUser.get("firstName");
                     var tuLastName  = thisUser.get("lastName");
 
+                    conditionalLog("tuF & L " + tuFirstname + " " + tuLastName);
+
                     if ( tuUsername === pmPhoneNumber )
                     {
                         // Username matches phone Number
+                        conditionalLog("Username matches phone number");
+
                         if ( ( tuFirstname === pmFirstName ) &&
                              ( tuLastName  === pmLastName ) &&
                              ( verificationCode.length > 0 ) )
                         {
+                            conditionalLog("Found User");
                             // First and Last Names match, and have Verification Code
                             // Assign to foundUser, then verify credentials
                             foundUser   = thisUser;
@@ -216,11 +242,15 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                     else if ( tuUsername === pmEmailAddress )
                     {
                         // Username matches emailAddress
+                        conditionalLog("username matches email address");
+
                         if ( ( tuFirstname === pmFirstName ) &&
                              ( tuLastName  === pmLastName ) )
                         {
                             // First and Last Names match,
                             // Assign to foundUser, then verify credentials
+                            conditionalLog("Found User");
+
                             foundUser   = thisUser;
                             userVersion = 1;
                             break;
@@ -233,6 +263,8 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         console.log("Check This Function, shouldn't get this code");
                     }
                 }
+
+                conditionalLog("7");
 
                 if ( foundUser !== null )
                 {
