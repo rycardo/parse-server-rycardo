@@ -190,6 +190,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
         success: function(usersResults)
         {
             conditionalLog("or S 1");
+            conditionalLog(usersResults.length.toString + " users found");
 
             if ( usersResults.length === 0 )
             {
@@ -212,6 +213,12 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 var foundUser       = null;
                 var userVersion     = 0;
 
+                conditionalLog("Comparing To:");
+                conditionalLog("email [" + pmEmailAddress + "]");
+                conditionalLog("phone [" + pmPhoneNumber + "]");
+                conditionalLog("first [" + pmFirstName + "]");
+                conditionalLog("last [" + pmLastName + "]");
+
                 for ( uIdx = 0; uIdx < usersResults.length; uIdx = (uIdx + 1) )
                 {
                     // Loop through matching users (should only be 0, 1, or 2)
@@ -220,7 +227,9 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                     var tuFirstname = thisUser.get("firstName");
                     var tuLastName  = thisUser.get("lastName");
 
-                    conditionalLog("tuF & L " + tuFirstname + " " + tuLastName);
+                    conditionalLog("tuF [" + tuFirstname + "]");
+                    conditionalLog("tuL [" + tuLastName + "]");
+                    conditionalLog("tuU [" + tuUsername + "]");
 
                     if ( tuUsername === pmPhoneNumber )
                     {
@@ -228,8 +237,7 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         conditionalLog("Username matches phone number");
 
                         if ( ( tuFirstname === pmFirstName ) &&
-                             ( tuLastName  === pmLastName ) &&
-                             ( verificationCode.length > 0 ) )
+                             ( tuLastName  === pmLastName  ) )
                         {
                             conditionalLog("Found User");
                             // First and Last Names match, and have Verification Code
