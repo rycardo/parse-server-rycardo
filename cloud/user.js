@@ -147,10 +147,42 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                 else
                 {
                     // No Verification Code
+                    conditionalLog("No Verification Code");
+                    try
+                    {
+                        conditionalLog("Without CONST");
+                        conditionalLog(ACTION_USER_VERIFY.toString);
+                        theResult   = {
+                                    action : ( ACTION_USER_VERIFY ),
+                                    description: "Verify User"
+                                  };
+                    }
+                    catch (e)
+                    {
+                        conditionalLog("Error with ACTION_USER_VERIFY");
+                    }
+                    finally {}
+
+                    try
+                    {
+                        conditionalLog("With CONST");
+                        conditionalLog(CONST.ACTION_USER_VERIFY);
+                        theResult   = {
+                                    action : ( CONST.ACTION_USER_VERIFY ),
+                                    description: "Verify User"
+                                  };
+                    }
+                    catch (e)
+                    {
+                        conditionalLog("Error with CONST.ACTION_USER_VERIFY");
+                    }
+                    finally {}
+                    /*
                     theResult   = {
                                     action : ( CONST.ACTION_USER_VERIFY ),
                                     description: "Verify User"
                                   };
+                    */
                     response.success(theResult);
                 }
             }
