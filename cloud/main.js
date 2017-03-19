@@ -116,17 +116,6 @@ Parse.Cloud.define("status", function(request, response)
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
 ///////////////////////////////////////
 //
 // incrementNewAppointmentTally
@@ -164,8 +153,6 @@ Parse.Cloud.define("incrementNewAppointmentTally", function(request, response)
 });
 
 
-
-
 ///////////////////////////////////////
 //
 // getTestDictionary
@@ -189,16 +176,6 @@ Parse.Cloud.define("getTestDictionary", function(request, response)
 
     response.success(theResult);
 });
-
-
-
-
-
-
-
-
-
-
 
 
 ///////////////////////////////////////

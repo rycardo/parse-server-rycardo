@@ -11,6 +11,23 @@ const ACTION_USER_VERIFY        = 8;
 const ACTION_USER_ACTIVE        = 16;
 const ACTION_USER_LOGGED_IN     = 32;
 
+
+///////////////////////////////////////
+//
+// conditionalLog - not public
+//
+///////////////////////////////////////
+function conditionalLog(logText)
+{
+    var doLog = process.env.DEBUG_LOG || true;
+
+    if ( doLog === true || doLog === "True" )
+    {
+        console.log(logText);
+    }
+}
+
+
 ///////////////////////////////////////
 //
 // determineHowToHandleUserWith
