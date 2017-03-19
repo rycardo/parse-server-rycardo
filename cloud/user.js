@@ -26,6 +26,12 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
 									   firstName:(NSString *)firstName
 										lastName:(NSString *)lastName
 */
+    conditionalLog("*");
+    conditionalLog("*");
+    conditionalLog("determineHowToHandleUserWith has begun.");
+    conditionalLog("*");
+    conditionalLog("*");
+
     if ( ( request.params.emailAddress === undefined ) ||
          ( request.params.phoneNumber === undefined  ) ||
          ( request.params.firstName === undefined    ) ||
