@@ -50,6 +50,12 @@
 /*
  * Includes
  */
+// Constants
+require("./const.js");
+
+// internal/private functions
+require("./funcs.js");
+
 // Barbers and Services
 require("./barber.js");
 
@@ -64,7 +70,6 @@ require("./twilio.js");
 
 // Users and User Related
 require("./user.js");
-
 
 // Twilio Code
 //require("./twilio.js");
@@ -689,55 +694,6 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
 
 
 ///////////////////////////////////////
-///////////////////////////////////////
-///////////////////////////////////////
-//
-// NOT PUBLIC - INTERNAL ONLY
-//
-///////////////////////////////////////
-///////////////////////////////////////
-///////////////////////////////////////
-
-
-///////////////////////////////////////
-//
-// randomNumberWithNumberOfDigits - not public
-//
-///////////////////////////////////////
-function randomNumberWithNumberOfDigits(numDigits)
-{
-    var num = "";
-
-    for( d = 0; d < numDigits; d += 1 )
-    {
-        var min = 0;
-        var max = 9;
-        var digit = Math.floor(Math.random() * (max - min + 1)) + min;
-
-        num = num + digit.toString();
-    }
-
-    return num;
-}
-
-
-///////////////////////////////////////
-//
-// conditionalLog - not public
-//
-///////////////////////////////////////
-function conditionalLog(logText)
-{
-    var doLog = process.env.DEBUG_LOG || true;
-
-    if ( doLog === true || doLog === "True" )
-    {
-        console.log(logText);
-    }
-}
-
-
-///////////////////////////////////////
 //
 // sendVerificationCodeBySmsToPhoneNumber
 //
@@ -1264,6 +1220,8 @@ Parse.Cloud.define("getTwilioPhoneNumber", function(request, response)
 
     response.success(twilioSendingNumber);
 });
+
+
 ///////////////////////////////////////
 //
 // sendVerificationCodeToUserWithPhoneNumberEmailAddress

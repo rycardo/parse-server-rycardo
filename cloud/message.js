@@ -1,18 +1,5 @@
-///////////////////////////////////////
-//
-// conditionalLog - not public
-//
-///////////////////////////////////////
-function conditionalLog(logText)
-{
-    var doLog = process.env.DEBUG_LOG || true;
-
-    if ( doLog === true || doLog === "True" )
-    {
-        console.log(logText);
-    }
-}
-
+require("./const.js");
+require("./funcs.js");
 
 ///////////////////////////////////////
 //
