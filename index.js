@@ -53,7 +53,7 @@ var api = new ParseServer(
 {
     databaseURI:    databaseUri                 ||  "mongodb://localhost:27017/dev",
     cloud:          process.env.CLOUD_CODE_MAIN ||  __dirname + "/cloud/main.js",
-    appId:          process.env.APP_ID          ||  "myAppId",
+    appId:          process.env.APP_ID          ||  "",
     masterKey:      process.env.MASTER_KEY      ||  "",
     serverURL:      process.env.SERVER_URL      ||  "http://localhost:1337/parse",
     push:
@@ -162,7 +162,7 @@ var httpServer  = require("http").createServer(app);
 
 httpServer.listen(port, function()
 {
-    console.log("parse-server running on port " + port + ".");
+    console.log("parse-server is now running on port " + port + ".");
 });
 
 
