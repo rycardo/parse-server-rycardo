@@ -10,8 +10,7 @@ const PerMessageDeflate = require('./PerMessageDeflate');
 const isValidUTF8 = require('./Validation');
 const bufferUtil = require('./BufferUtil');
 const ErrorCodes = require('./ErrorCodes');
-
-const EMPTY_BUFFER = Buffer.alloc(0);
+const constants = require('./Constants');
 
 const GET_INFO = 0;
 const GET_PAYLOAD_LENGTH_16 = 1;
@@ -29,8 +28,10 @@ class Receiver {
    *
    * @param {Object} extensions An object containing the negotiated extensions
    * @param {Number} maxPayload The maximum allowed message length
+   * @param {String} binaryType The type for binary data
    */
-  constructor (extensions, maxPayload) {
+  constructor (extensions, maxPayload, binaryType) {
+    this.binaryType = binaryType || constants.BINARY_TYPES[0];
     this.extensions = extensions || {};
     this.maxPayload = maxPayload | 0;
 
@@ -85,7 +86,7 @@ class Receiver {
       return dst;
     }
 
-    dst = new Buffer(bytes);
+    dst = Buffer.allocUnsafe(bytes);
 
     while (bytes > 0) {
       l = this.buffers[0].length;
@@ -307,7 +308,7 @@ class Receiver {
    * @private
    */
   getData () {
-    var data = EMPTY_BUFFER;
+    var data = constants.EMPTY_BUFFER;
 
     if (this.payloadLength) {
       if (!this.hasBufferedBytes(this.payloadLength)) return;
@@ -353,20 +354,29 @@ class Receiver {
    */
   dataMessage () {
     if (this.fin) {
-      const buf = this.fragments.length > 1
-        ? Buffer.concat(this.fragments, this.messageLength)
-        : this.fragments.length === 1
-          ? this.fragments[0]
-          : EMPTY_BUFFER;
+      const messageLength = this.messageLength;
+      const fragments = this.fragments;
 
       this.totalPayloadLength = 0;
-      this.fragments.length = 0;
       this.messageLength = 0;
       this.fragmented = 0;
+      this.fragments = [];
 
       if (this.opcode === 2) {
-        this.onmessage(buf, { masked: this.masked, binary: true });
+        var data;
+
+        if (this.binaryType === 'nodebuffer') {
+          data = toBuffer(fragments, messageLength);
+        } else if (this.binaryType === 'arraybuffer') {
+          data = toArrayBuffer(toBuffer(fragments, messageLength));
+        } else {
+          data = fragments;
+        }
+
+        this.onmessage(data, { masked: this.masked, binary: true });
       } else {
+        const buf = toBuffer(fragments, messageLength);
+
         if (!isValidUTF8(buf)) {
           this.error(new Error('invalid utf8 sequence'), 1007);
           return;
@@ -511,3 +521,31 @@ class Receiver {
 }
 
 module.exports = Receiver;
+
+/**
+ * Makes a buffer from a list of fragments.
+ *
+ * @param {Buffer[]} fragments The list of fragments composing the message
+ * @param {Number} messageLength The length of the message
+ * @return {Buffer}
+ * @private
+ */
+function toBuffer (fragments, messageLength) {
+  if (fragments.length === 1) return fragments[0];
+  if (fragments.length > 1) return Buffer.concat(fragments, messageLength);
+  return constants.EMPTY_BUFFER;
+}
+
+/**
+ * Converts a buffer to an `ArrayBuffer`.
+ *
+ * @param {Buffer} The buffer to convert
+ * @return {ArrayBuffer} Converted buffer
+ */
+function toArrayBuffer (buf) {
+  if (buf.byteOffset === 0 && buf.byteLength === buf.buffer.byteLength) {
+    return buf.buffer;
+  }
+
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+}
