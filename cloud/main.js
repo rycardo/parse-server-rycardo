@@ -102,6 +102,9 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
+    conditionalLog("server status check by app");
+
+    useMasterKey        = true;
     var theRelease      = null;
     var hrv             = process.env.HEROKU_RELEASE_VERSION;
 
@@ -732,8 +735,11 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
 // sendVerificationCodeBySmsToPhoneNumber
 //
 ///////////////////////////////////////
-function sendVerificationCodeBySmsToPhoneNumber(verificationCode, phoneNumber)
+Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, response)
 {
+    var verificationCode    = request.params.verificationCode;
+    var phoneNumber         = request.params.phoneNumber;
+
     conditionalLog("sendVerificationCodeBySmsToPhoneNumber()");
     conditionalLog("phoneNumber: " + phoneNumber + " vCode [" + verificationCode + "]");
 
@@ -749,7 +755,7 @@ function sendVerificationCodeBySmsToPhoneNumber(verificationCode, phoneNumber)
     conditionalLog("account token starts " + tat);
     conditionalLog("from phone " + tSendingNumber);
 
-    var message = "Your Verification Code for the Barbershop Deluxe app is " + os.EOL + verificationCode + os.EOL + "You may be able to tap this link: " + os.EOL + "fourxq.barbershop://verify?code=" + verificationCode;
+    var message = "Your Verification Code for the Barbershop Deluxe app is " + verificationCode + ". You may be able to tap this link: " + "fourxq.barbershop://verify?code=" + verificationCode;
 
     var toNumber = "";
     if ( phoneNumber.length === 10 )

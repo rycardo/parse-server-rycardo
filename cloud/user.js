@@ -137,8 +137,10 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         {
                             // The login failed. Check error to see why.
                             theResult   = {
-                                            action: ( CONST.ACTION_USER_VERIFY ),
-                                            description: "Verify User"
+                                            action: ( CONST.ACTION_USER_VERIFY |
+                                                      CONST.ACTION_USER_INVALID_VCODE ),
+                                            description: "Verify User",
+                                            parseError: error
                                           };
                             response.success(theResult);
                         }
@@ -854,10 +856,28 @@ Parse.Cloud.define("resetVerificationCodeStepOne", function(request, response)
                     useMasterKey: true,
                     success: function(savedUser)
                     {
-                        conditionalLog("User Verification Code Saved.");
+                        conditionalLog("User Verification Code Saved, sending text.");
                         // Send Text
-                        sendVerificationCodeBySmsToPhoneNumber(vcode, phoneNumber);
-                        response.success(true);
+                        Parse.Cloud.run("sendVerificationCodeBySmsToPhoneNumber",
+                        {
+                            phoneNumber: phoneNumber,
+                            verificationCode: vcode
+                        },
+                        {
+                            useMasterKey: true,
+                            success: function(smsResult)
+                            {
+                                conditionalLog("SMS Sent");
+                                conditionalLog(smsResult);
+                                response.success(true);
+                            },
+                            error: function(smsError)
+                            {
+                                console.log("Error sending SMS");
+                                console.log(smsError);
+                                response.error(smsError);
+                            }
+                        });
                     },
                     error: function(saveError)
                     {
