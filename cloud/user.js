@@ -1,5 +1,5 @@
 const CONST = require("./const.js");
-require("./funcs.js")();
+require("./funcs.js");
 
 ///////////////////////////////////////
 //

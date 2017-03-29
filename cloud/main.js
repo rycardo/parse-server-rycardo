@@ -54,7 +54,7 @@
 const CONST = require("./const.js");
 
 // internal/private functions
-require("./funcs.js")();
+require("./funcs.js");
 
 // Barbers and Services
 require("./barber.js");
