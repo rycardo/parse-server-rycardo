@@ -60,18 +60,6 @@ const CONST = require("./const.js");
 //require("./funcs.js");
 var funcs = require('./funcs.js');
 
-//conditionalLog("funcs has been required.");
-//conditionalLog("Testing Constants, next line should show: is 16");
-//
-//var temp    = CONST.ACTION_USER_ACTIVE.toString;
-//conditionalLog("ACTION_USER_ACTIVE is " + temp);
-
-funcs.conditionalLog("funcs has been set for funcs.js");
-funcs.conditionalLog("Testing Constants, next line should show: is 8");
-
-var temp        = CONST.ACTION_USER_VERIFY;
-funcs.conditionalLog("ACTION_USER_VERIFY is " + temp.toString);
-
 // Barbers and Services
 require("./barber.js");
 
