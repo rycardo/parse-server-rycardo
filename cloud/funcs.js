@@ -13,13 +13,31 @@
 ///////////////////////////////////////
 ///////////////////////////////////////
 
+module.exports =
+{
+    // This is the function which will be called in the main file, which is server.js
+    // The parameters 'name' and 'surname' will be provided inside the function
+    // when the function is called in the main file.
+    // Example: concatenameNames('John,'Doe');
+    conditionalLog: function (logText)
+    {
+        pvtConditionalLog(logText);
+    },
+
+    randomNumberOfDigits: function (numDigits)
+    {
+        var theRandom   = pvtRandomNumberOfDigits(numDigits);
+        return theRandom;
+    }
+};
+
 
 ///////////////////////////////////////
 //
 // conditionalLog - not public
 //
 ///////////////////////////////////////
-function conditionalLog(logText)
+function pvtConditionalLog(logText)
 {
     var doLog = process.env.DEBUG_LOG || true;
 
@@ -35,7 +53,7 @@ function conditionalLog(logText)
 // randomNumberWithNumberOfDigits
 //
 ///////////////////////////////////////
-function randomNumberOfDigits(numDigits)
+function pvtRandomNumberOfDigits(numDigits)
 {
     var num = "";
 
@@ -49,5 +67,3 @@ function randomNumberOfDigits(numDigits)
     }
     return num;
 }
-
-

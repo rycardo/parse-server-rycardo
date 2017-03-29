@@ -52,9 +52,24 @@
  */
 // Constants
 const CONST = require("./const.js");
+//const FUNCS = require("./funcs.js");
 
+require('funcs.js')();
 // internal/private functions
-require("./funcs.js");
+//require("./funcs.js");
+var funcs = require('funcs.js');
+
+conditionalLog("funcs has been required.");
+conditionalLog("Testing Constants, next line should show: is 16");
+
+var temp    = CONST.ACTION_USER_ACTIVE.toString;
+conditionalLog("ACTION_USER_ACTIVE is " + temp;
+
+funcs.conditionalLog("funcs has been set for funcs.js");
+funcs.conditionalLog("Testing Constants, next line should show: is 8");
+
+temp        = CONST.ACTION_USER_VERIFY.toString;
+funcs.conditionalLog("ACTION_USER_VERIFY is " + temp;
 
 // Barbers and Services
 require("./barber.js");
