@@ -63,7 +63,7 @@ conditionalLog("funcs has been required.");
 conditionalLog("Testing Constants, next line should show: is 16");
 
 var temp    = CONST.ACTION_USER_ACTIVE.toString;
-conditionalLog("ACTION_USER_ACTIVE is " + temp;
+conditionalLog("ACTION_USER_ACTIVE is " + temp);
 
 funcs.conditionalLog("funcs has been set for funcs.js");
 funcs.conditionalLog("Testing Constants, next line should show: is 8");
@@ -119,6 +119,8 @@ Parse.Cloud.define("status", function(request, response)
 {
     conditionalLog("server status check by app");
 
+    var theRandom       = randomNumberWithNumberOfDigits(3);
+
     useMasterKey        = true;
     var theRelease      = null;
     var hrv             = process.env.HEROKU_RELEASE_VERSION;
@@ -129,7 +131,7 @@ Parse.Cloud.define("status", function(request, response)
     }
     else
     {
-        theRelease      = "XQ" + hrv.toUpperCase() + "4";
+        theRelease      = "XQ" + hrv.toUpperCase() + "4" + " " + theRandom.toString;
     }
     var theNickname     = process.env.SERVER_NICKNAME;
 
