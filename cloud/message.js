@@ -1,5 +1,5 @@
-require("./const.js");
-require("./funcs.js");
+//require("./const.js");
+//require("./funcs.js");
 
 ///////////////////////////////////////
 //
@@ -14,7 +14,7 @@ require("./funcs.js");
 ///////////////////////////////////////
 Parse.Cloud.define("canReplyToUserWithId", function(request, response)
 {
-    conditionalLog("canReplyToUserWithId " + request.params.userId);
+    funcs.conditionalLog("canReplyToUserWithId " + request.params.userId);
 
     var User  = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
@@ -54,39 +54,39 @@ Parse.Cloud.define("canReplyToUserWithId", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("canReplyToUserWithId_B", function(request, response)
 {
-    conditionalLog("canReplyToUserWithId_B " + request.params.userId);
+    funcs.conditionalLog("canReplyToUserWithId_B " + request.params.userId);
 
     var query = new Parse.Query("_User");
-    conditionalLog("1");
+    funcs.conditionalLog("1");
     query.equalTo("objectId", request.params.userId);
-    conditionalLog("2");
+    funcs.conditionalLog("2");
     query.find(
     {
         useMasterKey: true,
         success: function(results)
         {
-            conditionalLog("3");
+            funcs.conditionalLog("3");
             if ( results.length === 1 )
             {
-                conditionalLog("4");
+                funcs.conditionalLog("4");
                 var canReply = results[0].get("allowsMessages");
                 if ( canReply === null )
                 {
-                    conditionalLog("5");
+                    funcs.conditionalLog("5");
                     canReply = false;
                 }
-                conditionalLog("6 can reply:");
-                conditionalLog(canReply);
+                funcs.conditionalLog("6 can reply:");
+                funcs.conditionalLog(canReply);
                 response.success(canReply);
             }
             else if ( results.length > 1 )
             {
-                conditionalLog("more than one user found");
+                funcs.conditionalLog("more than one user found");
                 response.error("more than one user found");
             }
             else
             {
-                conditionalLog("no user found");
+                funcs.conditionalLog("no user found");
                 response.error("no user found with that objectId");
             }
         },
@@ -132,8 +132,8 @@ Parse.Cloud.define("convertMessagesFromDeviceRecipientToUserReceiver", function(
         success: function(results)
         {
             var foundStr = results.length.toString();
-            conditionalLog("Converting from Install ID In recipientID to User ID in receiverID");
-            conditionalLog("found: " + foundStr);
+            funcs.conditionalLog("Converting from Install ID In recipientID to User ID in receiverID");
+            funcs.conditionalLog("found: " + foundStr);
 
             if ( results.length === 0 )
             {
@@ -147,7 +147,7 @@ Parse.Cloud.define("convertMessagesFromDeviceRecipientToUserReceiver", function(
                 for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
                 {
                     msgId = results[mIdx].objectId;
-                    conditionalLog("converting msg " + msgId);
+                    funcs.conditionalLog("converting msg " + msgId);
                     results[mIdx].set("userID", "-not-used-");
                     results[mIdx].set("recipientID", "-not-used-");
                     results[mIdx].set("receiverID", userId);
@@ -200,8 +200,8 @@ Parse.Cloud.define("convertMessagesFromUserRecipientToUserReceiver", function(re
         success: function(results)
         {
             var foundStr = results.length.toString();
-            conditionalLog("Converting from User ID in recipientID to receiverID");
-            conditionalLog("found: " + foundStr);
+            funcs.conditionalLog("Converting from User ID in recipientID to receiverID");
+            funcs.conditionalLog("found: " + foundStr);
             if ( results.length === 0 )
             {
                 response.success("no messages to convert");
@@ -212,7 +212,7 @@ Parse.Cloud.define("convertMessagesFromUserRecipientToUserReceiver", function(re
                 for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
                 {
                     var msgId = results[mIdx].objectId;
-                    conditionalLog("converting msg " + msgId);
+                    funcs.conditionalLog("converting msg " + msgId);
                     results[mIdx].set("userID", "-not-used-");
                     results[mIdx].set("recipientID", "-not-used-");
                     results[mIdx].set("receiverID", userId);
@@ -266,8 +266,8 @@ Parse.Cloud.define("convertMessagesFromUserUserToUserReceiver", function(request
         success: function(results)
         {
             var foundStr = results.length.toString();
-            conditionalLog("Converting from User ID in userID to receiverID");
-            conditionalLog("found: " + foundStr);
+            funcs.conditionalLog("Converting from User ID in userID to receiverID");
+            funcs.conditionalLog("found: " + foundStr);
             if ( results.length === 0 )
             {
                 response.success("no messages to convert");
@@ -278,7 +278,7 @@ Parse.Cloud.define("convertMessagesFromUserUserToUserReceiver", function(request
                 for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
                 {
                     var msgId = results[mIdx].objectId;
-                    conditionalLog("converting msg " + msgId);
+                    funcs.conditionalLog("converting msg " + msgId);
                     results[mIdx].set("userID", "-not-used-");
                     results[mIdx].set("recipientID", "-not-used-");
                     results[mIdx].set("receiverID", userId);
@@ -365,14 +365,14 @@ Parse.Cloud.define("getMessageCount", function(request, response)
     var query = new Parse.Query("Messages");
     query.equalTo("recipientID", request.params.installId);
 
-    conditionalLog("Getting Messages Count for recipient [" + request.params.installId + "]");
+    funcs.conditionalLog("Getting Messages Count for recipient [" + request.params.installId + "]");
 
     query.find(
     {
         useMasterKey: true,
         success: function(results)
         {
-            conditionalLog("SUCCESS: ");
+            funcs.conditionalLog("SUCCESS: ");
             response.success(results.length);
         },
         error: function(error)
@@ -408,7 +408,7 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
     var query         = new Parse.Query("Messages");
     query.equalTo("receiverID", receiverID);
 
-    conditionalLog("Getting Messages Count for user [" + receiverID + "]");
+    funcs.conditionalLog("Getting Messages Count for user [" + receiverID + "]");
 
     query.find(
     {
@@ -425,16 +425,16 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
                 message = results[mIdx];
                 if ( message.has("readAt") )
                 {
-                    conditionalLog("not new");
+                    funcs.conditionalLog("not new");
                 }
                 else
                 {
                     newMessagesCount += 1;
                 }
             }
-            conditionalLog("messages count: " + allMessagesCount.toString() );
-            conditionalLog("unread count:   " + newMessagesCount.toString() );
-            conditionalLog("SUCCESS");
+            funcs.conditionalLog("messages count: " + allMessagesCount.toString() );
+            funcs.conditionalLog("unread count:   " + newMessagesCount.toString() );
+            funcs.conditionalLog("SUCCESS");
 
             var theResult = { allCount: allMessagesCount, newCount: newMessagesCount };
 
@@ -470,14 +470,14 @@ Parse.Cloud.define("getUnreadMessageCount", function(request, response)
     query.equalTo("recipientID", request.params.installId);
     query.doesNotExist("readAt");
 
-    conditionalLog("Getting Unread Messages Count for recipient [" + request.params.installId + "]");
+    funcs.conditionalLog("Getting Unread Messages Count for recipient [" + request.params.installId + "]");
 
     query.find(
     {
         useMasterKey: true,
         success: function(results)
         {
-            conditionalLog("SUCCESS: ");
+            funcs.conditionalLog("SUCCESS: ");
             response.success(results.length);
         },
         error: function(error)

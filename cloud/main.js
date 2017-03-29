@@ -69,8 +69,8 @@ var funcs = require('./funcs.js');
 funcs.conditionalLog("funcs has been set for funcs.js");
 funcs.conditionalLog("Testing Constants, next line should show: is 8");
 
-temp        = CONST.ACTION_USER_VERIFY.toString;
-funcs.conditionalLog("ACTION_USER_VERIFY is " + temp);
+var temp        = CONST.ACTION_USER_VERIFY;
+funcs.conditionalLog("ACTION_USER_VERIFY is " + temp.toString);
 
 // Barbers and Services
 require("./barber.js");
@@ -149,24 +149,24 @@ Parse.Cloud.define("status", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("testConstants", function(request, response)
 {
-    conditionalLog("1");
+    funcs.conditionalLog("1");
 
     try
     {
         var theCreate   = CONST.ACTION_USER_CREATE;
 
-        conditionalLog("2");
+        funcs.conditionalLog("2");
 
         var theVerify   = CONST.ACTION_USER_VERIFY;
 
-        conditionalLog("3");
+        funcs.conditionalLog("3");
 
         response.success(theVerify|theCreate);
     }
     catch (e)
     {
-        conditionalLog("4");
-        conditionalLog(e);
+        funcs.conditionalLog("4");
+        funcs.conditionalLog(e);
 
         response.error(e);
     }
@@ -220,7 +220,7 @@ Parse.Cloud.define("incrementNewAppointmentTally", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getTestDictionary", function(request, response)
 {
-    conditionalLog("getTestDictionary");
+    funcs.conditionalLog("getTestDictionary");
 
     var theString   = "This is a string";
     var theNumber   = 420;
@@ -228,11 +228,11 @@ Parse.Cloud.define("getTestDictionary", function(request, response)
     var theNumberArray = [1,2,3,4,5];
     var trueEh = false;
 
-    conditionalLog("Just before creating dictionary");
+    funcs.conditionalLog("Just before creating dictionary");
 
     var theResult = { aString: theString, aNumber: theNumber, anArray: theStringArray, secondArray: theNumberArray, aBool: trueEh };
 
-    conditionalLog("Just after creating dictionary");
+    funcs.conditionalLog("Just after creating dictionary");
 
     response.success(theResult);
 });
@@ -252,7 +252,7 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
     // useMasterKey: true,
     // above your success: lines.
 
-    conditionalLog("Starting convertUsernameBackToEmail");
+    funcs.conditionalLog("Starting convertUsernameBackToEmail");
 
     var emailAddress     = request.params.emailAddress;
     var phoneNumber      = request.params.phoneNumber;
@@ -265,8 +265,8 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
         response.error("missing information");
     }
 
-    conditionalLog("emailAddress [" + emailAddress + "]");
-    conditionalLog("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
 
     var query = new Parse.Query(Parse.User);
 
@@ -277,12 +277,12 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            conditionalLog("find with phone number in username was successful.");
-            conditionalLog(results.length + " records found");
+            funcs.conditionalLog("find with phone number in username was successful.");
+            funcs.conditionalLog(results.length + " records found");
 
             if ( results.length === 0 )
             {
-                conditionalLog("No records found to convert");
+                funcs.conditionalLog("No records found to convert");
                 var theResponse =
                     {
                         'description' : 'No records found to convert'
@@ -291,7 +291,7 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
             }
             else
             {
-                conditionalLog("convert only first user, remove the remaining");
+                funcs.conditionalLog("convert only first user, remove the remaining");
                 // Create New User copying from first
                 // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
                 // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
@@ -305,14 +305,14 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
                 var fuUserStaffId   = firstUser.get("staffID");
                 var fuTheUsername   = firstUser.get("username");
 
-                conditionalLog("Can update user:");
+                funcs.conditionalLog("Can update user:");
 
-                conditionalLog("email:      " + fuEmailAddress);
-                conditionalLog("firstName:  " + fuUserFirstName);
-                conditionalLog("installoids:" + fuInstalloids);
-                conditionalLog("lastName:   " + fuUserLastName);
-                conditionalLog("staffId:    " + fuUserStaffId);
-                conditionalLog("username:   " + fuTheUsername);
+                funcs.conditionalLog("email:      " + fuEmailAddress);
+                funcs.conditionalLog("firstName:  " + fuUserFirstName);
+                funcs.conditionalLog("installoids:" + fuInstalloids);
+                funcs.conditionalLog("lastName:   " + fuUserLastName);
+                funcs.conditionalLog("staffId:    " + fuUserStaffId);
+                funcs.conditionalLog("username:   " + fuTheUsername);
 
                 //firstUser.set("verificationCode", random);
                 firstUser.set("gbAssist","REVERTED");
@@ -323,7 +323,7 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
                     useMasterKey: true,
                     success: function(savedUser)
                     {
-                        conditionalLog("User saved CONVERTED.");
+                        funcs.conditionalLog("User saved CONVERTED.");
                         var userResponse = { email : fuEmailAddress,
                                              firstName : fuUserFirstName,
                                              installoids : fuInstalloids,
@@ -366,13 +366,13 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
     // useMasterKey: true,
     // above your success: lines.
 
-    conditionalLog("Starting convertUsernameToPhoneNumber");
+    funcs.conditionalLog("Starting convertUsernameToPhoneNumber");
 
     var emailAddress     = request.params.emailAddress;
     var phoneNumber      = request.params.phoneNumber;
 
-    conditionalLog("emailAddress [" + emailAddress + "]");
-    conditionalLog("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
 
     var User  = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
@@ -383,17 +383,17 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            conditionalLog("find with email address in username was successful.");
-            conditionalLog(results.length + " records found");
+            funcs.conditionalLog("find with email address in username was successful.");
+            funcs.conditionalLog(results.length + " records found");
 
             if ( results.length === 0 )
             {
-                conditionalLog("No records found to convert");
+                funcs.conditionalLog("No records found to convert");
                 response.success( "{ 'description' : 'No records found to convert' }" );
             }
             else
             {
-                conditionalLog("convert only first user, remove the remaining");
+                funcs.conditionalLog("convert only first user, remove the remaining");
                 // Create New User copying from first
                 // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
                 // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
@@ -407,20 +407,20 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                 var fuUserStaffId   = firstUser.get("staffID");
                 var fuTheUsername   = firstUser.get("username");
 
-                conditionalLog("Can update user:");
+                funcs.conditionalLog("Can update user:");
 
-                conditionalLog("email:      " + fuEmailAddress);
-                conditionalLog("firstName:  " + fuUserFirstName);
-                conditionalLog("installoids:" + fuInstalloids);
-                conditionalLog("lastName:   " + fuUserLastName);
-                conditionalLog("staffId:    " + fuUserStaffId);
-                conditionalLog("username:   " + fuTheUsername);
+                funcs.conditionalLog("email:      " + fuEmailAddress);
+                funcs.conditionalLog("firstName:  " + fuUserFirstName);
+                funcs.conditionalLog("installoids:" + fuInstalloids);
+                funcs.conditionalLog("lastName:   " + fuUserLastName);
+                funcs.conditionalLog("staffId:    " + fuUserStaffId);
+                funcs.conditionalLog("username:   " + fuTheUsername);
 
                 var userServiceToken    = process.env.USER_SERVICE_TOKEN;
 
-                conditionalLog("token length: " + userServiceToken.length);
+                funcs.conditionalLog("token length: " + userServiceToken.length);
 
-                var random  = randomNumberWithNumberOfDigits(5);
+                var random  = funcs.randomNumberWithNumberOfDigits(5);
 
                 //firstUser.set("verificationCode", random);
                 firstUser.set("gbAssist","CONVERTED");
@@ -429,7 +429,7 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
                     useMasterKey: true,
                     success: function(savedUser)
                     {
-                        conditionalLog("User saved CONVERTED.");
+                        funcs.conditionalLog("User saved CONVERTED.");
                         var userResponse = { email : fuEmailAddress,
                                              firstName : fuUserFirstName,
                                              installoids : fuInstalloids,
@@ -472,9 +472,9 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
     // useMasterKey: true,
     // above your success: lines.
 
-    conditionalLog("Starting resetUserToVersionOne");
-    conditionalLog("emailAddress [" + request.params.emailAddress + "]");
-    conditionalLog("phoneNumber [" + request.params.phoneNumber + "]");
+    funcs.conditionalLog("Starting resetUserToVersionOne");
+    funcs.conditionalLog("emailAddress [" + request.params.emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + request.params.phoneNumber + "]");
 
     var User  = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
@@ -486,19 +486,19 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            conditionalLog("find with email address in username was successful.");
-            conditionalLog(results.length + " records found");
+            funcs.conditionalLog("find with email address in username was successful.");
+            funcs.conditionalLog(results.length + " records found");
 
             if ( results.length === 0 )
             {
-                conditionalLog("No records found to convert");
+                funcs.conditionalLog("No records found to convert");
                 var theResult = { description : "No records found to convert" };
 
                 response.success(theResult);
             }
             else
             {
-                conditionalLog("convert only first user, remove the remaining");
+                funcs.conditionalLog("convert only first user, remove the remaining");
                 // Create New User copying from first
                 // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
                 // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
@@ -512,20 +512,20 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
                 var userStaffId     = firstUser.get("staffID");
                 var theUsername     = firstUser.get("username");
 
-                conditionalLog("Can update user:");
+                funcs.conditionalLog("Can update user:");
 
-                conditionalLog("email:      " + emailAddress);
-                conditionalLog("firstName:  " + userFirstName);
-                conditionalLog("installoids:" + installoids);
-                conditionalLog("lastName:   " + userLastName);
-                conditionalLog("staffId:    " + userStaffId);
-                conditionalLog("username:   " + theUsername);
+                funcs.conditionalLog("email:      " + emailAddress);
+                funcs.conditionalLog("firstName:  " + userFirstName);
+                funcs.conditionalLog("installoids:" + installoids);
+                funcs.conditionalLog("lastName:   " + userLastName);
+                funcs.conditionalLog("staffId:    " + userStaffId);
+                funcs.conditionalLog("username:   " + theUsername);
 
                 var userServiceToken = process.env.USER_SERVICE_TOKEN;
 
-                conditionalLog("token length: " + userServiceToken.length);
+                funcs.conditionalLog("token length: " + userServiceToken.length);
 
-                var random  = randomNumberWithNumberOfDigits(5);
+                var random  = funcs.randomNumberWithNumberOfDigits(5);
 
                 firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
@@ -533,7 +533,7 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
                     useMasterKey: true,
                     success: function(savedUser)
                     {
-                        conditionalLog("User saved CONVERTED.");
+                        funcs.conditionalLog("User saved CONVERTED.");
 
                         var userResponse = { email : emailAddress,
                                              firstName : userFirstName,
@@ -572,7 +572,7 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getVerificationCode", function(request, response)
 {
-    var verification    = randomNumberWithNumberOfDigits(5);
+    var verification    = funcs.randomNumberWithNumberOfDigits(5);
     var token           = process.env.USER_SERVICE_TOKEN;
     var newPassword     = token + "-" + verification;
 
@@ -604,9 +604,9 @@ Parse.Cloud.define("createMessageForUser", function(request, response)
     var msgSubtitle        = request.params.subtitle;
     var msgBody            = request.params.body;
 
-    conditionalLog("createMessageForUser called");
-    conditionalLog("with params:");
-    conditionalLog("senderID [" + msgSenderID + "], receiverID [" + msgReceiverID + "], title [" + msgTitle + "], subtitle [" + msgSubtitle + "], body [" + msgBody + "]");
+    funcs.conditionalLog("createMessageForUser called");
+    funcs.conditionalLog("with params:");
+    funcs.conditionalLog("senderID [" + msgSenderID + "], receiverID [" + msgReceiverID + "], title [" + msgTitle + "], subtitle [" + msgSubtitle + "], body [" + msgBody + "]");
 
     Parse.Cloud.run("userWithUserIdExists",
     {
@@ -667,9 +667,9 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
 
     //var receivingUser    = null;
 
-    conditionalLog("saveMessageForUserThenNotify called");
-    conditionalLog("with params:");
-    conditionalLog("senderID [" + pSenderID + "], receiverID [" + pReceiverID + "], title [" + pMsgTitle + "], subtitle [" + pMsgSubtitle + "], body [" + pMsgBody + "]");
+    funcs.conditionalLog("saveMessageForUserThenNotify called");
+    funcs.conditionalLog("with params:");
+    funcs.conditionalLog("senderID [" + pSenderID + "], receiverID [" + pReceiverID + "], title [" + pMsgTitle + "], subtitle [" + pMsgSubtitle + "], body [" + pMsgBody + "]");
 
     Parse.Cloud.run("createMessageForUser",
     {
@@ -758,8 +758,8 @@ Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, r
     var verificationCode    = request.params.verificationCode;
     var phoneNumber         = request.params.phoneNumber;
 
-    conditionalLog("sendVerificationCodeBySmsToPhoneNumber()");
-    conditionalLog("phoneNumber: " + phoneNumber + " vCode [" + verificationCode + "]");
+    funcs.conditionalLog("sendVerificationCodeBySmsToPhoneNumber()");
+    funcs.conditionalLog("phoneNumber: " + phoneNumber + " vCode [" + verificationCode + "]");
 
     var tAccountSid     = process.env.TWILIO_ACCOUNT_SID;
     var tAccountToken   = process.env.TWILIO_ACCOUNT_TOKEN;
@@ -769,9 +769,9 @@ Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, r
     var tas = tAccountSid.substring(1,5);
     var tat = tAccountToken.substring(1,5);
 
-    conditionalLog("account sid starts " + tas);
-    conditionalLog("account token starts " + tat);
-    conditionalLog("from phone " + tSendingNumber);
+    funcs.conditionalLog("account sid starts " + tas);
+    funcs.conditionalLog("account token starts " + tat);
+    funcs.conditionalLog("from phone " + tSendingNumber);
 
     var message = "Your Verification Code for the Barbershop Deluxe app is " + verificationCode + ". You may be able to tap this link: " + "fourxq.barbershop://verify?code=" + verificationCode;
 
@@ -788,7 +788,7 @@ Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, r
     {
         toNumber = phoneNumber;
     }
-    conditionalLog("about to send");
+    funcs.conditionalLog("about to send");
 
     twilio.sendMessage(
     {
@@ -806,8 +806,8 @@ Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, r
         }
         else
         {
-            conditionalLog("New Verification Code Sent");
-            conditionalLog(responseData);
+            funcs.conditionalLog("New Verification Code Sent");
+            funcs.conditionalLog(responseData);
 
             response.success(responseData);
         }
@@ -822,7 +822,7 @@ Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, r
 ///////////////////////////////////////
 Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, response)
 {
-    conditionalLog("resetVerificationCodeThenSMSToUser()");
+    funcs.conditionalLog("resetVerificationCodeThenSMSToUser()");
 
     var os = require("os");
 
@@ -831,10 +831,10 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
     var language        = request.params.language;
     var resend          = request.params.resend;
 
-    conditionalLog("phoneNumber [" + phoneNumber + "]");
-    conditionalLog("emailAddress [" + emailAddress + "]");
-    conditionalLog("language [" + language + "]");
-    conditionalLog("resend [" + resend + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("language [" + language + "]");
+    funcs.conditionalLog("resend [" + resend + "]");
 
     /*
      *  1.  Get New Verification Code
@@ -869,16 +869,16 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
                 },
                 error: function(errorResult)
                 {
-                    conditionalLog("Error sending message");
-                    conditionalLog(errorResult);
+                    funcs.conditionalLog("Error sending message");
+                    funcs.conditionalLog(errorResult);
                     response.error(errorResult);
                 }
             });
         },
         error: function(errorResult)
         {
-            conditionalLog("Unable to reset code");
-            conditionalLog(errorResult);
+            funcs.conditionalLog("Unable to reset code");
+            funcs.conditionalLog(errorResult);
         }
     });
 });
@@ -898,7 +898,7 @@ Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, respo
 ///////////////////////////////////////
 Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
 {
-    conditionalLog("getRoleNamesForCurrentUser");
+    funcs.conditionalLog("getRoleNamesForCurrentUser");
 
     var currentUser     = request.user;
 
@@ -908,7 +908,7 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
 
     var userId          = request.user.id;
 
-    conditionalLog("Checking [" + userId + "] " + first + " " + last + " (" + username + ")");
+    funcs.conditionalLog("Checking [" + userId + "] " + first + " " + last + " (" + username + ")");
     if ( ( currentUser === null ) || ( currentUser === undefined ) )
     {
         response.error("missing user");
@@ -930,7 +930,7 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                 var roleObject      = roleResults[rIdx];
                 var roleName        = roleObject.get("name");
 
-                conditionalLog("Checking role '" + roleName + "' for '" + userId + "'");
+                funcs.conditionalLog("Checking role '" + roleName + "' for '" + userId + "'");
 
                 var relationQuery = roleObject.relation("users").query();
                 relationQuery.get(userId,
@@ -938,23 +938,23 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
                     useMasterKey: true,
                     success     : function(userResult)
                     {
-                        conditionalLog("User belongs to role " + roleName);
+                        funcs.conditionalLog("User belongs to role " + roleName);
 
                         belongsToRoleNames.push(roleName);
 
-                        conditionalLog("Belongs to these roles:");
-                        conditionalLog(belongsToRoleNames);
+                        funcs.conditionalLog("Belongs to these roles:");
+                        funcs.conditionalLog(belongsToRoleNames);
                     },
                     error       : function(userError)
                     {
-                        conditionalLog("User does not belong to role " + roleName);
-                        //conditionalLog(userError);
+                        funcs.conditionalLog("User does not belong to role " + roleName);
+                        //funcs.conditionalLog(userError);
                     }
                 });
             }
 
-            conditionalLog("User belongs to:");
-            conditionalLog(belongsToRoleNames);
+            funcs.conditionalLog("User belongs to:");
+            funcs.conditionalLog(belongsToRoleNames);
             response.success(belongsToRoleNames);
         },
         error: function(roleError)
@@ -998,7 +998,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response)
 
 Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, response)
 {
-    conditionalLog("addCurrentUserToRoleWithRoleName");
+    funcs.conditionalLog("addCurrentUserToRoleWithRoleName");
 
     var roleName        = request.params.roleName;
     var currentUser     = request.user;
@@ -1008,7 +1008,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
     var username        = currentUser.get("username");
     var userId          = currentUser.id;
 
-    conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
+    funcs.conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
 
     if ( ( currentUser === null ) ||
          ( roleName === null    ) ||
@@ -1026,7 +1026,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
         success: function(roleObject)
         {
             var fRoleName = roleObject.get("name");
-            conditionalLog("Have role '" + fRoleName + "'");
+            funcs.conditionalLog("Have role '" + fRoleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
             relationQuery.equalTo("objectId", currentUser.id);
@@ -1070,7 +1070,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
 ///////////////////////////////////////
 Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, response)
 {
-    conditionalLog("doesCurrentUserBelongToRoleWithRoleName");
+    funcs.conditionalLog("doesCurrentUserBelongToRoleWithRoleName");
 
     var roleName        = request.params.roleName;
     var currentUser     = request.user;
@@ -1080,7 +1080,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
     var username        = currentUser.get("username");
     var userId          = currentUser.id;
 
-    conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
+    funcs.conditionalLog("Checking [" + userId + "] "+ first + " " + last + " (" + username + ")");
 
     if ( ( currentUser === null ) ||
          ( roleName === null    ) ||
@@ -1097,7 +1097,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
         success: function(roleObject)
         {
             var roleName = roleObject.get("name");
-            conditionalLog("Have role '" + roleName + "'");
+            funcs.conditionalLog("Have role '" + roleName + "'");
 
             var relationQuery = roleObject.relation("users").query();
             relationQuery.get(userId,
@@ -1105,14 +1105,14 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
                 useMasterKey: true,
                 success     : function(userResult)
                 {
-                    conditionalLog("User belongs to role " + roleName);
+                    funcs.conditionalLog("User belongs to role " + roleName);
 
                     var theResult = { belongs: true };
                     response.success(theResult);
                 },
                 error       : function(userError)
                 {
-                    conditionalLog("User does not belong to role " + roleName);
+                    funcs.conditionalLog("User does not belong to role " + roleName);
                     var theResult = { belongs: false };
                     response.success(theResult);
                 }
@@ -1157,7 +1157,7 @@ Parse.Cloud.define("doesCurrentUserBelongToRoleWithRoleName", function(request, 
 ///////////////////////////////////////
 Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 {
-    conditionalLog("Send Push 1");
+    funcs.conditionalLog("Send Push 1");
 
     if ( ( request.params.firstName.length === 0    ) ||
          ( request.params.lastName.length === 0     ) ||
@@ -1175,7 +1175,7 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
         response.error(theResult);
     }
 
-    conditionalLog("Send Push 2");
+    funcs.conditionalLog("Send Push 2");
 
     var phoneNumber     = request.params.phoneNumber;
 
@@ -1183,14 +1183,14 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
     userQuery.equalTo("phoneNumber", request.params.phoneNumber);
     userQuery.equalTo("email", request.params.emailAddress);
 
-    conditionalLog("Send Push 3");
+    funcs.conditionalLog("Send Push 3");
 
     var pushQuery       = new Parse.Query(Parse.Installation);
     pushQuery.include("currentUser");
     pushQuery.matchesQuery("currentUser", userQuery);
     pushQuery.equalTo("userId", "4QdhsyAE6f");
 
-    conditionalLog("Send Push 4");
+    funcs.conditionalLog("Send Push 4");
 
     var categoryIdentifier = "ca.4xq.Barbershop8.Notification-Interface-Message.notification";
 
@@ -1216,8 +1216,8 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
         "badge" : "Increment"
     };
 
-    conditionalLog("Send Push 5");
-    conditionalLog("Send Push 6");
+    funcs.conditionalLog("Send Push 5");
+    funcs.conditionalLog("Send Push 6");
 
     Parse.Push.send(
     {
@@ -1228,12 +1228,12 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
         useMasterKey: true,
         success: function (pushResult)
         {
-            conditionalLog("Send Push Success:");
-            conditionalLog(pushResult);
+            funcs.conditionalLog("Send Push Success:");
+            funcs.conditionalLog(pushResult);
 
             var theResult = pushResult["result"];
 
-            conditionalLog("Push Sent (" + theResult.toString() + ")");
+            funcs.conditionalLog("Push Sent (" + theResult.toString() + ")");
             var theResult =
             {
                 success: true,
@@ -1243,8 +1243,8 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
         },
         error: function (pushError)
         {
-            conditionalLog("Send Push Error");
-            conditionalLog(pushError);
+            funcs.conditionalLog("Send Push Error");
+            funcs.conditionalLog(pushError);
 
             var theResult =
             {
@@ -1274,7 +1274,7 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getTwilioPhoneNumber", function(request, response)
 {
-    conditionalLog("getTwilioPhoneNumber");
+    funcs.conditionalLog("getTwilioPhoneNumber");
 
     response.success(twilioSendingNumber);
 });
@@ -1292,8 +1292,8 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
     var emailAddress     = request.params.emailAddress;
     var phoneNumber      = request.params.phoneNumber;
 
-    conditionalLog("emailAddress [" + emailAddress + "]");
-    conditionalLog("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
 
     if ( theUser === null )
     {
@@ -1302,7 +1302,7 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
         query.equalTo("username",phoneNumber);
         query.equalTo("email",emailAddress);
 
-        conditionalLog("starting query");
+        funcs.conditionalLog("starting query");
 
         query.find(
         {
@@ -1311,21 +1311,21 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
             {
                 if ( results.length > 0 )
                 {
-                    conditionalLog("I have a user");
+                    funcs.conditionalLog("I have a user");
                     var qUser        = results[0];
 
-                    conditionalLog(user.username);
+                    funcs.conditionalLog(user.username);
 
                     var password    = qUser.get("password");
 
-                    conditionalLog("pass length is ");
-                    conditionalLog(password.length.toString);
+                    funcs.conditionalLog("pass length is ");
+                    funcs.conditionalLog(password.length.toString);
 
                     if ( password.length > 0 )
                     {
                         var code        = password.substring(-5);
-                        conditionalLog("I have a code ");
-                        conditionalLog(code);
+                        funcs.conditionalLog("I have a code ");
+                        funcs.conditionalLog(code);
                         sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
                         response.success(true);
                     }
@@ -1337,7 +1337,7 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
                 }
                 else
                 {
-                    conditionalLog("I do not have a user");
+                    funcs.conditionalLog("I do not have a user");
                     response.success(false);
                 }
             },
@@ -1360,7 +1360,7 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
              ( reqEmailAddress === emailAddress ) )
         {
 
-            conditionalLog("user was in request");
+            funcs.conditionalLog("user was in request");
             var password    = theUser.get("password");
             var code        = password.substring(-5);
             sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
@@ -1383,16 +1383,16 @@ Parse.Cloud.define("sendSMS", function(request, response)
 {
     //Parse.Cloud.useMasterKey();
 
-    conditionalLog("sendSMS with:");
-    conditionalLog("toNumber: " + request.params.toNumber);
-    conditionalLog("message: " + request.params.message);
-    conditionalLog("from: " + twilioSendingNumber);
+    funcs.conditionalLog("sendSMS with:");
+    funcs.conditionalLog("toNumber: " + request.params.toNumber);
+    funcs.conditionalLog("message: " + request.params.message);
+    funcs.conditionalLog("from: " + twilioSendingNumber);
 
     var tas = twilioAccountSid.substring(1,5);
     var tat = twilioAccountToken.substring(1,5);
 
-    conditionalLog("account sid starts " + tas);
-    conditionalLog("account token starts " + tat);
+    funcs.conditionalLog("account sid starts " + tas);
+    funcs.conditionalLog("account token starts " + tat);
 
     var twilio      = require("twilio")(twilioAccountSid,twilioAccountToken);
     var to          = request.params.toNumber;
@@ -1414,8 +1414,8 @@ Parse.Cloud.define("sendSMS", function(request, response)
         }
         else
         {
-            conditionalLog("success with sendSMS:");
-            conditionalLog(responseData);
+            funcs.conditionalLog("success with sendSMS:");
+            funcs.conditionalLog(responseData);
             response.success(responseData);
         }
     });

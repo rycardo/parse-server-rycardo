@@ -1,5 +1,5 @@
-require("./const.js");
-require("./funcs.js");
+//require("./const.js");
+//require("./funcs.js");
 
 ///////////////////////////////////////
 //

@@ -1,5 +1,5 @@
-require("./const.js");
-require("./funcs.js");
+//require("./const.js");
+//require("./funcs.js");
 
 ///////////////////////////////////////
 //
@@ -32,8 +32,8 @@ Parse.Cloud.define("convertProductsCartToUserId", function(request, response)
         success: function(results)
         {
             var foundStr = results.length.toString();
-            conditionalLog("Converting Products Cart from Install ID to User ID");
-            conditionalLog("found: " + foundStr);
+            funcs.conditionalLog("Converting Products Cart from Install ID to User ID");
+            funcs.conditionalLog("found: " + foundStr);
             if ( results.length === 0 )
             {
                 response.success("no carts to convert");
