@@ -54,16 +54,17 @@
 const CONST = require("./const.js");
 //const FUNCS = require("./funcs.js");
 
-require('./funcs.js')();
+// next line errors out
+//require('./funcs.js')();
 // internal/private functions
 //require("./funcs.js");
 var funcs = require('./funcs.js');
 
-conditionalLog("funcs has been required.");
-conditionalLog("Testing Constants, next line should show: is 16");
-
-var temp    = CONST.ACTION_USER_ACTIVE.toString;
-conditionalLog("ACTION_USER_ACTIVE is " + temp);
+//conditionalLog("funcs has been required.");
+//conditionalLog("Testing Constants, next line should show: is 16");
+//
+//var temp    = CONST.ACTION_USER_ACTIVE.toString;
+//conditionalLog("ACTION_USER_ACTIVE is " + temp);
 
 funcs.conditionalLog("funcs has been set for funcs.js");
 funcs.conditionalLog("Testing Constants, next line should show: is 8");
@@ -117,9 +118,9 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    conditionalLog("server status check by app");
+    funcs.conditionalLog("server status check by app");
 
-    var theRandom       = randomNumberWithNumberOfDigits(3);
+    var theRandom       = funcs.randomNumberWithNumberOfDigits(3);
 
     useMasterKey        = true;
     var theRelease      = null;
