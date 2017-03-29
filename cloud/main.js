@@ -54,10 +54,10 @@
 const CONST = require("./const.js");
 //const FUNCS = require("./funcs.js");
 
-require('funcs.js')();
+require('./funcs.js')();
 // internal/private functions
 //require("./funcs.js");
-var funcs = require('funcs.js');
+var funcs = require('./funcs.js');
 
 conditionalLog("funcs has been required.");
 conditionalLog("Testing Constants, next line should show: is 16");
