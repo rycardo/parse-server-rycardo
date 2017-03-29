@@ -69,7 +69,7 @@ funcs.conditionalLog("funcs has been set for funcs.js");
 funcs.conditionalLog("Testing Constants, next line should show: is 8");
 
 temp        = CONST.ACTION_USER_VERIFY.toString;
-funcs.conditionalLog("ACTION_USER_VERIFY is " + temp;
+funcs.conditionalLog("ACTION_USER_VERIFY is " + temp);
 
 // Barbers and Services
 require("./barber.js");
