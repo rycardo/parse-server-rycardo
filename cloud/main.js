@@ -794,7 +794,7 @@ Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, r
             response.success(responseData);
         }
     });
-}
+});
 
 
 ///////////////////////////////////////
