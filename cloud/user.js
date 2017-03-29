@@ -1152,3 +1152,42 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 });
 
 
+///////////////////////////////////////
+//
+// ROLES SECTION
+//
+///////////////////////////////////////
+
+///////////////////////////////////////
+//
+// getNamesOfRolesCurrentUserBelongsTo
+//
+// Params:
+// Current User
+//
+// Response:
+// ARRAY the role names
+//
+///////////////////////////////////////
+Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
+{
+    // Maximum depth is 3, after that we get a "" error from Parse
+    var queries = [
+                    new Parse.Query(Parse.Role).equalTo('users', request.user)
+                  ];
+
+    for (qIdx = 0; qIdx < 2; qIdx = qIdx + 1)
+    {
+        queries.push(new Parse.Query(Parse.Role).matchesQuery('roles', queries[i]));
+    }
+
+    return user.rolesPromise = Parse.Query.or.apply(Parse.Query, queries).find().then(
+        function(roles)
+        {
+            return roles.map(function(role)
+            {
+                return role.get('name');
+            });
+        }
+    );
+});
