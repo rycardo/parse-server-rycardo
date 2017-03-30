@@ -95,7 +95,9 @@ var twilioSendingNumber     = process.env.TWILIO_PHONE_NUMBER;
 //////////////////////////////////////
 Parse.Cloud.define("hello", function(request, response)
 {
-    response.success("I am not really dreaming of being a website, instead I am dreaming of being the back end to an app... SUCCESS!");
+    var theResult   = "I am not really dreaming of being a website, instead I am dreaming of being the back end to an app... SUCCESS!";
+
+    response.success(theResult);
 });
 
 
@@ -106,9 +108,44 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    funcs.conditionalLog("server status check by app");
+    //funcs.conditionalLog("server status check by app");
+    try
+    {
+        Parse.Cloud.run("debugLog", { logText: "server status check by app" },{});
+    }
+    catch (e)
+    {
+        console.log("Unable to run cloud code 'debugLog' with param logText");
+        console.log(e);
+    }
+    finally
+    {}
 
-    var theRandom       = funcs.randomNumberWithNumberOfDigits(3);
+    var theRandom       = -1;
+
+    try
+    {
+        theRandom           = pvtRandomNumberOfDigits(4);
+    }
+    catch (e)
+    {
+        console.log("Unable to call 'pvtRandomNumberOfDigits(4)'");
+        console.log(e);
+    }
+    finally
+    {}
+
+    try
+    {
+        theRandom           = funcs.randomNumberWithNumberOfDigits(3);
+    }
+    catch (e)
+    {
+        console.log("Unable to call 'funcs.randomNumberWithNumberOfDigits(3)'");
+        console.log(e);
+    }
+    finally
+    {}
 
     useMasterKey        = true;
     var theRelease      = null;
@@ -126,6 +163,14 @@ Parse.Cloud.define("status", function(request, response)
 
     var theResponse     = "Up, " + theNickname + ", Valid, " + theRelease;
 
+    try
+    {
+        Parse.Cloud.run("debugLog", { logText: theResponse },{});
+    }
+    catch (e)
+    {}
+    finally
+    {}
     response.success(theResponse);
 });
 

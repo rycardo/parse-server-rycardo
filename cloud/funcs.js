@@ -13,6 +13,32 @@
 ///////////////////////////////////////
 ///////////////////////////////////////
 
+//////////////////////////////////////
+//
+// conditionalLog
+//
+// Params:
+// text     The text to log
+//
+// Success Response:
+// BOOL         Whether the text was actually logged or not
+//
+//////////////////////////////////////
+Parse.Cloud.define("debugLog", function(request, response)
+{
+    logText     = request.params.text;
+    override    = request.params.force;
+
+    var doLog   = process.env.DEBUG_LOG || true;
+
+    if ( doLog === true || doLog === "True" || override === true )
+    {
+        console.log(logText);
+    }
+    response.success(doLog);
+});
+
+
 module.exports =
 {
     // This is the function which will be called in the main file, which is server.js
