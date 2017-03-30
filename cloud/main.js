@@ -97,6 +97,7 @@ Parse.Cloud.define("hello", function(request, response)
 {
     var theResult   = "I am not really dreaming of being a website, instead I am dreaming of being the back end to an app... SUCCESS!";
 
+    funcs.conditionalLog(theResult);
     response.success(theResult);
 });
 
@@ -108,15 +109,15 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    //funcs.conditionalLog("server status check by app");
+    funcs.conditionalLog("server status check by app");
     try
     {
-        Parse.Cloud.run("debugLog", { logText: "server status check by app" },{});
+        //Parse.Cloud.run("debugLog", { logText: "server status check by app" },{});
     }
     catch (e)
     {
-        console.log("Unable to run cloud code 'debugLog' with param logText");
-        console.log(e);
+        //console.log("Unable to run cloud code 'debugLog' with param logText");
+        //console.log(e);
     }
     finally
     {}
@@ -125,12 +126,12 @@ Parse.Cloud.define("status", function(request, response)
 
     try
     {
-        theRandom           = pvtRandomNumberOfDigits(4);
+        //theRandom           = pvtRandomNumberOfDigits(4);
     }
     catch (e)
     {
-        console.log("Unable to call 'pvtRandomNumberOfDigits(4)'");
-        console.log(e);
+        //console.log("Unable to call 'pvtRandomNumberOfDigits(4)'");
+        //console.log(e);
     }
     finally
     {}
@@ -138,6 +139,7 @@ Parse.Cloud.define("status", function(request, response)
     try
     {
         theRandom           = funcs.randomNumberWithNumberOfDigits(3);
+        funcs.conditionalLog("The random number is " + theRandom.toString());
     }
     catch (e)
     {
@@ -165,12 +167,13 @@ Parse.Cloud.define("status", function(request, response)
 
     try
     {
-        Parse.Cloud.run("debugLog", { logText: theResponse },{});
+        //Parse.Cloud.run("debugLog", { logText: theResponse },{});
     }
     catch (e)
     {}
     finally
     {}
+
     response.success(theResponse);
 });
 

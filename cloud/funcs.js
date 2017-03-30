@@ -24,20 +24,20 @@
 // BOOL         Whether the text was actually logged or not
 //
 //////////////////////////////////////
-Parse.Cloud.define("debugLog", function(request, response)
-{
-    logText     = request.params.text;
-    override    = request.params.force;
-
-    var doLog   = process.env.DEBUG_LOG || true;
-
-    if ( doLog === true || doLog === "True" || override === true )
-    {
-        console.log(logText);
-    }
-    response.success(doLog);
-});
-
+//Parse.Cloud.define("debugLog", function(request, response)
+//{
+//    logText     = request.params.text;
+//    override    = request.params.force;
+//
+//   var doLog   = process.env.DEBUG_LOG || true;
+//
+//    if ( doLog === true || doLog === "True" || override === true )
+//    {
+//        console.log(logText);
+//    }
+//    response.success(doLog);
+//});
+//
 
 module.exports =
 {
