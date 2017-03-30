@@ -1171,6 +1171,8 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
+    funcs.conditionalLog("In getNamesOfRolesCurrentUserBelongsTo");
+
     if ( request.user === undefined || request.user === null )
     {
         funcs.conditionalLog("No User passed, unable to continue");
@@ -1178,8 +1180,8 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         return;
     }
 
-    var User        = Parse.User.extend;
-    var Role        = Parse.Role.extend;
+    var User        = Parse.Object.extend("_User");
+    var Role        = Parse.Object.extend("_Role");
 
     var innerQuery  = new Parse.Query(User);
     innerQuery.equalTo("objectId", request.user.objectId);
