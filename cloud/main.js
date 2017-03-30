@@ -1250,6 +1250,146 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 });
 
 
+///////////////////////////////////////
+//
+// sendPushNotificationWithParams
+//
+// REQUIRED PARAMETERS:
+//
+// startObjectId        The first characters of the objectId
+// queryClass           The name of the class for the objectId (User | Installation)
+// payload              The entire Push Payload
+//
+//
+// RESULT:
+//
+// Successful:
+// success          true
+// result           the number of devices the push sent to
+//
+// Error:
+// success          false
+// error            the error from the server
+//
+///////////////////////////////////////
+Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
+{
+    funcs.conditionalLog("Send Push 1");
+
+    if ( ( request.params.startObjectId.length === 0 ) ||
+         ( request.params.queryClass.length    === 0 ) ||
+         ( request.params.payload.length       === 0 ) ||
+         ( request.params.startObjectId        === undefined ) ||
+         ( request.params.queryClass           === undefined ) ||
+         ( request.params.payload              === undefined ) )
+    {
+        var theResult =
+            {
+                code: 4001,
+                message: "missing one or more required parameters"
+            };
+        response.error(theResult);
+    }
+
+    funcs.conditionalLog("Send Push 2");
+
+    var payload     = JSON.parse(request.params.payload);
+    var userQuery   = null;
+    var installQuery= null;
+
+    if ( request.params.queryClass === "User" )
+    {
+        userQuery   = new Parse.Query(Parse.User);
+        userQuery.startsWith("objectId", request.params.startObjectId);
+
+        installQuery= new Parse.Query(Parse.Installation);
+    }
+    else if ( request.params.queryClass === "Installation" )
+    {
+        installQuery= new Parse.Query(Parse.Installation);
+        installQuery.startsWith("objectId", request.params.startObjectId);
+    }
+    else
+    {
+        var theResult =
+            {
+                code: 4002,
+                message: "queryClass parameter was not User or Installation"
+            };
+        response.error(theResult);
+    }
+
+    funcs.conditionalLog("Send Push 3");
+
+    //var pushQuery       = new Parse.Query(Parse.Installation);
+    if ( userQuery !== null )
+    {
+        installQuery.include("currentUser");
+        installQuery.matchesQuery("currentUser", userQuery);
+        //TODO: Remove Next Line When I know This Works
+        installQuery.whereKey("userId", "4QdhsyAE6f");
+    }
+
+    funcs.conditionalLog("Send Push 4");
+
+/*
+    var pushData =
+    {
+        "aps" :
+        {
+            "category" : categoryIdentifier,
+            "alert" :
+            {
+                "title" : request.params.title,
+                "subtitle" : request.params.subtitle,
+                "body": request.params.body
+            },
+            "badge" : 3,
+            "sound" : "timbre3.caf"
+        },
+        "badge" : "Increment"
+    };
+*/
+    funcs.conditionalLog("Send Push 5");
+    funcs.conditionalLog("Send Push 6");
+
+    Parse.Push.send(
+    {
+        where: pushQuery,
+        data: payload
+    },
+    {
+        useMasterKey: true,
+        success: function (pushResult)
+        {
+            funcs.conditionalLog("Send Push Success:");
+            funcs.conditionalLog(pushResult);
+
+            var theResult = pushResult["result"];
+
+            funcs.conditionalLog("Push Sent (" + theResult.toString() + ")");
+            var theResult =
+            {
+                success: true,
+                result: theResult
+            };
+            response.success(theResult);
+        },
+        error: function (pushError)
+        {
+            funcs.conditionalLog("Send Push Error");
+            funcs.conditionalLog(pushError);
+
+            var theResult =
+            {
+                success: false,
+                error: pushError
+            };
+            response.error(theResult);
+        }
+    });
+});
+
 
 ///////////////////////////////////////
 //
