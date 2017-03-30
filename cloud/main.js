@@ -110,45 +110,10 @@ Parse.Cloud.define("hello", function(request, response)
 Parse.Cloud.define("status", function(request, response)
 {
     funcs.conditionalLog("server status check by app");
-    try
-    {
-        //Parse.Cloud.run("debugLog", { logText: "server status check by app" },{});
-    }
-    catch (e)
-    {
-        //console.log("Unable to run cloud code 'debugLog' with param logText");
-        //console.log(e);
-    }
-    finally
-    {}
 
-    var theRandom       = -1;
-
-    try
-    {
-        //theRandom           = pvtRandomNumberOfDigits(4);
-    }
-    catch (e)
-    {
-        //console.log("Unable to call 'pvtRandomNumberOfDigits(4)'");
-        //console.log(e);
-    }
-    finally
-    {}
-
-    try
-    {
-        theRandom           = funcs.randomNumberWithNumberOfDigits(3);
-        var randomText      = theRandom.toString();
-        funcs.conditionalLog("The random number is " + randomText + "");
-    }
-    catch (e)
-    {
-        console.log("Unable to call 'funcs.randomNumberWithNumberOfDigits(3)'");
-        console.log(e);
-    }
-    finally
-    {}
+    var theRandom       = funcs.randomNumberWithNumberOfDigits(3);
+    var randomText      = theRandom.toString();
+    funcs.conditionalLog("The random number is " + randomText + "");
 
     useMasterKey        = true;
     var theRelease      = null;
@@ -160,20 +125,11 @@ Parse.Cloud.define("status", function(request, response)
     }
     else
     {
-        theRelease      = "XQ" + hrv.toUpperCase() + "4" + " " + theRandom.toString;
+        theRelease      = "XQ" + hrv.toUpperCase() + "4" + " " + theRandom.toString();
     }
     var theNickname     = process.env.SERVER_NICKNAME;
 
     var theResponse     = "Up, " + theNickname + ", Valid, " + theRelease;
-
-    try
-    {
-        //Parse.Cloud.run("debugLog", { logText: theResponse },{});
-    }
-    catch (e)
-    {}
-    finally
-    {}
 
     response.success(theResponse);
 });

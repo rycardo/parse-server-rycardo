@@ -1189,11 +1189,11 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
     funcs.conditionalLog("created inner query for user id");
 
     var roleQuery   = new Parse.Query(Role);
-    query.matchesQuery("users", innerQuery);
+    roleQuery.matchesQuery("users", innerQuery);
 
     funcs.conditionalLog("created role query");
 
-    query.find(
+    roleQuery.find(
     {
         useMasterKey: true,
         success: function(results)
