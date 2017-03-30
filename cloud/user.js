@@ -1171,23 +1171,61 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
-    // Maximum depth is 3, after that we get a "" error from Parse
-    var queries = [
-                    new Parse.Query(Parse.Role).equalTo('users', request.user)
-                  ];
-
-    for (qIdx = 0; qIdx < 2; qIdx = qIdx + 1)
+    if ( request.user === undefined || request.user === null )
     {
-        queries.push(new Parse.Query(Parse.Role).matchesQuery('roles', queries[i]));
+        funcs.conditionalLog("No User passed, unable to continue");
+        response.error("No User passed");
+        return;
     }
 
-    return user.rolesPromise = Parse.Query.or.apply(Parse.Query, queries).find().then(
-        function(roles)
+    var User        = Parse.User.extend;
+    var Role        = Parse.Role.extend;
+
+    var innerQuery  = new Parse.Query(User);
+    innerQuery.equalTo("objectId", request.user.objectId);
+
+    funcs.conditionalLog("created inner query for user id");
+
+    var roleQuery   = new Parse.Query(Role);
+    query.matchesQuery("users", innerQuery);
+
+    funcs.conditionalLog("created role query");
+
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
         {
-            return roles.map(function(role)
+            // do my shite
+            var count = results.length;
+
+            funcs.conditionalLog("Found " + count.toString + " roles.");
+
+            var roleNames   = new array();
+
+            funcs.conditionalLog("Created roleNames array");
+
+            for (var rIdx = 0; rIdx < count; rIdx = (rIdx + 1))
             {
-                return role.get('name');
-            });
+                funcs.conditionalLog("Role index " + rIdx.toString + "");
+
+                var theRole     = results[rIdx];
+                var roleName    = theRole.get("name");
+
+                funcs.conditionalLog("Role [" + roleName  + "]");
+
+                roleNames.push(roleName);
+            }
+
+            funcs.conditionalLog("Sending " + roleNames.length.toString + " role names");
+
+            result.success(roleNames);
+        },
+        error: function(queryError)
+        {
+            funcs.conditionalLog("Query Error:");
+            funcs.conditionalLog(queryError);
+            response.error(queryError);
         }
-    );
+    });
 });

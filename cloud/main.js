@@ -139,7 +139,8 @@ Parse.Cloud.define("status", function(request, response)
     try
     {
         theRandom           = funcs.randomNumberWithNumberOfDigits(3);
-        funcs.conditionalLog("The random number is " + theRandom.toString());
+        var randomText      = theRandom.toString();
+        funcs.conditionalLog("The random number is " + randomText + "");
     }
     catch (e)
     {

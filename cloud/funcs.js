@@ -50,9 +50,9 @@ module.exports =
         pvtConditionalLog(logText);
     },
 
-    randomNumberOfDigits: function (numDigits)
+    randomNumberWithNumberOfDigits: function (numDigits)
     {
-        var theRandom   = pvtRandomNumberOfDigits(numDigits);
+        var theRandom   = pvtRandomNumberWithNumberOfDigits(numDigits);
         return theRandom;
     }
 };
@@ -79,7 +79,7 @@ function pvtConditionalLog(logText)
 // randomNumberWithNumberOfDigits
 //
 ///////////////////////////////////////
-function pvtRandomNumberOfDigits(numDigits)
+function pvtRandomNumberWithNumberOfDigits(numDigits)
 {
     var num = "";
 
