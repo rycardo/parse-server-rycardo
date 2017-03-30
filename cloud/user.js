@@ -1,5 +1,5 @@
-//const CONST = require("./const.js");
-//require("./funcs.js");
+const CONST = require("./const.js");
+var funcs = require("./funcs.js");
 
 ///////////////////////////////////////
 //

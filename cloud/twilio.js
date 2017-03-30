@@ -1,3 +1,6 @@
+const CONST = require("./const.js");
+var funcs = require("./funcs.js");
+
 //var twilioAccountSid 	= process.env.TWILIO_ACCOUNT_SID;
 //var twilioAccountToken  = process.env.TWILIO_ACCOUNT_TOKEN;
 //var twilioSendingNumber	= process.env.TWILIO_PHONE_NUMBER;
