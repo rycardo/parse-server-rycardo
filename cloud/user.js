@@ -1199,17 +1199,17 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         success: function(results)
         {
             // do my shite
-            var count = results.length;
+            var count = results.length.toString();
 
-            funcs.conditionalLog("Found " + count.toString + " roles.");
+            funcs.conditionalLog("Found " + count + " roles.");
 
             var roleNames   = new array();
 
             funcs.conditionalLog("Created roleNames array");
 
-            for (var rIdx = 0; rIdx < count; rIdx = (rIdx + 1))
+            for ( rIdx = 0; rIdx < count; rIdx += 1)
             {
-                funcs.conditionalLog("Role index " + rIdx.toString + "");
+                funcs.conditionalLog("Role index " + rIdx.toString() + "");
 
                 var theRole     = results[rIdx];
                 var roleName    = theRole.get("name");
