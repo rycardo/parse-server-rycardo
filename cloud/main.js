@@ -1291,6 +1291,15 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         response.error(theResult);
     }
 
+    funcs.conditionalLog("Send Push 1");
+
+    var sendThePush = true;
+
+    if ( request.params.pseudoSend !== undefined )
+    {
+        sendThePush = false;
+    }
+
     funcs.conditionalLog("Send Push 2");
 
     var payload     = JSON.parse(request.params.payload);
@@ -1332,7 +1341,6 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
     funcs.conditionalLog("Send Push 4");
 
-/*
     var pushData =
     {
         "aps" :
@@ -1349,45 +1357,77 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         },
         "badge" : "Increment"
     };
-*/
+
     funcs.conditionalLog("Send Push 5");
+
     funcs.conditionalLog("Send Push 6");
 
-    Parse.Push.send(
+    if ( sendThePush === true )
     {
-        where: pushQuery,
-        data: payload
-    },
-    {
-        useMasterKey: true,
-        success: function (pushResult)
+        Parse.Push.send(
         {
-            funcs.conditionalLog("Send Push Success:");
-            funcs.conditionalLog(pushResult);
-
-            var theResult = pushResult["result"];
-
-            funcs.conditionalLog("Push Sent (" + theResult.toString() + ")");
-            var theResult =
-            {
-                success: true,
-                result: theResult
-            };
-            response.success(theResult);
+            where: installQuery,
+            data: payload
         },
-        error: function (pushError)
         {
-            funcs.conditionalLog("Send Push Error");
-            funcs.conditionalLog(pushError);
-
-            var theResult =
+            useMasterKey: true,
+            success: function (pushResult)
             {
-                success: false,
-                error: pushError
-            };
-            response.error(theResult);
-        }
-    });
+                funcs.conditionalLog("Send Push Success:");
+                funcs.conditionalLog(pushResult);
+
+                var pResult = pushResult["result"];
+
+                funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
+                var theResult =
+                {
+                    success: true,
+                    result: pResult
+                };
+                response.success(theResult);
+            },
+            error: function (pushError)
+            {
+                funcs.conditionalLog("Send Push Error");
+                funcs.conditionalLog(pushError);
+
+                var theResult =
+                {
+                    success: false,
+                    error: pushError
+                };
+                response.error(theResult);
+            }
+        });
+    }
+    else
+    {
+        // sendThePush is false
+        // parameter 'pseudoSend' was sent
+        // So instead, send the count of query results
+        installQuery.count(
+        {
+            useMasterKey: true,
+            success: function(countResult)
+            {
+                funcs.conditionalLog("Count Query Result: ");
+
+                var theResult =
+                {
+                    success: true,
+                    result: countResult,
+                    payload: pushData
+                };
+                response.success(theResult);
+            },
+            error: function(countError)
+            {
+                console.log("Count Query ERROR: ");
+                console.log(error);
+                response.error("unable to get count: " + error);
+            }
+        });
+    }
 });
 
 
