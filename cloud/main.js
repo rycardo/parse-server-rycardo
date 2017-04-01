@@ -1261,6 +1261,12 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 // payload              The entire Push Payload
 //
 //
+// OPTIONAL PARAMTERS:
+//
+// pseudoSend           Any Object Value, will run a query count instead of
+//                      sending the push.
+//
+//
 // RESULT:
 //
 // Successful:
@@ -1302,7 +1308,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
     funcs.conditionalLog("Send Push 2");
 
-    var payload     = JSON.parse(request.params.payload);
+    var payload     = request.params.payload;
     var userQuery   = null;
     var installQuery= null;
 
@@ -1341,7 +1347,8 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
     funcs.conditionalLog("Send Push 4");
 
-    var pushData =
+    var pushData = payload;
+    /*
     {
         "aps" :
         {
@@ -1357,8 +1364,13 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         },
         "badge" : "Increment"
     };
+    */
 
     funcs.conditionalLog("Send Push 5");
+
+    funcs.conditionalLog("Push Data (payload):");
+
+    funcs.conditionalLog(payload);
 
     funcs.conditionalLog("Send Push 6");
 
