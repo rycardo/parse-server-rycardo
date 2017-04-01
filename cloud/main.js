@@ -1310,18 +1310,19 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
     var payload     = request.params.payload;
     var userQuery   = null;
-    var installQuery= null;
+    var installQuery= new Parse.Query(Parse.Installation);
 
     if ( request.params.queryClass === "User" )
     {
-        userQuery   = new Parse.Query(Parse.User);
-        userQuery.startsWith("objectId", request.params.startObjectId);
-
-        installQuery= new Parse.Query(Parse.Installation);
+        //userQuery   = new Parse.Query(Parse.User);
+        //userQuery.startsWith("objectId", request.params.startObjectId);
+        //
+        //installQuery= new Parse.Query(Parse.Installation);
+        installQuery.startsWith("userId", request.params.startObjectId);
     }
     else if ( request.params.queryClass === "Installation" )
     {
-        installQuery= new Parse.Query(Parse.Installation);
+        //installQuery= new Parse.Query(Parse.Installation);
         installQuery.startsWith("objectId", request.params.startObjectId);
     }
     else
@@ -1337,13 +1338,13 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     funcs.conditionalLog("Send Push 3");
 
     //var pushQuery       = new Parse.Query(Parse.Installation);
-    if ( userQuery !== null )
-    {
-        installQuery.include("currentUser");
-        installQuery.matchesQuery("currentUser", userQuery);
-        //TODO: Remove Next Line When I know This Works
-        installQuery.equalTo("userId", "4QdhsyAE6f");
-    }
+    //if ( userQuery !== null )
+    //{
+    //    installQuery.include("currentUser");
+    //    installQuery.matchesQuery("currentUser", userQuery);
+    //    //TODO: Remove Next Line When I know This Works
+    //    installQuery.equalTo("userId", "4QdhsyAE6f");
+    //}
 
     funcs.conditionalLog("Send Push 4");
 
@@ -1364,6 +1365,23 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         },
         "badge" : "Increment"
     };
+
+
+    {
+        aps:
+        {
+            alert:
+            {
+                title: 'App Support Message',
+                subtitle: 'Response To Support Enquiry',
+                body: 'App Support has responded to your support enquiry by email.'
+            },
+            category: 'ca.4xq.Barbershop8.Notification-Interface-Message.notification',
+            sound: 'timbre.caf'
+        },
+        badge: 'Increment'
+    }
+
     */
 
     funcs.conditionalLog("Send Push 5");
