@@ -1280,7 +1280,7 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 {
-    funcs.conditionalLog("Send Push 1");
+    funcs.conditionalLog("sendPushNotificationWithParams started");
 
     if ( ( request.params.startObjectId.length === 0 ) ||
          ( request.params.queryClass.length    === 0 ) ||
@@ -1342,7 +1342,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         installQuery.include("currentUser");
         installQuery.matchesQuery("currentUser", userQuery);
         //TODO: Remove Next Line When I know This Works
-        installQuery.whereKey("userId", "4QdhsyAE6f");
+        installQuery.equalTo("userId", "4QdhsyAE6f");
     }
 
     funcs.conditionalLog("Send Push 4");
