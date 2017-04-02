@@ -1171,6 +1171,46 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
+    var Role        = Parse.Role.extend();
+    var roleQuery   = new Parse.Query(Role);
+    var namesResult = [];
+
+    roleQuery.each(function(role)
+    {
+        var rolesRelation = role.relation("roles");
+        return rolesRelation.query().find().then(
+        function(role)
+        {
+            // do stuff
+            // push the foos to an array to have them acessable later
+            namesResult.push(role.get("name"));
+            // just to return something successfully.
+            // The iteration will only continue if a promise is returned successfully
+            // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+
+            return Parse.Promise.as(role);
+        },
+        function( promiseError)
+        {
+            response.error(promiseError);
+        });
+    },
+    function( promiseError )
+    {
+        response.error(promiseError);
+    }).
+    then(function ()
+    {
+        response.json(namesResult);
+    },
+    function(responseError)
+    {
+      response.error(responseError);
+    });
+});
+/*
+Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
+{
     funcs.conditionalLog("In getNamesOfRolesCurrentUserBelongsTo");
 
     if ( request.user === undefined || request.user === null )
@@ -1236,6 +1276,8 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         });
     });
 });
+*/
+
 /*
 	// Using PFQuery
 	[roleQuery whereKey:@"users"
