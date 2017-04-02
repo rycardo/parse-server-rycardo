@@ -1185,7 +1185,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
     var roleNamesResult = new Array();
 
     var Role        = Parse.Role.extend();
-    var *roleQuery  = new Parse.Query(Role);
+    var roleQuery   = new Parse.Query(Role);
 
     roleQuery.includeKey("users");
 
