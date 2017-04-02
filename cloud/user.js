@@ -1180,54 +1180,97 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         return;
     }
 
-    var User        = Parse.Object.extend("_User");
-    var Role        = Parse.Object.extend("_Role");
+    funcs.conditionalLog("1");
 
-    var innerQuery  = new Parse.Query(User);
-    innerQuery.equalTo("objectId", request.user.objectId);
+    var roleNamesResult = new Array();
 
-    funcs.conditionalLog("created inner query for user id");
+    var Role        = Parse.Role.extend();
+    var *roleQuery  = new Parse.Query(Role);
 
-    var roleQuery   = new Parse.Query(Role);
-    roleQuery.matchesQuery("users", innerQuery);
+    roleQuery.includeKey("users");
 
-    funcs.conditionalLog("created role query");
+    funcs.conditionalLog("2");
 
-    roleQuery.find(
+    roleQuery.find().then(function(roleResults)
     {
-        useMasterKey: true,
-        success: function(results)
+        funcs.conditionalLog("3");
+
+        var cbCallBack      = _.after(roleResults.length, function()
         {
-            // do my shite
-            var count = results.length.toString();
+            // Call Back Data
+            funcs.conditionalLog("4");
 
-            funcs.conditionalLog("Found " + count + " roles.");
+            return roleNamesResult;
+        });
 
-            var roleNames   = new array();
+        _.each(roleResults, function(role)
+        {
+            // Get the relations
+            funcs.conditionalLog("5");
 
-            funcs.conditionalLog("Created roleNames array");
-
-            for ( rIdx = 0; rIdx < count; rIdx += 1)
+            roleNamesResult.push(
             {
-                funcs.conditionalLog("Role index " + rIdx.toString() + "");
+                role.get("name")
+            });
 
-                var theRole     = results[rIdx];
-                var roleName    = theRole.get("name");
+            var innerRoles    = role.relation("roles");
 
-                funcs.conditionalLog("Role [" + roleName  + "]");
+            funcs.conditionalLog("6");
 
-                roleNames.push(roleName);
-            }
+            innerRoles.query().find().then(function(innerRoles)
+            {
+                funcs.conditionalLog("7");
 
-            funcs.conditionalLog("Sending " + roleNames.length.toString + " role names");
+                roleNamesResult.push(
+                {
+                    role.get("name")
+                });
 
-            result.success(roleNames);
-        },
-        error: function(queryError)
-        {
-            funcs.conditionalLog("Query Error:");
-            funcs.conditionalLog(queryError);
-            response.error(queryError);
-        }
+                funcs.conditionalLog("8");
+
+                cbCallBack();
+
+                funcs.conditionalLog("9");
+
+            });
+        });
     });
 });
+/*
+	// Using PFQuery
+	[roleQuery whereKey:@"users"
+				equalTo:[PFUser objectWithoutDataWithObjectId:PFUser.currentUser.objectId]];
+	[roleQuery findObjectsInBackgroundWithBlock:^(NSArray<PFRole *>* _Nullable objects,
+												  NSError * _Nullable error)
+	{
+		if ( error )
+		{
+			XQLog(@"Error with my query:\n%@\n%@", error.description, error.userInfo);
+		}
+
+		for (PFObject *role in objects)
+		{
+			[role fetchIfNeeded];
+			NSString *roleName	= role[@"name"];
+			XQLog(@"Main Role: %@", roleName);
+			[belongsTo addObject:roleName];
+
+			PFRelation *rolesRelation	= role[@"roles"];
+			PFQuery *innerQuery = [rolesRelation query];
+
+			[innerQuery findObjectsInBackgroundWithBlock:^(NSArray<PFRole *> * _Nullable objects,
+														   NSError * _Nullable error)
+			{
+				for (PFRole *inRole in objects)
+				{
+					[inRole fetchIfNeeded];
+					NSString *inRoleName	= inRole[@"name"];
+					XQLog(@"\tInner Role: %@", inRoleName);
+					[belongsTo addObject:inRoleName];
+				}
+			}];
+		}
+	}];
+
+});
+*/
