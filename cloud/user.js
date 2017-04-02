@@ -1171,12 +1171,15 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
-    var Role        = Parse.Role.extend();
+    var Role        = Parse.Object.extend(Parse.Role);
     var roleQuery   = new Parse.Query(Role);
     var namesResult = [];
 
     roleQuery.each(function(role)
     {
+        // Base Role
+        namesResult.push(role.get("name"));
+
         var rolesRelation = role.relation("roles");
         return rolesRelation.query().find().then(
         function(role)
