@@ -1171,44 +1171,81 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
+    funcs.conditionalLog("getNamesOfRolesCurrentUserBelongsTo started");
+
     var Role        = Parse.Object.extend(Parse.Role);
     var roleQuery   = new Parse.Query(Role);
     var namesResult = [];
 
+    funcs.conditionalLog("1");
+
     roleQuery.each(function(role)
     {
         // Base Role
-        namesResult.push(role.get("name"));
+        funcs.conditionalLog("2");
+
+        var theName = role.get("name");
+
+        namesResult.push(theName);
+
+        funcs.conditionalLog("3 pushed " + theName);
 
         var rolesRelation = role.relation("roles");
+
+        funcs.conditionalLog("4 have rolesRelation");
+
         return rolesRelation.query().find().then(
         function(role)
         {
+            funcs.conditionalLog("5 in query find function role");
+
             // do stuff
             // push the foos to an array to have them acessable later
+            var theName = role.get("name");
+
+            funcs.conditionalLog("6 have inner role named " + theName);
+
             namesResult.push(role.get("name"));
+
+            funcs.conditionalLog("7 pushed the name");
+
             // just to return something successfully.
             // The iteration will only continue if a promise is returned successfully
             // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+
+            funcs.conditionalLog("8 returning the promise as role");
 
             return Parse.Promise.as(role);
         },
         function( promiseError)
         {
+            funcs.conditionalLog("9 Promise Error:");
+            console.log(promiseError);
+
             response.error(promiseError);
         });
     },
     function( promiseError )
     {
+        funcs.conditionalLog("10 Promise Error:");
+        console.log(promiseError);
+
         response.error(promiseError);
     }).
     then(function ()
     {
-        response.json(namesResult);
+        funcs.conditionalLog("11 Success ?");
+        funcs.conditionalLog(namesResult.length());
+        funcs.conditionalLog(namesResult);
+
+        response.success(namesResult);
     },
     function(responseError)
     {
-      response.error(responseError);
+        funcs.conditionalLog("12 Response Error");
+        funcs.conditionalLog(responseError);
+
+        response.error(responseError);
     });
 });
 /*
