@@ -1195,13 +1195,17 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         funcs.conditionalLog("4 have rolesRelation");
 
         return rolesRelation.query().find().then(
-        function(role)
+        function(rRole)
         {
             funcs.conditionalLog("5 in query find function role");
 
+            var theCount = rRole.count.toString();
+
+            funcs.conditionalLog("5.5 count: " + theCount);
+
             // do stuff
             // push the foos to an array to have them acessable later
-            var theName = role.get("name");
+            var theName = rRole.get("name");
 
             funcs.conditionalLog("6 have inner role named " + theName);
 
