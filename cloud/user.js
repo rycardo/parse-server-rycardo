@@ -1176,6 +1176,12 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
     var Role        = Parse.Object.extend(Parse.Role);
     var roleQuery   = new Parse.Query(Role);
+
+    var innerQuery  = new Parse.Query(Parse.User);
+    innerQuery.equalTo("objectId", request.user.objectId);
+
+    roleQuery.matchesQuery("users", innerQuery);
+
     var namesResult = [];
 
     funcs.conditionalLog("1");
@@ -1185,7 +1191,9 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         // Base Role
         funcs.conditionalLog("2");
 
-        var theName = roleObject.get("name");
+        var theName     = roleObject.get("name");
+
+        var theUsers    = roleObject.get("users");
 
         namesResult.push(theName);
 
@@ -1202,7 +1210,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
                 // push the foos to an array to have them acessable later
                 funcs.conditionalLog("4.1 in roleList function");
 
-                var rlCount = roleList.length.toString;
+                var rlCount = roleList.length.toString();
 
                 funcs.conditionalLog("4.2 there are " + rlCount + " in the roleList");
 
@@ -1213,7 +1221,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
                 else
                 {
                     funcs.conditionalLog("4.4 there is at least one roleList item");
-                    funcs.conditionalLot("forEaching");
+                    funcs.conditionalLog("forEaching");
 
                     roleList.forEach(function (relRole)
                     {
@@ -1255,11 +1263,11 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
     }).
     then(function ()
     {
-        funcs.conditionalLog("11 Success ?");
+        funcs.conditionalLog("11");
         funcs.conditionalLog(namesResult.length());
         funcs.conditionalLog(namesResult);
 
-        response.success(namesResult);
+        return; //response.success(namesResult);
     },
     function(responseError)
     {
