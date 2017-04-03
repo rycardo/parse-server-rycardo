@@ -151,8 +151,10 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                     // No Verification Code
                     try
                     {
+                        var userVerify  = CONST.ACTION_USER_VERIFY.toString();
+
                         funcs.conditionalLog("Verify User:");
-                        funcs.conditionalLog(CONST.ACTION_USER_VERIFY.toString);
+                        funcs.conditionalLog(userVerify);
                         theResult   = {
                                     action : ( CONST.ACTION_USER_VERIFY ),
                                     description: "Verify User"
@@ -209,7 +211,10 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
         success: function(usersResults)
         {
             funcs.conditionalLog("or S 1");
-            funcs.conditionalLog(usersResults.length.toString + " users found");
+
+            var userCountString = usersResults.length.toString();
+
+            funcs.conditionalLog(userCountString + " users found");
 
             if ( usersResults.length === 0 )
             {

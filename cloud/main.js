@@ -109,15 +109,17 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    funcs.conditionalLog("server status check by app");
+    funcs.conditionalLog("status - check by app");
 
     var theRandom       = funcs.randomNumberWithNumberOfDigits(3);
     var randomText      = theRandom.toString();
-    funcs.conditionalLog("The random number is " + randomText + "");
 
-    useMasterKey        = true;
+    funcs.conditionalLog("status - The random number is " + randomText + "");
+
     var theRelease      = null;
     var hrv             = process.env.HEROKU_RELEASE_VERSION;
+
+    funcs.conditionalLog("status - release " + hrv);
 
     if ( ( hrv === undefined ) || ( hrv === null ) )
     {
@@ -128,6 +130,8 @@ Parse.Cloud.define("status", function(request, response)
         theRelease      = "XQ" + hrv.toUpperCase() + "4" + " " + theRandom.toString();
     }
     var theNickname     = process.env.SERVER_NICKNAME;
+
+    funcs.conditionalLog("status - nickname " + theNickname);
 
     var theResponse     = "Up, " + theNickname + ", Valid, " + theRelease;
 
@@ -278,8 +282,9 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
                 funcs.conditionalLog("No records found to convert");
                 var theResponse =
                     {
-                        'description' : 'No records found to convert'
+                        description : "No records found to convert"
                     };
+                // The above was 'description' : 'No r....ert'
                 response.success(theResponse);
             }
             else
@@ -323,8 +328,8 @@ Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
                                              lastName : fuUserLastName,
                                              staffId : fuUserStaffId,
                                              username : fuTheUsername,
-                                             confirmation : random,
-                                             transaction : userServiceToken,
+                                             confirmation : 0,
+                                             transaction : 0,
                                              description : "confirmed" };
 
                         response.success(userResponse);
@@ -630,7 +635,7 @@ Parse.Cloud.define("createMessageForUser", function(request, response)
                     {
                         console.log("save error");
                         console.log(saveError);
-                        response.error(setError);
+                        response.error(saveError);
                     }
                 });
             }
@@ -1342,8 +1347,6 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     //{
     //    installQuery.include("currentUser");
     //    installQuery.matchesQuery("currentUser", userQuery);
-    //    //TODO: Remove Next Line When I know This Works
-    //    installQuery.equalTo("userId", "4QdhsyAE6f");
     //}
 
     funcs.conditionalLog("Send Push 4");
@@ -1453,8 +1456,8 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
             error: function(countError)
             {
                 console.log("Count Query ERROR: ");
-                console.log(error);
-                response.error("unable to get count: " + error);
+                console.log(countError);
+                response.error("unable to get count: " + countError);
             }
         });
     }
@@ -1517,12 +1520,13 @@ Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", func
                     funcs.conditionalLog("I have a user");
                     var qUser        = results[0];
 
-                    funcs.conditionalLog(user.username);
+                    funcs.conditionalLog(qUser.username);
 
                     var password    = qUser.get("password");
+                    var passLength  = password.length.toString();
 
-                    funcs.conditionalLog("pass length is ");
-                    funcs.conditionalLog(password.length.toString);
+                    funcs.conditionalLog("pass length is " + passLength);
+                    //funcs.conditionalLog(password.length.toString);
 
                     if ( password.length > 0 )
                     {
