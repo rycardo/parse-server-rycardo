@@ -1232,6 +1232,87 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
                     return Parse.Promise.as(relationQueryObject);
                 }
+            ).then(
+            function()
+            {
+                funcs.conditionalLog("5 In Success then block, returning namesResult:");
+                funcs.conditionalLog(namesResult);
+
+                response.success(namesResult);
+            },
+            function(thenError)
+            {
+                funcs.conditionalLog("6 In error then block, returning thenError:");
+                funcs.conditionalLog(thenError);
+
+                response.error(thenError);
+            });
+
+            funcs.condtionalLog("6 return roleQueryObject");
+            return Parse.Promise.as(roleQueryObject);
+        }
+    );
+});
+
+/*
+Parse.Cloud.define("RETURNSEMPTYALWAYSgetNamesOfRolesCurrentUserBelongsTo", function(request, response)
+{
+    funcs.conditionalLog("getNamesOfRolesCurrentUserBelongsTo started");
+    //response.error("The method is not functional yet, needs to be debugged.");
+
+    var Role        = Parse.Object.extend(Parse.Role);
+    var roleQuery   = new Parse.Query(Role);
+
+    var innerQuery  = new Parse.Query(Parse.User);
+    innerQuery.equalTo("objectId", request.user.objectId);
+
+    roleQuery.matchesQuery("users", innerQuery);
+
+    var namesResult = [];
+
+    funcs.conditionalLog("1");
+
+    roleQuery.each(
+        function(roleQueryObject)
+        {
+            // Base Role
+            funcs.conditionalLog("2");
+
+            var theName     = roleQueryObject.get("name");
+
+            namesResult.push(theName);
+
+            funcs.conditionalLog("3 pushed " + theName);
+
+            var roleRelation = roleQueryObject.relation("roles");
+
+            funcs.conditionalLog("4 have roleRelation");
+
+            var relationQuery   = roleRelation.query;
+
+            funcs.conditionalLog("Created relationQuery from roleRelation");
+
+            relationQuery.each(
+                function(relationQueryObject)
+                {
+                    // do stuff
+                    // push the foos to an array to have them acessable later
+                    funcs.conditionalLog("4.1 in relationQueryObject function");
+
+                    var rqoObjectId  = relationQueryObject.get("id");
+
+                    funcs.conditionalLog("4.2 rqoObjectId is " + rqoObjectId);
+
+                    var rqoName      = relationQueryObject.get("name");
+
+                    funcs.conditionalLog("4.3 rqoName is " + rqoName);
+
+                    namesResult.push(rqoName);
+
+                    funcs.conditionalLog("4.4 pushed name to namesResult");
+
+                    return Parse.Promise.as(relationQueryObject);
+                }
             );
 
             funcs.conditionalLog("Returning roleQueryObject");
@@ -1258,6 +1339,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         }
     );
 });
+*/
 /*
 Parse.Cloud.define("getNamesOfRolesForUser", function(request, response)
 {
