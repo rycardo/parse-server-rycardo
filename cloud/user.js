@@ -1253,7 +1253,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         }
     );
 });
-
+/*
 Parse.Cloud.define("getNamesOfRolesForUser", function(request, response)
 {
     funcs.conditionalLog("In getNamesOfRolesForUser");
@@ -1325,7 +1325,7 @@ Parse.Cloud.define("getNamesOfRolesForUser", function(request, response)
         });
     });
 });
-
+*/
 
 /*
 	// Using PFQuery
