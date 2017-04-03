@@ -1196,59 +1196,67 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         funcs.conditionalLog("4 have relatedRoles");
 
         relatedRole.query().find().then(
-        function(roleList)
-        {
-            // do stuff
-            // push the foos to an array to have them acessable later
+            function(roleList)
+            {
+                // do stuff
+                // push the foos to an array to have them acessable later
+                funcs.conditionalLog("4.1 in roleList function");
 
-            if ( roleList.length == 0 )
-            {
-                funcs.conditionalLog("no related roles");
-            }
-            else
-            {
-                roleList.forEach(function (relRole)
+                var rlCount = roleList.length.toString;
+
+                funcs.conditionalLog("4.2 there are " + rlCount + " in the roleList");
+
+                if ( roleList.length == 0 )
                 {
-                    funcs.conditionalLog("5 in forEach function relRole,");
-                    funcs.conditionalLog("with relRole:");
-                    funcs.conditionalLog(relRole);
+                    funcs.conditionalLog("4.3 no related roles");
+                }
+                else
+                {
+                    funcs.conditionalLog("4.4 there is at least one roleList item");
+                    funcs.conditionalLot("forEaching");
 
-                    funcs.conditionalLog("5.5");
+                    roleList.forEach(function (relRole)
+                    {
+                        funcs.conditionalLog("5 in forEach function relRole,");
+                        funcs.conditionalLog("with relRole:");
+                        funcs.conditionalLog(relRole);
 
-                    var rrObjectId  = relRole.objectId;
+                        funcs.conditionalLog("5.5");
 
-                    funcs.conditionalLog("5.6 " + rrObjectId);
+                        var rrObjectId  = relRole.objectId;
 
-                    var rrName      = relRole.get("name");
+                        funcs.conditionalLog("5.6 " + rrObjectId);
 
-                    funcs.conditionalLog("5.7 " + rrName);
+                        var rrName      = relRole.get("name");
 
-                    namesResult.push(rrName);
+                        funcs.conditionalLog("5.7 " + rrName);
 
-                     funcs.conditionalLog("7 pushed the name");
+                        namesResult.push(rrName);
 
-                    // just to return something successfully.
-                    // The iteration will only continue
-                    // if a promise is returned successfully
-                    // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+                         funcs.conditionalLog("7 pushed the name");
 
-                    funcs.conditionalLog("8 returning the promise as role");
-                });
-            }
-            return Parse.Promise.as(role);
-        },
-        function( promiseError)
-        {
-            funcs.conditionalLog("9 Promise Error:");
-            console.log(promiseError);
+                        // just to return something successfully.
+                        // The iteration will only continue
+                        // if a promise is returned successfully
+                        // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
 
-            response.error(promiseError);
-        });
+                        funcs.conditionalLog("8 returning the promise as role");
+                    });
+                }
+                return Parse.Promise.as(roleList);
+            },
+            function( promiseError)
+            {
+                funcs.conditionalLog("9 Promise Error:");
+                console.log(promiseError);
+
+                response.error(promiseError);
+            });
     },
-    function( promiseError )
+    function( queryError )
     {
-        funcs.conditionalLog("10 Promise Error:");
-        console.log(promiseError);
+        funcs.conditionalLog("10 Query Error:");
+        console.log(queryError);
 
         response.error(promiseError);
     }).
