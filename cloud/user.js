@@ -1191,26 +1191,27 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
         funcs.conditionalLog("3 pushed " + theName);
 
-        var rolesRelation = role.relation("roles");
+        var relatedRole = role.relation("roles");
 
-        funcs.conditionalLog("4 have rolesRelation");
+        funcs.conditionalLog("4 have relatedRoles");
 
-        return rolesRelation.query().find().then(
-        function(rRole)
+        return relatedRole.query().find().then(
+        function(relatedRole)
         {
-            funcs.conditionalLog("5 in query find function role");
-            funcs.conditionalLog("rRole:");
-            funcs.conditionalLog(rRole);
+            funcs.conditionalLog("5 in query find function relatedRole,");
+            funcs.conditionalLog("with relatedRole:");
+            funcs.conditionalLog(relatedRole);
 
             funcs.conditionalLog("5.5");
 
             // do stuff
             // push the foos to an array to have them acessable later
-            var theName = rRole.get("name");
+            var rrObjectId  = relatedRole.objectId;
+            var rrName      = relatedRole.get("name");
 
-            funcs.conditionalLog("6 have inner role named " + theName);
+            funcs.conditionalLog("6 have related role named " + rrName);
 
-            namesResult.push(role.get("name"));
+            namesResult.push(rrName);
 
             funcs.conditionalLog("7 pushed the name");
 
