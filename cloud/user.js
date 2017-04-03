@@ -1186,102 +1186,77 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
     funcs.conditionalLog("1");
 
-    roleQuery.each(function(roleObject)
-    {
-        // Base Role
-        funcs.conditionalLog("2");
+    roleQuery.each(
+        function(roleQueryObject)
+        {
+            // Base Role
+            funcs.conditionalLog("2");
 
-        var theName     = roleObject.get("name");
+            var theName     = roleQueryObject.get("name");
 
-        var theUsers    = roleObject.get("users");
+            namesResult.push(theName);
 
-        namesResult.push(theName);
+            funcs.conditionalLog("3 pushed " + theName);
 
-        funcs.conditionalLog("3 pushed " + theName);
+            var roleRelation = roleQueryObject.relation("roles");
 
-        var roleRelation = roleObject.relation("roles");
+            funcs.conditionalLog("4 have roleRelation");
 
-        funcs.conditionalLog("4 have relatedRoles");
+            var relationQuery   = roleRelation.query;
 
-        roleRelation.query().find({useMasterKey:true}).then(
-            function(roleList)
-            {
-                // do stuff
-                // push the foos to an array to have them acessable later
-                funcs.conditionalLog("4.1 in roleList function");
+            funcs.conditionalLog("Created relationQuery from roleRelation");
 
-                var rlCount = roleList.length.toString();
-
-                funcs.conditionalLog("4.2 there are " + rlCount + " in the roleList");
-
-                if ( roleList.length === 0 )
+            relationQuery.each(
+                function(relationQueryObject)
                 {
-                    funcs.conditionalLog("4.3 no related roles");
+                    // do stuff
+                    // push the foos to an array to have them acessable later
+                    funcs.conditionalLog("4.1 in relationQueryObject function");
+
+                    var rqoObjectId  = relationQueryObject.get("id");
+
+                    funcs.conditionalLog("4.2 rqoObjectId is " + rqoObjectId);
+
+                    var rqoName      = relationQueryObject.get("name");
+
+                    funcs.conditionalLog("4.3 rqoName is " + rqoName);
+
+                    namesResult.push(rqoName);
+
+                    funcs.conditionalLog("4.4 pushed name to namesResult");
+
+                    return Parse.Promise.as(relationQueryObject);
                 }
-                else
-                {
-                    funcs.conditionalLog("4.4 there is at least one roleList item");
-                    funcs.conditionalLog("forEaching");
+            );
 
-                    roleList.forEach(function (relRole)
-                    {
-                        funcs.conditionalLog("5 in forEach function relRole,");
-                        funcs.conditionalLog("with relRole:");
-                        funcs.conditionalLog(relRole);
-
-                        funcs.conditionalLog("5.5");
-
-                        var rrObjectId  = relRole.objectId;
-
-                        funcs.conditionalLog("5.6 " + rrObjectId);
-
-                        var rrName      = relRole.get("name");
-
-                        funcs.conditionalLog("5.7 " + rrName);
-
-                        namesResult.push(rrName);
-
-                         funcs.conditionalLog("7 pushed the name");
-
+            funcs.conditionalLog("Returning roleQueryObject");
                         // just to return something successfully.
                         // The iteration will only continue
                         // if a promise is returned successfully
                         // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+            return Parse.Promise.as(roleQueryObject);
+        }
+    ).then(
+        function()
+        {
+            funcs.conditionalLog("In Success then block, returning namesResult:");
+            funcs.conditionalLog(namesResult);
 
-                        funcs.conditionalLog("8 returning the promise as role");
-                    });
-                }
-                return Parse.Promise.as(roleList);
-            },
-            function( promiseError)
-            {
-                funcs.conditionalLog("9 Promise Error:");
-                console.log(promiseError);
+            response.success(namesResult);
+        },
+        function(thenError)
+        {
+            funcs.conditionalLog("In error then block, returning thenError:");
+            funcs.conditionalLog(thenError);
 
-                response.error(promiseError);
-            });
-    }).
-    then(function ()
-    {
-        funcs.conditionalLog("11");
-        funcs.conditionalLog(namesResult.length());
-        funcs.conditionalLog(namesResult);
-
-        response.success(namesResult);
-    },
-    function(responseError)
-    {
-        funcs.conditionalLog("12 Response Error");
-        funcs.conditionalLog(responseError);
-
-        response.error(responseError);
-    });
-
+            response.error(thenError);
+        }
+    );
 });
-/*
-Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
+
+Parse.Cloud.define("getNamesOfRolesForUser", function(request, response)
 {
-    funcs.conditionalLog("In getNamesOfRolesCurrentUserBelongsTo");
+    funcs.conditionalLog("In getNamesOfRolesForUser");
 
     if ( request.user === undefined || request.user === null )
     {
@@ -1294,14 +1269,18 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
     var roleNamesResult = new Array();
 
-    var Role        = Parse.Role.extend();
+    var Role        = Parse.Object.extend(Parse.Role);
     var roleQuery   = new Parse.Query(Role);
-
     roleQuery.includeKey("users");
 
     funcs.conditionalLog("2");
 
-    roleQuery.find().then(function(roleResults)
+    var innerQuery  = new Parse.Query(Parse.User);
+    innerQuery.equalTo("id", request.user.objectId);
+
+    roleQuery.matchesQuery("users", innerQuery);
+
+    roleQuery.find().then(function(roleQueryResults)
     {
         funcs.conditionalLog("3");
 
@@ -1310,7 +1289,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
             // Call Back Data
             funcs.conditionalLog("4");
 
-            return roleNamesResult;
+            response.success(roleNamesResult);
         });
 
         _.each(roleResults, function(role)
@@ -1346,7 +1325,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         });
     });
 });
-*/
+
 
 /*
 	// Using PFQuery
