@@ -1267,7 +1267,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         funcs.conditionalLog(namesResult.length());
         funcs.conditionalLog(namesResult);
 
-        return; //response.success(namesResult);
+        response.success(namesResult);
     },
     function(responseError)
     {
