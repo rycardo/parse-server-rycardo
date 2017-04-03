@@ -1172,6 +1172,7 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
     funcs.conditionalLog("getNamesOfRolesCurrentUserBelongsTo started");
+    //response.error("The method is not functional yet, needs to be debugged.");
 
     var Role        = Parse.Object.extend(Parse.Role);
     var roleQuery   = new Parse.Query(Role);
@@ -1198,10 +1199,10 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         function(rRole)
         {
             funcs.conditionalLog("5 in query find function role");
+            funcs.conditionalLog("rRole:");
+            funcs.conditionalLog(rRole);
 
-            var theCount = rRole.count.toString();
-
-            funcs.conditionalLog("5.5 count: " + theCount);
+            funcs.conditionalLog("5.5");
 
             // do stuff
             // push the foos to an array to have them acessable later
@@ -1251,6 +1252,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
         response.error(responseError);
     });
+
 });
 /*
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
