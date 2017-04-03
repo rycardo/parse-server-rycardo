@@ -1180,47 +1180,61 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
     funcs.conditionalLog("1");
 
-    roleQuery.each(function(role)
+    roleQuery.each(function(roleObject)
     {
         // Base Role
         funcs.conditionalLog("2");
 
-        var theName = role.get("name");
+        var theName = roleObject.get("name");
 
         namesResult.push(theName);
 
         funcs.conditionalLog("3 pushed " + theName);
 
-        var relatedRole = role.relation("roles");
+        var roleRelation = roleObject.relation("roles");
 
         funcs.conditionalLog("4 have relatedRoles");
 
-        return relatedRole.query().find().then(
-        function(relatedRole)
+        relatedRole.query().find().then(
+        function(roleList)
         {
-            funcs.conditionalLog("5 in query find function relatedRole,");
-            funcs.conditionalLog("with relatedRole:");
-            funcs.conditionalLog(relatedRole);
-
-            funcs.conditionalLog("5.5");
-
             // do stuff
             // push the foos to an array to have them acessable later
-            var rrObjectId  = relatedRole.objectId;
-            var rrName      = relatedRole.get("name");
 
-            funcs.conditionalLog("6 have related role named " + rrName);
+            if ( roleList.length == 0 )
+            {
+                funcs.conditionalLog("no related roles");
+            }
+            else
+            {
+                roleList.forEach(function (relRole)
+                {
+                    funcs.conditionalLog("5 in forEach function relRole,");
+                    funcs.conditionalLog("with relRole:");
+                    funcs.conditionalLog(relRole);
 
-            namesResult.push(rrName);
+                    funcs.conditionalLog("5.5");
 
-            funcs.conditionalLog("7 pushed the name");
+                    var rrObjectId  = relRole.objectId;
 
-            // just to return something successfully.
-            // The iteration will only continue if a promise is returned successfully
-            // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+                    funcs.conditionalLog("5.6 " + rrObjectId);
 
-            funcs.conditionalLog("8 returning the promise as role");
+                    var rrName      = relRole.get("name");
 
+                    funcs.conditionalLog("5.7 " + rrName);
+
+                    namesResult.push(rrName);
+
+                     funcs.conditionalLog("7 pushed the name");
+
+                    // just to return something successfully.
+                    // The iteration will only continue
+                    // if a promise is returned successfully
+                    // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+
+                    funcs.conditionalLog("8 returning the promise as role");
+                });
+            }
             return Parse.Promise.as(role);
         },
         function( promiseError)
