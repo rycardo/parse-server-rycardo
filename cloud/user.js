@@ -1195,7 +1195,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
         funcs.conditionalLog("4 have relatedRoles");
 
-        relatedRole.query().find().then(
+        relatedRole.query().find({useMasterKey:true}).then(
             function(roleList)
             {
                 // do stuff
@@ -1252,13 +1252,6 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
                 response.error(promiseError);
             });
-    },
-    function( queryError )
-    {
-        funcs.conditionalLog("10 Query Error:");
-        console.log(queryError);
-
-        response.error(promiseError);
     }).
     then(function ()
     {
