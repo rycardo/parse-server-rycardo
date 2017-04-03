@@ -1193,31 +1193,40 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
         userMasterKey:  true,
         success: function(results)
         {
-            funcs.conditionalLog("2");
+            funcs.conditionalLog("2 success getting results");
 
             var namesResult = [];
 
             if ( results.count > 0 )
             {
-                funcs.conditionalLog("3");
+                funcs.conditionalLog("3 results has more than 0");
 
                 for ( rIdx = 0; rIdx < results.count; rIdx += 1 )
                 {
-                    funcs.conditionalLog("4");
+                    var theTemp = rIdx.toString();
+
+                    funcs.conditionalLog("4 is index " + theTemp);
 
                     var theRole = results[rIdx];
 
-                    var theName     = theRole.get("name");
+                    funcs.conditionalLog("4.1 have theRole");
 
-                    funcs.conditionalLog("5");
+                    var theName = theRole.get("name");
+
+                    theTemp     = namesResult.count.toString();
+
+                    funcs.conditionalLog("5 about to push, there are " + theTemp);
 
                     namesResult.push(theName);
 
-                    funcs.conditionalLog("6");
+                    theTemp     = namesResult.count.toString();
+
+                    funcs.conditionalLog("6 just pushed, now there are " + theTemp);
                 }
             }
 
-            funcs.conditionalLog("7");
+            funcs.conditionalLog("7 finished with results, namesResult:");
+            funcs.conditionalLog(namesResult);
 
             response.success(namesResult);
         },
@@ -1231,7 +1240,7 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
     });
 });
 
-
+/*
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
     funcs.conditionalLog("getNamesOfRolesCurrentUserBelongsTo started");
@@ -1316,6 +1325,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
         }
     );
 });
+*/
 
 /*
 Parse.Cloud.define("getNamesOfRolesForUser", function(request, response)
