@@ -1195,7 +1195,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
         funcs.conditionalLog("4 have relatedRoles");
 
-        relatedRole.query().find({useMasterKey:true}).then(
+        roleRelation.query().find({useMasterKey:true}).then(
             function(roleList)
             {
                 // do stuff
@@ -1206,7 +1206,7 @@ Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, resp
 
                 funcs.conditionalLog("4.2 there are " + rlCount + " in the roleList");
 
-                if ( roleList.length == 0 )
+                if ( roleList.length === 0 )
                 {
                     funcs.conditionalLog("4.3 no related roles");
                 }
