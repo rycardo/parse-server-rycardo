@@ -1178,7 +1178,7 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
 {
     funcs.conditionalLog("getRoleNamesOfCurrentUser");
 
-    var userId      = request.user.objectId;
+    var userId      = request.user.id;
 
     funcs.conditionalLog("0 User Id is " + userId);
 

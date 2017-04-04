@@ -1314,20 +1314,26 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     funcs.conditionalLog("Send Push 2");
 
     var payload     = request.params.payload;
+
+    var User        = Parse.Object.extend(Parse.User);
+    var Installation= Parse.Object.extend(Parse.Installation);
+
     var userQuery   = null;
-    var installQuery= new Parse.Query(Parse.Installation);
+    var installQuery= null;
 
     if ( request.params.queryClass === "User" )
     {
-        //userQuery   = new Parse.Query(Parse.User);
-        //userQuery.startsWith("objectId", request.params.startObjectId);
-        //
-        //installQuery= new Parse.Query(Parse.Installation);
-        installQuery.startsWith("userId", request.params.startObjectId);
+        userQuery   = new Parse.Query(User);
+        userQuery.startsWith("objectId", request.params.startObjectId);
+
+        installQuery= new Parse.Query(Installation);
+        installQuery.matchesQuery("currentUser", userQuery);
+        //TODO: Remove next line when I know this works
+        installQuery.equalTo("userId","4QdhsyAE6f");
     }
     else if ( request.params.queryClass === "Installation" )
     {
-        //installQuery= new Parse.Query(Parse.Installation);
+        installQuery= new Parse.Query(Installation);
         installQuery.startsWith("objectId", request.params.startObjectId);
     }
     else
