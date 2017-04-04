@@ -1180,7 +1180,7 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
 
     var userId      = request.user.objectId;
 
-    conditionalLog("0 User Id is " + userId);
+    funcs.conditionalLog("0 User Id is " + userId);
 
     var Role        = Parse.Object.extend(Parse.Role);
     var roleQuery   = new Parse.Query(Role);
