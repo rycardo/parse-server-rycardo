@@ -1224,7 +1224,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
                     funcs.conditionalLog("the save wouldn't success, because the user");
                     funcs.conditionalLog("wasn't added, therefor the role not changed.");
                     funcs.conditionalLog("check this.");
-                    resonse.error(saveError);
+                    response.error(saveError);
                 }
             });
         },
