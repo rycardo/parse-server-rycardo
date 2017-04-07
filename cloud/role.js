@@ -51,7 +51,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 {
-    funcs.conditionalLog("addCurrentUserToRoleWithName");
+    funcs.conditionalLog("addCurrentUserToRoleWithName started");
 
     if ( ( request.user === undefined ) || ( request.user === null ) )
     {
@@ -59,8 +59,12 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
         return;
     }
 
+    funcs.conditionalLog("Getting params.");
+
     var roleName    = request.params.roleName;
-    var userId      = request.user.id;
+    var currentUser = request.user;
+
+    var userId      = currentUser.id;
 
     funcs.conditionalLog("0 userId: " + userId + ", roleName: " + roleName);
 
