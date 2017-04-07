@@ -114,7 +114,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, respons
 {
     funcs.conditionalLog("addCurrentUserToRoleWithRoleName");
 
-    response.error("Use 'addCurrentUserToRoleWithName' Instead.");
+    response.error("Depreciated, use 'addCurrentUserToRoleWithName' Instead.");
 /*
     var roleName        = request.params.roleName;
     var currentUser     = request.user;
