@@ -1,3 +1,6 @@
+const CONST = require("./const.js");
+var funcs = require("./funcs.js");
+
 ///////////////////////////////////////
 //
 // ROLES AND PERMISSIONS
