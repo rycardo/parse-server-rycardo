@@ -71,9 +71,13 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 
     funcs.conditionalLog("0 userId: " + userId + ", roleName: " + roleName);
 
-    var roleQuery   = new Parse.Query(Parse.Role);
+    var Role        = Parse.Object.extend(Parse.Role);
+    var roleQuery   = new Parse.Query(Role);
+
+    funcs.conditionalLog("0.5");
 
     roleQuery.equalTo("name", roleName);
+    roleQuery.include("users");
 
     funcs.conditionalLog("1 about to find");
 
@@ -84,25 +88,58 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
         {
             funcs.conditionalLog("2 success getting role result");
 
-            roleResult.addUnique("users",request.user);
-            roleResult.save(null,
+            var usersRelation = roleResult.get("users");
+
+            funcs.conditionalLog("2.1");
+
+            var relationQuery = usersRelation.query;
+            relationQuery.contains("users",request.user);
+
+            funcs.conditionalLog("2.2");
+
+            relationQuery.find(
             {
-                userMasterKey: true,
-                success: function(saveObject)
+                success: function(relationResults)
                 {
-                    // The save was successful.
-                    funcs.conditionalLog("3 success saving role");
-                    response.success(true);
+
+                    funcs.conditionalLog("2.3");
+
+                    if ( relationResults.length === 0 )
+                    {
+                        usersRelation.push(request.user);
+                        roleResult.save(null,
+                        {
+                            userMasterKey: true,
+                            success: function(saveObject)
+                            {
+                                // The save was successful.
+                                funcs.conditionalLog("3 success saving user to role");
+                                response.success(true);
+                            },
+                            error: function(saveError)
+                            {
+                                // The save failed.
+                                funcs.conditionalLog("4 error saving role");
+                                funcs.conditionalLog("it might be if the user was already included");
+                                funcs.conditionalLog("the save wouldn't success, because the user");
+                                funcs.conditionalLog("wasn't added, therefor the role not changed.");
+                                funcs.conditionalLog("check this.");
+                                response.error(saveError);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        funcs.conditionalLog("2.4");
+                        response.success(true);
+                    }
                 },
-                error: function(saveError)
+                error: function(relationError)
                 {
-                    // The save failed.
-                    funcs.conditionalLog("4 error saving role");
-                    funcs.conditionalLog("it might be if the user was already included");
-                    funcs.conditionalLog("the save wouldn't success, because the user");
-                    funcs.conditionalLog("wasn't added, therefor the role not changed.");
-                    funcs.conditionalLog("check this.");
-                    response.error(saveError);
+                    console.log("Error getting relation query");
+                    console.log(relationError);
+
+                    response.error(relationError);
                 }
             });
         },
