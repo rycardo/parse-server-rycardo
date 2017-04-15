@@ -71,7 +71,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 
     funcs.conditionalLog("0 userId: " + userId + ", roleName: " + roleName);
 
-    var Role        = Parse.Object.extend(Parse.Role);
+    var Role        = Parse.Object.extend("_Role");
     var roleQuery   = new Parse.Query(Role);
 
     funcs.conditionalLog("0.5");
