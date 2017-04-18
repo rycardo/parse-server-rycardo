@@ -1018,6 +1018,69 @@ Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
 
 ///////////////////////////////////////
 //
+// pushNotificationTest
+//
+// REQUIRED PARAMETERS:
+//
+// none
+//
+// OPTIONAL PARAMTERS:
+//
+// none
+//
+//
+//
+// RESULT:
+//
+// Successful:
+// success          true
+// result           the number of devices the push sent to
+//
+// Error:
+// success          false
+// error            the error from the server
+//
+///////////////////////////////////////
+Parse.Cloud.define("pushNotificationTest", function(request, response)
+{
+    var user = request.user;
+
+    var title       = "Barbershop Deluxe app";
+    var subtitle    = "Local Database Updated.";
+    var body        = "Your copy of the Barbershop Deluxe dat has been updated.";
+
+    var pushQuery = new Parse.Query(Parse.Installation);
+    pushQuery.equalTo("userId", user.id);
+
+    Parse.Push.send(
+    {
+        where: pushQuery, // Set our Installation query
+        data:
+        {
+            alert:
+            {
+                "title" : title,
+                "subtitle" : subtitle,
+                "body" : body
+            }
+        }
+    },
+    {
+        success: function()
+        {
+            console.log("#### PUSH OK");
+        },
+        error: function(error)
+        {
+            console.log("#### PUSH ERROR" + error.message);
+        },
+        useMasterKey: true
+    });
+    response.success("success");
+});
+
+///////////////////////////////////////
+//
 // sendPushNotificationWithParams
 //
 // REQUIRED PARAMETERS:
