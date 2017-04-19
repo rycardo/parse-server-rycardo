@@ -12,7 +12,7 @@
     "express": "~4.14.1",
     "kerberos": "~0.0.x",
     "mailgun": "*",
-    "mongodb": ">=2.2.24",
+    "mongodb": "*",
     "parse": "~1.9.2",
     "parse-server": ">=2.3.6",
     "twilio": "^2.11.1"
@@ -22,5 +22,6 @@
   },
   "engines": {
     "node": ">=6.9.1"
-  }
+  },
+  "myNote": "mongodb was >=2.2.26"
 }
