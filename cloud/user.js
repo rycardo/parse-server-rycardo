@@ -644,26 +644,40 @@ Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", functio
 ///////////////////////////////////////
 Parse.Cloud.define("loginUser", function(request, response)
 {
+    if ( ( request.params.phoneNumber === undefined ) ||
+         ( request.params.phoneNumber.length !== 10 ) ||
+         ( request.params.verificationCode === undefined ) ||
+         ( request.params.verificationCode.length < 4 ) ||
+         ( request.params.verificationCode.length > 6 ) )
+    {
+        return response.error("Missing or Invalid Parameters. Expected 10 digit phoneNumber and 4 - 6 digit verificationCode.");
+    }
+
+    funcs.conditionalLog("phoneNumber:");
+    funcs.conditionalLog(request.params.phoneNumber);
+    funcs.conditionalLog("verificationCode:");
+    funcs.conditionalLog(request.params.verificationCode);
+
     // Phone Number
-    var phoneNumber            = request.params.phoneNumber;
-    phoneNumber                = phoneNumber.replace(/\D/g, "");
+    var phoneNumber             = "";
+    if ( request.params.phoneNumber )
+    {
+        phoneNumber             = request.params.phoneNumber;
+        phoneNumber             = phoneNumber.replace(/\D/g, "");
+    }
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
 
     // Verification Code
-    var verificationCode    = request.params.verificationCode;
-    verificationCode        = verificationCode.replace(/\D/g, "");
+    var verificationCode        = "";
+    if ( request.params.verificationCode )
+    {
+        var verificationCode    = request.params.verificationCode;
+        verificationCode        = verificationCode.replace(/\D/g, "");
+    }
+    funcs.conditionalLog("verificationCode [" + verificationCode + "]");
 
     // User Service Token
     var userServiceToken    = process.env.USER_SERVICE_TOKEN;
-
-    if ( !phoneNumber || phoneNumber.length !== 10 )
-    {
-        return response.error("Phone Number missing or invalid length");
-    }
-
-    if ( !verificationCode || verificationCode.length < 4 || verificationCode.length > 6 )
-    {
-        return response.error("Verification Code missing or invalid length");
-    }
 
     Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
     {
