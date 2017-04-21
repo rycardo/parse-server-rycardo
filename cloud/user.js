@@ -1037,74 +1037,26 @@ Parse.Cloud.define("verifyVerificationCode", function(request, response)
                 funcs.conditionalLog("No users found to verify");
 
                 theDesc             = "No users found to verify";
-                theResult           = { description : theDesc };
-
-                response.error(theResult);
+                response.error(theDesc);
             }
             else
             {
-                funcs.conditionalLog("verify first user");
+                funcs.conditionalLog("found a user, so attempt login");
 
-                var firstUser           = results[0];
+                var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+                var password            = userServiceToken + "-" + verificationCode;
 
-                var userToken           = process.env.USER_SERVICE_TOKEN;
-
-                funcs.conditionalLog("vVC-1");
-
-                var tokenLength         = userToken.length;
-
-                funcs.conditionalLog("the token's length is:");
-                funcs.conditionalLog(tokenLength.toString());
-
-                funcs.conditionalLog("vVC-1.1");
-
-                var fup                 = firstUser.get("password");
-
-                funcs.conditionalLog("vVC-1.2");
-
-                funcs.conditionalLog("fup length is:");
-                var fl  = fup.length;
-
-                funcs.conditionalLog(fup.length.toString());
-
-                var idx                 = fup.search(userToken);
-
-                funcs.conditionalLog("user index is:");
-                funcs.conditionalLog(idx.toString());
-
-                if ( idx === -1 )
+                Parse.User.logIn(phoneNumber, password,
                 {
-                    funcs.conditionalLog("vVC-2");
-
-                    theDesc          = "User Token not found.";
-                    theResult        = { description : theDesc };
-
-                    funcs.conditionalLog(theDesc);
-                    response.error(theResult);
-                }
-                else
-                {
-                    funcs.conditionalLog("vVC-3");
-
-                    idx             = (idx + tokenLength);
-                    funcs.conditionalLog("New User Index is:");
-                    funcs.conditionalLog(idx.toString());
-
-                    var code        = firstUser.password.substr(idx);
-
-                    funcs.conditionalLog("REMOVE THESE LINES");
-                    funcs.conditionalLog("error code [" + code + "]");
-                    funcs.conditionalLog("REMOVE THESE LINES");
-
-                    var isValid     = ( verificationCode === code );
-
-                    theDesc         = "Verification Successful";
-                    theResult       = { description : theDesc,
-                                        valid : isValid
-                                      };
-
-                    response.success(theResult);
-                }
+                    success: function (user)
+                    {
+                        response.success(true);
+                    },
+                    error: function (loginError)
+                    {
+                        response.success(false);
+                    }
+                });
             }
         },
         error: function(queryError)

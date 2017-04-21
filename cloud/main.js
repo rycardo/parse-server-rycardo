@@ -1047,7 +1047,7 @@ Parse.Cloud.define("pushNotificationTest", function(request, response)
 
     var title       = "Barbershop Deluxe app";
     var subtitle    = "Local Database Updated.";
-    var body        = "Your copy of the Barbershop Deluxe dat has been updated.";
+    var body        = "Your copy of the Barbershop Deluxe database has been updated.";
 
     var pushQuery = new Parse.Query(Parse.Installation);
     pushQuery.equalTo("userId", user.id);
