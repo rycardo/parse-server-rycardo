@@ -134,6 +134,99 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 });
 
 
+///////////////////////////////////////
+//
+// addCurrentUserToRoleWithName
+//
+// Params:
+// userId
+// roleName
+//
+// Response:
+// BOOL sucessful
+//
+///////////////////////////////////////
+Parse.Cloud.define("addUserWithIdToRoleWithName", function(request, response)
+{
+    funcs.conditionalLog("addUserWithIdToRoleWithName started");
+
+    if ( ( request.params.userId === undefined ) || ( request.params.userId === null ) )
+    {
+        response.error("Missing Required Parameters");
+        return;
+    }
+
+    funcs.conditionalLog("Getting params.");
+
+    var roleName    = request.params.roleName;
+    var userId      = request.params.userId;
+
+    funcs.conditionalLog("0 userId: " + userId + ", roleName: " + roleName);
+
+    var Role        = Parse.Object.extend("_Role");
+    var roleQuery   = new Parse.Query(Role);
+
+    funcs.conditionalLog("0.1");
+
+    var userQuery   = new Parse.Query(Parse.User);
+    userQuery.equalTo("id", userId);
+
+    funcs.conditionalLog("0.2");
+
+    roleQuery.equalTo("name", roleName);
+    roleQuery.include("users");
+
+    funcs.conditionalLog("0.3");
+
+    roleQuery.doesNotMatchQuery("users", userQuery);
+
+    funcs.conditionalLog("1 about to find");
+
+    roleQuery.first(
+    {
+        userMasterKey: true,
+        success: function(roleResult)
+        {
+            funcs.conditionalLog("2 success getting role result");
+
+            var usersRelation   = roleResult.get("users");
+
+            funcs.conditionalLog("2.1");
+
+            usersRelation.push(request.user);
+
+            roleResult.save(null,
+            {
+                userMasterKey: true,
+                success: function(saveObject)
+                {
+                    // The save was successful.
+                    funcs.conditionalLog("3 success saving user to role");
+                    response.success(true);
+                },
+                error: function(saveError)
+                {
+                    // The save failed.
+                    funcs.conditionalLog("4 error saving role");
+                    funcs.conditionalLog("it might be if the user was already included");
+                    funcs.conditionalLog("the save wouldn't success, because the user");
+                    funcs.conditionalLog("wasn't added, therefor the role not changed.");
+                    funcs.conditionalLog("check this.");
+                    response.error(saveError);
+                }
+            });
+        },
+        error: function(queryError)
+        {
+            // Query Failed
+            funcs.conditionalLog("Query Failed");
+            funcs.conditionalLog(queryError);
+            response.error(queryError);
+        }
+    });
+});
+
+
 Parse.Cloud.define("addCurrentUserToRoleWithRoleName", function(request, response)
 {
     funcs.conditionalLog("addCurrentUserToRoleWithRoleName");
@@ -292,6 +385,84 @@ Parse.Cloud.define("getRoleNamesForCurrentUser", function(request, response)
 
     //var Role        = Parse.Object.extend("_Role");
     //var roleQuery   = new Parse.Query(Role);
+    var roleQuery = new Parse.Query(Parse.Role);
+    roleQuery.exists("name");
+    roleQuery.find(
+    {
+        useMasterKey: true,
+        success: function(roleResults)
+        {
+            var belongsToRoleNames = [];
+
+            for ( rIdx = 0; rIdx < roleResults.length; rIdx += 1 )
+            {
+                var roleObject      = roleResults[rIdx];
+                var roleName        = roleObject.get("name");
+
+                funcs.conditionalLog("Checking role '" + roleName + "' for '" + userId + "'");
+
+                var relationQuery = roleObject.relation("users").query();
+                relationQuery.get(userId,
+                {
+                    useMasterKey: true,
+                    success     : function(userResult)
+                    {
+                        funcs.conditionalLog("User belongs to role " + roleName);
+
+                        belongsToRoleNames.push(roleName);
+
+                        funcs.conditionalLog("Belongs to these roles:");
+                        funcs.conditionalLog(belongsToRoleNames);
+                    },
+                    error       : function(userError)
+                    {
+                        funcs.conditionalLog("User does not belong to role " + roleName);
+                        //funcs.conditionalLog(userError);
+                    }
+                });
+            }
+
+            funcs.conditionalLog("User belongs to:");
+            funcs.conditionalLog(belongsToRoleNames);
+            response.success(belongsToRoleNames);
+        },
+        error: function(roleError)
+        {
+            console.log("RoleError:");
+            console.log(roleError);
+            response.error(roleError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// getRoleNamesForUserWithId
+//
+// Params:
+// userId
+//
+// Response:
+// ARRAY the role names
+//
+///////////////////////////////////////
+Parse.Cloud.define("getRoleNamesForUserWithId", function(request, response)
+{
+    funcs.conditionalLog("getRoleNamesForUserWithId");
+
+    var userId          = request.params.userId;
+
+    var first           = currentUser.get("firstName");
+    var last            = currentUser.get("lastName");
+    var username        = currentUser.get("username");
+
+    funcs.conditionalLog("Checking [" + userId + "]");
+    if ( ( userId === null ) || ( userId === undefined ) )
+    {
+        response.error("missing user id");
+    }
+
     var roleQuery = new Parse.Query(Parse.Role);
     roleQuery.exists("name");
     roleQuery.find(
