@@ -1111,17 +1111,35 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 {
     funcs.conditionalLog("sendPushNotificationWithParams started");
 
-    if ( ( request.params.startObjectId.length === 0 ) ||
-         ( request.params.queryClass.length    === 0 ) ||
+    var message   = undefined;
+    var theResult = undefined;
+
+    if ( ( request.params.queryClass.length    === 0 ) ||
          ( request.params.payload.length       === 0 ) ||
-         ( request.params.startObjectId        === undefined ) ||
          ( request.params.queryClass           === undefined ) ||
          ( request.params.payload              === undefined ) )
     {
-        var theResult =
+        message = "missing one or more required parameters";
+    }
+
+    if ( ( request.params.startObjectId === undefined ) &&
+         ( request.params.userIds === undefined ) )
+    {
+        message = "missing either support code or user ids";
+    }
+
+    if ( ( request.params.startObjectId.length === 0 ) &&
+         ( request.params.userIds.length === 0 ) )
+    {
+        message = "missing either support code or user ids";
+    }
+
+    if ( message.length )
+    {
+        theResult =
             {
-                code: 4001,
-                message: "missing one or more required parameters"
+                "code": 4001,
+                "message": message
             };
         response.error(theResult);
     }
@@ -1148,7 +1166,14 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     if ( request.params.queryClass === "User" )
     {
         userQuery   = new Parse.Query(User);
-        userQuery.startsWith("objectId", request.params.startObjectId);
+        if ( request.params.startObjectId.length )
+        {
+            userQuery.startsWith("objectId", request.params.startObjectId);
+        }
+        else if ( request.params.userIds.length )
+        {
+            userQuery.containedIn( "userId", request.params.userIds );
+        }
 
         installQuery= new Parse.Query(Installation);
         installQuery.matchesQuery("currentUser", userQuery);
@@ -1162,7 +1187,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     }
     else
     {
-        var theResult =
+        theResult =
             {
                 code: 4002,
                 message: "queryClass parameter was not User or Installation"
@@ -1242,7 +1267,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
                 var pResult = pushResult["result"];
 
                 funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
-                var theResult =
+                theResult =
                 {
                     success: true,
                     result: pResult
@@ -1254,7 +1279,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
                 funcs.conditionalLog("Send Push Error");
                 funcs.conditionalLog(pushError);
 
-                var theResult =
+                theResult =
                 {
                     success: false,
                     error: pushError
@@ -1275,7 +1300,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
             {
                 funcs.conditionalLog("Count Query Result: ");
 
-                var theResult =
+                theResult =
                 {
                     success: true,
                     result: countResult,
