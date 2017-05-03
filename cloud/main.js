@@ -1140,7 +1140,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         message = "missing user ids";
     }
 
-    if ( message.length )
+    if ( message !== undefined )
     {
         theResult =
             {
