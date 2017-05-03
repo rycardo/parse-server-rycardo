@@ -1172,11 +1172,11 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     if ( request.params.queryClass === "User" )
     {
         userQuery   = new Parse.Query(User);
-        if ( request.params.startObjectId.length )
+        if ( request.params.startObjectId !== undefined )
         {
             userQuery.startsWith("objectId", request.params.startObjectId);
         }
-        else if ( request.params.userIds.length )
+        else if ( request.params.userIds !== undefined )
         {
             userQuery.containedIn( "userId", request.params.userIds );
         }
