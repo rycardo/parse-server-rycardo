@@ -1128,10 +1128,16 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         message = "missing either support code or user ids";
     }
 
-    if ( ( request.params.startObjectId.length === 0 ) &&
+    if ( ( request.params.startObjectId !== undefined ) &&
+         ( request.params.startObjectId.length === 0 ) )
+    {
+         message = "missing support code";
+    }
+
+    if ( ( request.params.userIds !== undefined ) &&
          ( request.params.userIds.length === 0 ) )
     {
-        message = "missing either support code or user ids";
+        message = "missing user ids";
     }
 
     if ( message.length )
