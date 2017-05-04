@@ -1215,7 +1215,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     funcs.conditionalLog("Send Push 2.9");
 
     //TODO: Remove next line when I know this works
-    installQuery.equalTo("userId","4QdhsyAE6f");
+    //installQuery.equalTo("userId","4QdhsyAE6f");
 
     funcs.conditionalLog("Send Push 3");
 
