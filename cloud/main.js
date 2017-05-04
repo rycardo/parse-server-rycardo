@@ -1167,39 +1167,55 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     var Installation= Parse.Object.extend(Parse.Installation);
 
     var userQuery   = null;
-    var installQuery= null;
+    var installQuery= new Parse.Query(Installation);
+
+    funcs.conditionalLog("Send Push 2.1");
 
     if ( request.params.queryClass === "User" )
     {
         userQuery   = new Parse.Query(User);
+
         if ( request.params.startObjectId !== undefined )
         {
             userQuery.startsWith("objectId", request.params.startObjectId);
-        }
-        else if ( request.params.userIds !== undefined )
-        {
-            userQuery.containedIn( "userId", request.params.userIds );
+            funcs.conditionalLog("Send Push 2.2");
         }
 
-        installQuery= new Parse.Query(Installation);
         installQuery.matchesQuery("currentUser", userQuery);
-        //TODO: Remove next line when I know this works
-        installQuery.equalTo("userId","4QdhsyAE6f");
+
+        funcs.conditionalLog("Send Push 2.3");
     }
     else if ( request.params.queryClass === "Installation" )
     {
-        installQuery= new Parse.Query(Installation);
-        installQuery.startsWith("objectId", request.params.startObjectId);
+        funcs.conditionalLog("Send Push 2.4");
+
+        if ( request.params.userIds !== undefined )
+        {
+            userQuery.containedIn( "userId", request.params.userIds );
+            funcs.conditionalLog("Send Push 2.5");
+        }
+        else if ( request.params.startObjectId !== undefined )
+        {
+            installQuery.startsWith("objectId", request.params.startObjectId);
+            funcs.conditionalLog("Send Push 2.6");
+        }
+        funcs.conditionalLog("Send Push 2.7");
     }
     else
     {
+        funcs.conditionalLog("Send Push 2.8");
         theResult =
             {
-                code: 4002,
-                message: "queryClass parameter was not User or Installation"
+                "code": 4002,
+                "message": "queryClass parameter was not User or Installation"
             };
         response.error(theResult);
     }
+
+    funcs.conditionalLog("Send Push 2.9");
+
+    //TODO: Remove next line when I know this works
+    installQuery.equalTo("userId","4QdhsyAE6f");
 
     funcs.conditionalLog("Send Push 3");
 
