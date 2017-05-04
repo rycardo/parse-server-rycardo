@@ -1191,7 +1191,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
         if ( request.params.userIds !== undefined )
         {
-            userQuery.containedIn( "userId", request.params.userIds );
+            installQuery.containedIn( "userId", request.params.userIds );
             funcs.conditionalLog("Send Push 2.5");
         }
         else if ( request.params.startObjectId !== undefined )
