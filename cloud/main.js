@@ -1291,7 +1291,7 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     if ( sendThePush === true )
     {
         if ( ( sendToChannels === true ) &&
-             ( sendChannels.length >== 1 ) )
+             ( sendChannels.length > 0 ) )
         {
             Parse.Push.send(
             {
