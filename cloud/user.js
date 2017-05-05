@@ -1125,6 +1125,97 @@ Parse.Cloud.define("userWithUserIdExists", function(request, response)
 
 ///////////////////////////////////////
 //
+// getChannelsOfUserWithUserId
+//
+// Params:
+// UserId
+//
+// Response:
+// ARRAY the channels
+//
+///////////////////////////////////////
+Parse.Cloud.define("getChannelsOfUserWithUserId", function(request, response)
+{
+    funcs.conditionalLog("getChannelsOfUserWithUserId");
+
+    var userId      = request.params.userId;
+
+    funcs.conditionalLog("0 with userId [" + userId + "]");
+
+    var Installation= Parse.Object.extend(Parse.Installation);
+    var User        = Parse.Object.extend(Parse.User);
+
+    var installQuery= new Parse.Query(Installation);
+
+    var innerQuery  = new Parse.Query(User);
+    innerQuery.equalTo("id", userId);
+
+    installQuery.matchesQuery("users", innerQuery);
+
+    funcs.conditionalLog("1 about to find");
+
+    installQuery.find(
+    {
+        userMasterKey:  true,
+        success: function(results)
+        {
+            var theCount = results.count.toString();
+
+            funcs.conditionalLog("2 success getting results");
+            funcs.conditionalLog("with " + theCount + " results");
+
+            var channelsResult = [];
+
+            if ( results.count > 0 )
+            {
+                funcs.conditionalLog("3 results has more than 0");
+
+                for ( rIdx = 0; rIdx < results.count; rIdx += 1 )
+                {
+                    var theTemp = rIdx.toString();
+
+                    funcs.conditionalLog("4 is index " + theTemp);
+
+                    var pfInstallation = results[rIdx];
+
+                    funcs.conditionalLog("4.1 have pfInstallation");
+
+                    var theChannels = pfInstallation.get("channels");
+
+                    theTemp     = channelsResult.count.toString();
+
+                    funcs.conditionalLog("5 about to push " + theTemp + " channels");
+                    for ( cIdx = 0; cIdx < theChannels.count; cIdx += 1 )
+                    {
+                        var theChannel = theChannels[cIdx];
+
+                        channelsResult.push(theChannel);
+                    }
+
+                    theTemp     = channelsResult.count.toString();
+
+                    funcs.conditionalLog("6 just pushed, now there are " + theTemp);
+                }
+            }
+
+            funcs.conditionalLog("7 finished with results, channelsResult:");
+            funcs.conditionalLog(channelsResult);
+
+            response.success(channelsResult);
+        },
+        error: function (queryError)
+        {
+            funcs.conditionalLog("8 query Error");
+            funcs.conditionalLog(queryError);
+
+            response.error(queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
 // getNamesOfRolesCurrentUserBelongsTo
 //
 // Params:
