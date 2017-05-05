@@ -91,7 +91,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 
     roleQuery.first(
     {
-        userMasterKey: true,
+        useMasterKey: true,
         success: function(roleResult)
         {
             funcs.conditionalLog("2 success getting role result");
@@ -104,7 +104,7 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 
             roleResult.save(null,
             {
-                userMasterKey: true,
+                useMasterKey: true,
                 success: function(saveObject)
                 {
                     // The save was successful.
@@ -184,7 +184,7 @@ Parse.Cloud.define("addUserWithIdToRoleWithName", function(request, response)
 
     roleQuery.first(
     {
-        userMasterKey: true,
+        useMasterKey: true,
         success: function(roleResult)
         {
             funcs.conditionalLog("2 success getting role result");
@@ -197,7 +197,7 @@ Parse.Cloud.define("addUserWithIdToRoleWithName", function(request, response)
 
             roleResult.save(null,
             {
-                userMasterKey: true,
+                useMasterKey: true,
                 success: function(saveObject)
                 {
                     // The save was successful.

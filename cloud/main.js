@@ -614,7 +614,7 @@ Parse.Cloud.define("createMessageForUser", function(request, response)
         userId: msgReceiverID
     },
     {
-        userMasterKey: true,
+        useMasterKey: true,
         success: function(existsResult)
         {
             if ( JSON.parse(existsResult) )

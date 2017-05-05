@@ -1156,7 +1156,7 @@ Parse.Cloud.define("getChannelsOfUserWithUserId", function(request, response)
 
     installQuery.find(
     {
-        userMasterKey:  true,
+        useMasterKey:  true,
         success: function(results)
         {
             var theCount = results.count.toString();
@@ -1247,7 +1247,7 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
 
     roleQuery.find(
     {
-        userMasterKey:  true,
+        useMasterKey:  true,
         success: function(results)
         {
             var theCount = results.count.toString();
