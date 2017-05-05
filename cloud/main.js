@@ -1111,8 +1111,10 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 {
     funcs.conditionalLog("sendPushNotificationWithParams started");
 
-    var message   = undefined;
-    var theResult = undefined;
+    var sendToChannels  = false;
+    var message         = undefined;
+    var theResult       = undefined;
+    var sendChannels    = undefined;
 
     if ( ( request.params.queryClass.length    === 0 ) ||
          ( request.params.payload.length       === 0 ) ||
@@ -1123,9 +1125,10 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     }
 
     if ( ( request.params.startObjectId === undefined ) &&
-         ( request.params.userIds === undefined ) )
+         ( request.params.userIds === undefined ) &&
+         ( request.params.channels === undefined ) )
     {
-        message = "missing either support code or user ids";
+        message = "missing either support code, user ids, or channel(s)";
     }
 
     if ( ( request.params.startObjectId !== undefined ) &&
@@ -1138,6 +1141,19 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
          ( request.params.userIds.length === 0 ) )
     {
         message = "missing user ids";
+    }
+
+    if ( request.params.channels !== undefined )
+    {
+        if ( request.params.channels.length === 0 )
+        {
+            message = "missing channels";
+        }
+        else
+        {
+            sendChannels    = request.params.channels;
+            sendToChannels  = true;
+        }
     }
 
     if ( message !== undefined )
@@ -1274,41 +1290,83 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
     if ( sendThePush === true )
     {
-        Parse.Push.send(
+        if ( ( sendToChannels === true ) &&
+             ( sendChannels.length >== 1 ) )
         {
-            where: installQuery,
-            data: payload
-        },
-        {
-            useMasterKey: true,
-            success: function (pushResult)
+            Parse.Push.send(
             {
-                funcs.conditionalLog("Send Push Success:");
-                funcs.conditionalLog(pushResult);
-
-                var pResult = pushResult["result"];
-
-                funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
-                theResult =
-                {
-                    success: true,
-                    result: pResult
-                };
-                response.success(theResult);
+                channels: sendChannels,
+                data: payload
             },
-            error: function (pushError)
             {
-                funcs.conditionalLog("Send Push Error");
-                funcs.conditionalLog(pushError);
-
-                theResult =
+                useMasterKey: true,
+                success: function (pushResult)
                 {
-                    success: false,
-                    error: pushError
-                };
-                response.error(theResult);
-            }
-        });
+                    funcs.conditionalLog("Send Push Success:");
+                    funcs.conditionalLog(pushResult);
+
+                    var pResult = pushResult["result"];
+
+                    funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
+                    theResult =
+                    {
+                        success: true,
+                        result: pResult
+                    };
+                    response.success(theResult);
+                },
+                error: function (pushError)
+                {
+                    funcs.conditionalLog("Send Push Error");
+                    funcs.conditionalLog(pushError);
+
+                    theResult =
+                    {
+                        success: false,
+                        error: pushError
+                    };
+                    response.error(theResult);
+                }
+            });
+        }
+        else
+        {
+            Parse.Push.send(
+            {
+                where: installQuery,
+                data: payload
+            },
+            {
+                useMasterKey: true,
+                success: function (pushResult)
+                {
+                    funcs.conditionalLog("Send Push Success:");
+                    funcs.conditionalLog(pushResult);
+
+                    var pResult = pushResult["result"];
+
+                    funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
+                    theResult =
+                    {
+                        success: true,
+                        result: pResult
+                    };
+                    response.success(theResult);
+                },
+                error: function (pushError)
+                {
+                    funcs.conditionalLog("Send Push Error");
+                    funcs.conditionalLog(pushError);
+
+                    theResult =
+                    {
+                        success: false,
+                        error: pushError
+                    };
+                    response.error(theResult);
+                }
+            });
+        }
     }
     else
     {
