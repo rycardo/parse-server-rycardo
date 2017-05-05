@@ -1143,14 +1143,14 @@ Parse.Cloud.define("getChannelsOfUserWithUserId", function(request, response)
     funcs.conditionalLog("0 with userId [" + userId + "]");
 
     var Installation= Parse.Object.extend(Parse.Installation);
-    var User        = Parse.Object.extend(Parse.User);
+    //var User        = Parse.Object.extend(Parse.User);
 
     var installQuery= new Parse.Query(Installation);
+    installQuery.equalTo("userId", userId);
+    //var innerQuery  = new Parse.Query(User);
+    //innerQuery.equalTo("id", userId);
 
-    var innerQuery  = new Parse.Query(User);
-    innerQuery.equalTo("id", userId);
-
-    installQuery.matchesQuery("users", innerQuery);
+    //installQuery.matchesQuery("users", innerQuery);
 
     funcs.conditionalLog("1 about to find");
 
