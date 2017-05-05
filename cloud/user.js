@@ -1156,21 +1156,21 @@ Parse.Cloud.define("getChannelsOfUserWithUserId", function(request, response)
 
     installQuery.find(
     {
-        useMasterKey:  true,
+        useMasterKey: true,
         success: function(results)
         {
-            var theCount = results.count.toString();
+            var theCount = results.length.toString();
 
             funcs.conditionalLog("2 success getting results");
             funcs.conditionalLog("with " + theCount + " results");
 
             var channelsResult = [];
 
-            if ( results.count > 0 )
+            if ( results.length > 0 )
             {
                 funcs.conditionalLog("3 results has more than 0");
 
-                for ( rIdx = 0; rIdx < results.count; rIdx += 1 )
+                for ( rIdx = 0; rIdx < results.length; rIdx += 1 )
                 {
                     var theTemp = rIdx.toString();
 
@@ -1182,17 +1182,17 @@ Parse.Cloud.define("getChannelsOfUserWithUserId", function(request, response)
 
                     var theChannels = pfInstallation.get("channels");
 
-                    theTemp     = channelsResult.count.toString();
+                    theTemp     = channelsResult.length.toString();
 
                     funcs.conditionalLog("5 about to push " + theTemp + " channels");
-                    for ( cIdx = 0; cIdx < theChannels.count; cIdx += 1 )
+                    for ( cIdx = 0; cIdx < theChannels.length; cIdx += 1 )
                     {
                         var theChannel = theChannels[cIdx];
 
                         channelsResult.push(theChannel);
                     }
 
-                    theTemp     = channelsResult.count.toString();
+                    theTemp     = channelsResult.length.toString();
 
                     funcs.conditionalLog("6 just pushed, now there are " + theTemp);
                 }
@@ -1250,18 +1250,18 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
         useMasterKey:  true,
         success: function(results)
         {
-            var theCount = results.count.toString();
+            var theCount = results.length.toString();
 
             funcs.conditionalLog("2 success getting results");
             funcs.conditionalLog("with " + theCount + " results");
 
             var namesResult = [];
 
-            if ( results.count > 0 )
+            if ( results.length > 0 )
             {
                 funcs.conditionalLog("3 results has more than 0");
 
-                for ( rIdx = 0; rIdx < results.count; rIdx += 1 )
+                for ( rIdx = 0; rIdx < results.length; rIdx += 1 )
                 {
                     var theTemp = rIdx.toString();
 
@@ -1273,13 +1273,13 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
 
                     var theName = theRole.get("name");
 
-                    theTemp     = namesResult.count.toString();
+                    theTemp     = namesResult.length.toString();
 
                     funcs.conditionalLog("5 about to push, there are " + theTemp);
 
                     namesResult.push(theName);
 
-                    theTemp     = namesResult.count.toString();
+                    theTemp     = namesResult.length.toString();
 
                     funcs.conditionalLog("6 just pushed, now there are " + theTemp);
                 }
