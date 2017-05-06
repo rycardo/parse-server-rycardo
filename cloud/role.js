@@ -512,3 +512,191 @@ Parse.Cloud.define("getRoleNamesForUserWithId", function(request, response)
         }
     });
 });
+
+///////////////////////////////////////
+//
+// modifyRolesOfUserWithUserId
+//
+// Params:
+// userId         String PFUser.objectId
+// addRoles       Array channels to add
+// removeRoles    Array channels to remove
+//
+// NOTE:
+// addRoles or removeRoles is required
+// both can be included as well
+//
+// Response:
+// ARRAY the roles after modified
+//
+///////////////////////////////////////
+Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
+{
+    funcs.conditionalLog("modifyRolesOfUserWithUserId");
+
+    if ( ( ( request.params.addRoles === undefined ) &&
+         ( request.params.removeRoles === undefined ) ) ||
+       ( request.params.userId === undefined ) )
+    {
+        response.error("missing required parameters");
+    }
+
+    var addRolesEh      = false;
+    var removeRolesEh   = false;
+
+    if ( request.params.addRoles !== undefined )
+    {
+        addRolesEh      = true;
+    }
+    if ( request.params.removeRoles !== undefined )
+    {
+        removeRolesEh   = true;
+    }
+
+    var userId          = request.params.userId;
+    funcs.conditionalLog("0 with userId [" + userId + "]");
+
+    Parse.Cloud.run("getUserWithId",
+    {
+        userId: request.params.userId
+    },
+    {
+        useMasterKey: true,
+        success: function(userResult)
+        {
+            funcs.conditionalLog("0.1 have User");
+
+            var Role            = Parse.Object.extend(Parse.Role);
+            var roleQuery       = new Parse.Query(Role);
+
+            funcs.conditionalLog("1 about to find");
+
+            roleQuery.find(
+            {
+                useMasterKey: true,
+                success: function(roleResults)
+                {
+                    var theCount = roleResults.length.toString();
+
+                    funcs.conditionalLog("2 success getting results");
+                    funcs.conditionalLog("with " + theCount + " results");
+
+                    if ( roleResults.length > 0 )
+                    {
+                        funcs.conditionalLog("3 results has more than 0");
+
+                        var rolesToSave = new Array();
+
+                        funcs.conditionalLog("3.1 created rolesToSave, about to loop");
+
+                        for ( rIdx = 0; rIdx < roleResults.length; rIdx += 1 )
+                        {
+                            var theTemp         = rIdx.toString();
+
+                            funcs.conditionalLog("4 is index " + theTemp);
+
+                            var pfRole          = roleResults[rIdx];
+                            var roleName        = pfRole.get("name");
+                            var usersRelation   = pfRole.get("users");
+
+                            funcs.conditionalLog("4.1 " + roleName + " Checking for Remove");
+
+                            if ( removeChannelsEh )
+                            {
+                                //var arr = new Array(1,2,3,2,5);
+                                //var p = arr.indexOf(3) //p = 2
+                                //p = arr.indexOf(7) //p = -1
+                                funcs.conditionalLog("4.2 checking if remove from role");
+
+                                var isRemove    = removeChannels.indexOf(roleName);
+
+                                if ( isRemove !== -1 )
+                                {
+                                    funcs.conditionalLog("4.3 removing from role");
+                                    usersRelation.remove(userResult);
+                                    rolesToSave.push(pfRole);
+                                    funcs.conditionalLog("4.4 need to save");
+
+                                }
+                            }
+
+                            funcs.conditionalLog("4.5 " + roleName + " Checking for Add");
+
+                            if ( addChannelsEh )
+                            {
+                                funcs.conditionalLog("4.6 checking if add to role");
+
+                                var isAdd       = addChannels.indexOf(roleName);
+
+                                if ( isAdd !== -1 )
+                                {
+                                    funcs.conditionalLog("4.7 adding to role");
+                                    usersRelation.add(userResult);
+                                    rolesToSave.push(pfRole);
+                                    funcs.conditionalLog("4.8 need to save");
+                                }
+                            }
+                        }
+
+                        funcs.conditionalLog("5 about to save");
+
+                        Parse.Object.saveAll(rolesToSave,
+                        {
+                            useMasterKey: true,
+                            success: function(saveResults)
+                            {
+                                // All the modfied roles were saved.
+                                funcs.conditionalLog("6 Saves were successful");
+                                // Need to get the roles, and return them
+                                Parse.Cloud.run("getRoleNamesForUserWithId",
+                                {
+                                    userId: request.params.userId
+                                },
+                                {
+                                    useMasterKey: true,
+                                    success: function(updatedRolesResult)
+                                    {
+                                        // Return Result
+                                        funcs.conditionalLog("6.1 retrieved updated roles");
+                                        response.success(updatedRolesResult);
+                                    },
+                                    error: function(updatedRolesError)
+                                    {
+                                        // Return error
+                                        funcs.conditionalLog("6.2 error retrieving updated roles");
+                                        funcs.conditionalLog(updatedRolesError);
+                                        response.error(updatedRolesError);
+                                    }
+                                });
+                            },
+                            error: function(saveError)
+                            {
+                                // An error occurred while saving one of the objects.
+                                funcs.conditionalLog("7 Error saving Installation objects");
+                                funcs.conditionalLog(saveError);
+                                response.error(saveError);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        funcs.conditionalLog("8 No roles found");
+                        response.error("No Roles found");
+                    }
+                },
+                error: function (roleQueryError)
+                {
+                    funcs.conditionalLog("9 Role Query Error");
+                    funcs.conditionalLog(roleQueryError);
+                    response.error(roleQueryError);
+                }
+            });
+        },
+        error: function(getUserError)
+        {
+            funcs.conditionalLog("10 GetUserError:");
+            funcs.conditionalLog(getUserError);
+            response.error(getUserError);
+        }
+    });
+});
