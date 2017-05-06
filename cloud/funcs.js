@@ -56,26 +56,41 @@ module.exports =
         return theRandom;
     }
 
-
-};
-
 ///////////////////////////////////////
 //
 // ARRAY.contains(element)
 //
 ///////////////////////////////////////
-Array.prototype.contains = function(theElement)
-{
-    var i   = this.length;
-    while ( i-- )
+    Array.prototype.contains = function(theElement)
     {
-        if ( this[i] === theElement )
+        var i   = this.length;
+        while ( i-- )
         {
-            return true;
+            if ( this[i] === theElement )
+            {
+                return true;
+            }
         }
+        return false;
     }
-    return false;
-}
+
+///////////////////////////////////////
+//
+// ARRAY.addUnique(element)
+//
+///////////////////////////////////////
+    Array.prototype.addUnique = function(theElement)
+    {
+        var i   = this.length;
+
+        if ( this.contains(theElement) )
+        {
+            return
+        }
+        this.add(theElement);
+    }
+};
+
 
 ///////////////////////////////////////
 //
