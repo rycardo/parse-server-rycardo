@@ -55,8 +55,27 @@ module.exports =
         var theRandom   = pvtRandomNumberWithNumberOfDigits(numDigits);
         return theRandom;
     }
+
+
 };
 
+///////////////////////////////////////
+//
+// ARRAY.contains(element)
+//
+///////////////////////////////////////
+Array.prototype.contains = function(theElement)
+{
+    var i   = this.length;
+    while ( i-- )
+    {
+        if ( this[i] === theElement )
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 ///////////////////////////////////////
 //
