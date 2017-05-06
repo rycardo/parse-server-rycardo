@@ -519,8 +519,8 @@ Parse.Cloud.define("getRoleNamesForUserWithId", function(request, response)
 //
 // Params:
 // userId         String PFUser.objectId
-// addRoles       Array channels to add
-// removeRoles    Array channels to remove
+// addRoles       Array Roles to add
+// removeRoles    Array Roles to remove
 //
 // NOTE:
 // addRoles or removeRoles is required
@@ -601,14 +601,14 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
 
                             funcs.conditionalLog("4.1 " + roleName + " Checking for Remove");
 
-                            if ( removeChannelsEh )
+                            if ( removeRolesEh )
                             {
                                 //var arr = new Array(1,2,3,2,5);
                                 //var p = arr.indexOf(3) //p = 2
                                 //p = arr.indexOf(7) //p = -1
                                 funcs.conditionalLog("4.2 checking if remove from role");
 
-                                var isRemove    = removeChannels.indexOf(roleName);
+                                var isRemove    = removeRoles.indexOf(roleName);
 
                                 if ( isRemove !== -1 )
                                 {
@@ -622,11 +622,11 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
 
                             funcs.conditionalLog("4.5 " + roleName + " Checking for Add");
 
-                            if ( addChannelsEh )
+                            if ( addRolesEh )
                             {
                                 funcs.conditionalLog("4.6 checking if add to role");
 
-                                var isAdd       = addChannels.indexOf(roleName);
+                                var isAdd       = addRoles.indexOf(roleName);
 
                                 if ( isAdd !== -1 )
                                 {
