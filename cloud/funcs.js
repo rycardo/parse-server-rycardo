@@ -79,21 +79,21 @@ function pvtArrayContainsElement(array,element)
 {
     pvtConditionalLog("I'm In");
 
-    var i   = array.length;
+    var theLength   = array.length;
 
-    pvtConditionalLog("Array Length is " + i.toString());
+    console.log("Array Length is " + theLength.toString());
 
-    while ( i-- )
+    for ( idx = 0; idx < array.length; idx += 1 )
     {
-        pvtConditionalLog("Checking Index " + i.toString());
+        console.log("Checking Index " + idx.toString());
 
-        if ( array[i] === element )
+        if ( array[idx] === element )
         {
-            pvtConditionalLog("Found it");
+            console.log("Found it");
             return true;
         }
     }
-    pvtConditionalLog("Never found it");
+    console.log("Never found it");
     return false;
 }
 
