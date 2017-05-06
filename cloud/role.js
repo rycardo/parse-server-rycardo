@@ -585,7 +585,7 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
                     {
                         funcs.conditionalLog("3 results has more than 0");
 
-                        var rolesToSave = new Array();
+                        var rolesToSave = []; //NOT: new Array();
 
                         funcs.conditionalLog("3.1 created rolesToSave, about to loop");
 
