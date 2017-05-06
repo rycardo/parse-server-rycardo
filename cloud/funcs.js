@@ -54,18 +54,6 @@ module.exports =
     {
         var theRandom   = pvtRandomNumberWithNumberOfDigits(numDigits);
         return theRandom;
-    },
-
-    arrayContainsElement: function ( array, element )
-    {
-        var containsEh  = pvtArrayContainsElement(array,element);
-        return containsEh;
-    },
-
-    arrayAfterAddingUniqueElement: function ( array, element )
-    {
-        var newArray    = pvtArrayAfterAddingUniqueElement(array,element);
-        return newArray;
     }
 };
 
@@ -77,6 +65,7 @@ module.exports =
 ///////////////////////////////////////
 function pvtArrayContainsElement(array,element)
 {
+    // THESE DON"T WORK
     pvtConditionalLog("I'm In");
 
     var theLength   = array.length;
@@ -105,6 +94,7 @@ function pvtArrayContainsElement(array,element)
 ///////////////////////////////////////
 function pvtArrayAfterAddingUniqueElement(array,element)
 {
+    // THESE DONT WORK
     if ( pvtArrayContainsElement(array,element) )
     {
         return array;

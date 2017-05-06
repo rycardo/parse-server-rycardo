@@ -608,7 +608,16 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
                                 //p = arr.indexOf(7) //p = -1
                                 funcs.conditionalLog("4.2 checking if remove from role");
 
-                                var isRemove    = funcs.arrayContainsElement(removeRoles,roleName);
+                                var isRemove    = false;
+
+                                for ( rrIdx = 0; rrIdx < removeRoles.length; rrIdx += 1 )
+                                {
+                                    var chkRoleName = removeRoles[rrIdx];
+                                    if ( chkRoleName === roleName )
+                                    {
+                                        isRemove    = true;
+                                    }
+                                }
 
                                 funcs.conditionalLog("4.2.1");
 
@@ -628,7 +637,16 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
                             {
                                 funcs.conditionalLog("4.6 checking if add to role");
 
-                                var isAdd       = funcs.arrayContainsElement(addRoles, roleName);
+                                var isAdd       = false;
+
+                                for ( arIdx = 0; arIdx < removeRoles.length; arIdx += 1 )
+                                {
+                                    var chkRoleName = removeRoles[arIdx];
+                                    if ( chkRoleName === roleName )
+                                    {
+                                        isAdd    = true;
+                                    }
+                                }
 
                                 funcs.condtionalLog("4.6.1");
 
