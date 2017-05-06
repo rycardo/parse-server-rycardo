@@ -1300,6 +1300,181 @@ Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
     });
 });
 
+
+///////////////////////////////////////
+//
+// modifyChannelsOfUserWithUserId
+//
+// Params:
+// userId         String PFUser.objectId
+// addChannels    Array channels to add
+// removeChannels Array channels to remove
+//
+// NOTE:
+// addChannels or removeChannels is required
+// both can be included as well
+//
+// Response:
+// ARRAY the channels after modified
+//
+///////////////////////////////////////
+Parse.Cloud.define("modifyChannelsOfUserWithUserId", function(request, response)
+{
+    funcs.conditionalLog("modifyChannelsOfUserWithUserId");
+
+    if ( ( ( request.params.addChannels === undefined ) &&
+         ( request.params.removeChannels === undefined ) ) ||
+       ( request.params.userId === undefined ) )
+    {
+        response.error("missing required parameters");
+    }
+
+    var addChannelsEh       = false;
+    var removeChannelsEh    = false;
+
+    if ( request.params.addChannels !== undefined )
+    {
+        addChannelsEh       = true;
+    }
+    if ( request.params.removeChannels !== undefined )
+    {
+        removeChannelsEh    = true;
+    }
+
+    var userId      = request.params.userId;
+
+    funcs.conditionalLog("0 with userId [" + userId + "]");
+
+    var Installation= Parse.Object.extend(Parse.Installation);
+    var installQuery= new Parse.Query(Installation);
+    installQuery.equalTo("userId", userId);
+
+    funcs.conditionalLog("1 about to find");
+
+    installQuery.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            var theCount = results.length.toString();
+
+            funcs.conditionalLog("2 success getting results");
+            funcs.conditionalLog("with " + theCount + " results");
+
+            if ( results.length > 0 )
+            {
+                funcs.conditionalLog("3 results has more than 0");
+
+                for ( rIdx = 0; rIdx < results.length; rIdx += 1 )
+                {
+                    var theTemp = rIdx.toString();
+
+                    funcs.conditionalLog("4 is index " + theTemp);
+
+                    var pfInstallation = results[rIdx];
+
+                    funcs.conditionalLog("4.1 have pfInstallation");
+
+                    var totalCount  = 0;
+
+                    if ( removeChannelsEh === true )
+                    {
+                        var removeChannels  = request.params.removeChannels;
+
+                        funcs.conditionalLog("4.2 about to remove channels");
+
+                        totalCount += removeChannels.length;
+
+                        if ( removeChannels.length > 0 )
+                        {
+                            for ( cIdx = 0; cIdx < removeChannels.length; cIdx += 1 )
+                            {
+                                var rChannel = removeChannels[cIdx];
+                                pfInstallation.remove("channels",rChannel);
+                            }
+                        }
+
+                        funcs.conditionalLog("4.3 finished removing channels");
+                    }
+
+                    if ( addChannelsEh === true )
+                    {
+                        var addChannels = request.params.addChannels;
+
+                        funcs.conditionalLog("4.4 about to add channels");
+
+                        totalCount += addChannels.length;
+
+                        if ( addChannels.length > 0 )
+                        {
+                            for ( cIdx = 0; cIdx < addChannels.length; cIdx += 1 )
+                            {
+                                var aChannel = addChannels[cIdx];
+                                pfInstallation.addUnique("channels",aChannel);
+                            }
+                        }
+
+                        funcs.conditionalLog("4.5 finished adding channels");
+                    }
+
+                    funcs.conditionalLog("5 finished modifying " + totalCount.toString() + " channels");
+                }
+
+                funcs.conditionalLog("6 about to save");
+
+                Parse.Object.saveAll(results,
+                {
+                    useMasterKey: true,
+                    success: function(saveResults)
+                    {
+                        // All the objects were saved.
+                        funcs.conditionalLog("7 Saves were successful");
+                        funcs.conditionalLog("7.1 Getting Channels");
+
+                        Parse.Cloud.run("getChannelsOfUserWithUserId",
+                        {
+                            userId: request.params.userId
+                        },
+                        {
+                            useMasterKey: true,
+                            success: function(getResult)
+                            {
+                                response.success(getResult);
+                            },
+                            error: function(getError)
+                            {
+                                response.error(getError);
+                            }
+                        });
+                    },
+                    error: function(saveError)
+                    {
+                        // An error occurred while saving one of the objects.
+                        funcs.conditionalLog("7.2 Error saving Installation objects");
+                        funcs.conditionalLog(saveError);
+                        response.error(saveError);
+                    }
+                });
+            }
+            else
+            {
+                // Query Successful, but no Results Count
+                funcs.conditionalLog("8.1 Query returned no results");
+                response.error("No Installations Found for userId");
+            }
+        },
+        error: function (queryError)
+        {
+            funcs.conditionalLog("8.2 query Error");
+            funcs.conditionalLog(queryError);
+
+            response.error(queryError);
+        }
+    });
+});
+
+
+
 /*
 Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
 {
