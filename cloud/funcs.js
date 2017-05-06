@@ -55,7 +55,7 @@ module.exports =
         var theRandom   = pvtRandomNumberWithNumberOfDigits(numDigits);
         return theRandom;
     }
-
+    /*
 ///////////////////////////////////////
 //
 // ARRAY.contains(element)
@@ -89,6 +89,8 @@ module.exports =
         }
         this.add(theElement);
     }
+
+    */
 };
 
 

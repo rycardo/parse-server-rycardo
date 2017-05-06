@@ -240,6 +240,44 @@ Parse.Cloud.define("getTestDictionary", function(request, response)
 
 ///////////////////////////////////////
 //
+// getTestArray
+//
+///////////////////////////////////////
+Parse.Cloud.define("getTestArray", function(request, response)
+{
+    funcs.conditionalLog("getTestArray");
+
+    var theStringArray = ["A","B","C","D"];
+
+    if ( theStringArray.contains("A") )
+    {
+        theStringArray.add("Found A");
+    }
+    else
+    {
+        theStringArray.add("Didn't Find A");
+    }
+    if ( theStringArray.contains("Z") )
+    {
+        theStringArray.add("Found Z");
+    }
+    else
+    {
+        theStringArray.add("Didn't Find Z");
+    }
+    funcs.conditionalLog("Just before creating dictionary");
+
+    theStringArray.addUnique("A");
+    theStringArray.addUnique("C");
+
+    funcs.conditionalLog("Just after creating array tests");
+
+    response.success(theStringArray);
+});
+
+
+///////////////////////////////////////
+//
 // convertUsernameToBackToEmail
 // Allows the app to convert again
 // This should only be necesasary for me testing.
