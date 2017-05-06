@@ -1287,7 +1287,6 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
                 {
                     funcs.conditionalLog("INVALID COMPARATOR!");
                     response.error("Invalid Comparator '" + compareKey + "' For '" + compareVer + "'");
-                    break;
                 }
             });
         }
