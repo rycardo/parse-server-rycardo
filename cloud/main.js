@@ -1085,9 +1085,23 @@ Parse.Cloud.define("pushNotificationTest", function(request, response)
 //
 // REQUIRED PARAMETERS:
 //
-// startObjectId        The first characters of the objectId
 // queryClass           The name of the class for the objectId (User | Installation)
 // payload              The entire Push Payload
+//
+//
+// ATLEAST ONE REQUIRED PARAMETER:
+//
+// channels             The PFInstallation channel(s)
+//                      If you use channels, you can not use any of the below three.
+//                      However, they can be combined.
+// startObjectId        The first characters of the objectId
+// userIds              The PFUser objectIds
+// versionsMatching     The Versions Matching Dictionary
+//                      KEY one of: <,<<, <=, ==, >=, >,>>,!=
+//                      VALUE: Version Number to compare #.##?.##?#?#?#?#?
+//                      NOTE: < and << are both Less Than
+//                            > and >> are both Greater Than
+//                            use the one that makes sense to you.
 //
 //
 // OPTIONAL PARAMTERS:
@@ -1112,9 +1126,12 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
     funcs.conditionalLog("sendPushNotificationWithParams started");
 
     var sendToChannels  = false;
+    var checkVersionsEh = false;
+
     var message         = undefined;
     var theResult       = undefined;
     var sendChannels    = undefined;
+    var versionsMatching= undefined;
 
     if ( ( request.params.queryClass.length    === 0 ) ||
          ( request.params.payload.length       === 0 ) ||
@@ -1126,9 +1143,10 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
 
     if ( ( request.params.startObjectId === undefined ) &&
          ( request.params.userIds === undefined ) &&
-         ( request.params.channels === undefined ) )
+         ( request.params.channels === undefined ) &&
+         ( request.params.versionsMatching === undefined ) )
     {
-        message = "missing either support code, user ids, or channel(s)";
+        message = "missing matching parameters";
     }
 
     if ( ( request.params.startObjectId !== undefined ) &&
@@ -1153,6 +1171,19 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         {
             sendChannels    = request.params.channels;
             sendToChannels  = true;
+        }
+    }
+
+    if ( request.params.versionsMatching !== undefined )
+    {
+        if ( request.params.versionsMatching.length === 0 )
+        {
+            message = "missing version matching parameter(s)";
+        }
+        else
+        {
+            versionsMatching    = request.params.versionsMatching;
+            checkVersionsEh     = true;
         }
     }
 
@@ -1214,6 +1245,51 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         {
             installQuery.startsWith("objectId", request.params.startObjectId);
             funcs.conditionalLog("Send Push 2.6");
+        }
+        else if ( checkVersionsEh === true )
+        {
+            funcs.conditionalLog("Send Push 2.6.1 about to iterate through versionsMatching");
+
+            versionsMatching.forEach(function(compareKey,compareVer)
+            {
+                funcs.conditionalLog("CompareKey [" + compareKey + "] compareVer [" + compareVer + "]");
+                if ( ( compareKey === ">" ) || ( compareKey === ">>" ) )
+                {
+                    funcs.conditionalLog("Greater Than");
+                    installQuery.greaterThan("appVersion", compareVer);
+                }
+                else if ( compareKey === ">=" )
+                {
+                    funcs.conditionalLog("Greater Than Or Equal To");
+                    installQuery.greaterThanOrEqualTo("appVersion", compareVer);
+                }
+                else if ( compareKey === "==" )
+                {
+                    funcs.conditionalLog("Equal To");
+                    installQuery.equalTo("appVersion", compareVer);
+                }
+                else if ( compareKey === "<=" )
+                {
+                    funcs.conditionalLog("Less Than Or Equal To");
+                    installQuery.lessThanOrEqualTo("appVersion", compareVer);
+                }
+                else if ( ( compareKey === "<" )  || ( compareKey === "<<" ) )
+                {
+                    funcs.conditionalLog("Less Than");
+                    installQuery.lessThan("appVersion", compareVer);
+                }
+                else if ( compareKey === "!=" )
+                {
+                    funcs.conditionalLog("Not Equal To");
+                    installQuery.notEqualTo("appVersion", compareVer);
+                }
+                else
+                {
+                    funcs.conditionalLog("INVALID COMPARATOR!");
+                    response.error("Invalid Comparator '" + compareKey + "' For '" + compareVer + "'");
+                    break;
+                }
+            });
         }
         funcs.conditionalLog("Send Push 2.7");
     }
