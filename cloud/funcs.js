@@ -54,13 +54,13 @@ module.exports =
     {
         var theRandom   = pvtRandomNumberWithNumberOfDigits(numDigits);
         return theRandom;
-    }
+    },
 
     arrayContainsElement: function ( array, element )
     {
         var containsEh  = pvtArrayContainsElement(array,element);
         return containsEh;
-    }
+    },
 
     arrayAfterAddingUniqueElement: function ( array, element )
     {
