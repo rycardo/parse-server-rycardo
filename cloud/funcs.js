@@ -77,14 +77,23 @@ module.exports =
 ///////////////////////////////////////
 function pvtArrayContainsElement(array,element)
 {
+    pvtConditionalLog("I'm In");
+
     var i   = array.length;
+
+    pvtConditionalLog("Array Length is " + i.toString());
+
     while ( i-- )
     {
+        pvtConditionalLog("Checking Index " + i.toString());
+
         if ( array[i] === element )
         {
+            pvtConditionalLog("Found it");
             return true;
         }
     }
+    pvtConditionalLog("Never found it");
     return false;
 }
 
