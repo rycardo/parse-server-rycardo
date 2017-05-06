@@ -55,43 +55,56 @@ module.exports =
         var theRandom   = pvtRandomNumberWithNumberOfDigits(numDigits);
         return theRandom;
     }
-    /*
-///////////////////////////////////////
-//
-// ARRAY.contains(element)
-//
-///////////////////////////////////////
-    Array.prototype.contains = function(theElement)
+
+    arrayContainsElement: function ( array, element )
     {
-        var i   = this.length;
-        while ( i-- )
-        {
-            if ( this[i] === theElement )
-            {
-                return true;
-            }
-        }
-        return false;
+        var containsEh  = pvtArrayContainsElement(array,element);
+        return containsEh;
     }
 
-///////////////////////////////////////
-//
-// ARRAY.addUnique(element)
-//
-///////////////////////////////////////
-    Array.prototype.addUnique = function(theElement)
+    arrayAfterAddingUniqueElement: function ( array, element )
     {
-        var i   = this.length;
-
-        if ( this.contains(theElement) )
-        {
-            return
-        }
-        this.add(theElement);
+        var newArray    = pvtArrayAfterAddingUniqueElement(array,element);
+        return newArray;
     }
-
-    */
 };
+
+
+///////////////////////////////////////
+//
+// arrayContainsElement(array,element)
+//
+///////////////////////////////////////
+function pvtArrayContainsElement(array,element)
+{
+    var i   = array.length;
+    while ( i-- )
+    {
+        if ( array[i] === element )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+///////////////////////////////////////
+//
+// arrayAfterAddingUniqueElement(array,element)
+//
+///////////////////////////////////////
+function pvtArrayAfterAddingUniqueElement(array,element)
+{
+    if ( pvtArrayContainsElement(array,element) )
+    {
+        return array;
+    }
+
+    array.add(element)
+
+    return array;
+}
 
 
 ///////////////////////////////////////
