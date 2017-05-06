@@ -607,8 +607,8 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
                                 //var p = arr.indexOf(3) //p = 2
                                 //p = arr.indexOf(7) //p = -1
                                 funcs.conditionalLog("4.2 checking if remove from role");
-                                // Contains is in my funcs as a prototype/extend
-                                var isRemove    = removeRoles.contains(roleName);
+
+                                var isRemove    = funcs.arrayContainsElement(removeRoles,roleName);
 
                                 if ( isRemove !== -1 )
                                 {
@@ -626,7 +626,7 @@ Parse.Cloud.define("modifyRolesOfUserWithUserId", function(request, response)
                             {
                                 funcs.conditionalLog("4.6 checking if add to role");
 
-                                var isAdd       = addRoles.contains(roleName);
+                                var isAdd       = funcs.arrayContainsElement(addRoles, roleName);
 
                                 if ( isAdd !== -1 )
                                 {
