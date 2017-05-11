@@ -1288,45 +1288,52 @@ Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
         {
             funcs.conditionalLog("Send Push 2.6.1 about to iterate through versionsMatching");
 
-            versionsMatching.forEach(function(compareKey,compareVer)
+            var compareKey;
+            for ( compareKey in versionsMatching )
             {
-                funcs.conditionalLog("CompareKey [" + compareKey + "] compareVer [" + compareVer + "]");
-                if ( ( compareKey === ">" ) || ( compareKey === ">>" ) )
+                if ( versionsMatching.hasOwnProperty(compareKey) )
                 {
-                    funcs.conditionalLog("Greater Than");
-                    installQuery.greaterThan("appVersion", compareVer);
+                    // this will check if key is owned by data object and not by any of it's ancestors
+                    var compareVer = versionsMatching[compareKey];
+
+                    funcs.conditionalLog("CompareKey [" + compareKey + "] compareVer [" + compareVer + "]");
+                    if ( ( compareKey === ">" ) || ( compareKey === ">>" ) )
+                    {
+                        funcs.conditionalLog("Greater Than");
+                        installQuery.greaterThan("appVersion", compareVer);
+                    }
+                    else if ( compareKey === ">=" )
+                    {
+                        funcs.conditionalLog("Greater Than Or Equal To");
+                        installQuery.greaterThanOrEqualTo("appVersion", compareVer);
+                    }
+                    else if ( compareKey === "==" )
+                    {
+                        funcs.conditionalLog("Equal To");
+                        installQuery.equalTo("appVersion", compareVer);
+                    }
+                    else if ( compareKey === "<=" )
+                    {
+                        funcs.conditionalLog("Less Than Or Equal To");
+                        installQuery.lessThanOrEqualTo("appVersion", compareVer);
+                    }
+                    else if ( ( compareKey === "<" )  || ( compareKey === "<<" ) )
+                    {
+                        funcs.conditionalLog("Less Than");
+                        installQuery.lessThan("appVersion", compareVer);
+                    }
+                    else if ( compareKey === "!=" )
+                    {
+                        funcs.conditionalLog("Not Equal To");
+                        installQuery.notEqualTo("appVersion", compareVer);
+                    }
+                    else
+                    {
+                        funcs.conditionalLog("INVALID COMPARATOR!");
+                        response.error("Invalid Comparator '" + compareKey + "' For '" + compareVer + "'");
+                    }
                 }
-                else if ( compareKey === ">=" )
-                {
-                    funcs.conditionalLog("Greater Than Or Equal To");
-                    installQuery.greaterThanOrEqualTo("appVersion", compareVer);
-                }
-                else if ( compareKey === "==" )
-                {
-                    funcs.conditionalLog("Equal To");
-                    installQuery.equalTo("appVersion", compareVer);
-                }
-                else if ( compareKey === "<=" )
-                {
-                    funcs.conditionalLog("Less Than Or Equal To");
-                    installQuery.lessThanOrEqualTo("appVersion", compareVer);
-                }
-                else if ( ( compareKey === "<" )  || ( compareKey === "<<" ) )
-                {
-                    funcs.conditionalLog("Less Than");
-                    installQuery.lessThan("appVersion", compareVer);
-                }
-                else if ( compareKey === "!=" )
-                {
-                    funcs.conditionalLog("Not Equal To");
-                    installQuery.notEqualTo("appVersion", compareVer);
-                }
-                else
-                {
-                    funcs.conditionalLog("INVALID COMPARATOR!");
-                    response.error("Invalid Comparator '" + compareKey + "' For '" + compareVer + "'");
-                }
-            });
+            }
         }
         funcs.conditionalLog("Send Push 2.7");
     }
