@@ -395,8 +395,9 @@ Parse.Cloud.define("getMessageCount", function(request, response)
 //
 // Response:
 // DICTIONARY
-// allCount     NUMBER  number of messages (new and read)
+// allCount     NUMBER  number of messages (new, read, and flagged)
 // newCount     NUMBER  number of unread messages
+// flaggedCount NUMBER  number of flagged messages
 //
 ///////////////////////////////////////
 Parse.Cloud.define("getMessagesCount", function(request, response)
@@ -415,8 +416,9 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            var allMessagesCount = results.length;
-            var newMessagesCount = 0;
+            var allMessagesCount        = results.length;
+            var flaggedMessagesCount    = 0;
+            var newMessagesCount        = 0;
 
             var message = null;
 
@@ -429,14 +431,22 @@ Parse.Cloud.define("getMessagesCount", function(request, response)
                 }
                 else
                 {
+                    funcs.conditionalLog("new");
                     newMessagesCount += 1;
+                }
+
+                if ( message.has("flaggedAt") )
+                {
+                    funcs.conditionalLog("flagged");
+                    flaggedMessagesCount += 1;
                 }
             }
             funcs.conditionalLog("messages count: " + allMessagesCount.toString() );
+            funcs.conditionalLog("flagged count: " + flaggedMessagesCount.toString() );
             funcs.conditionalLog("unread count:   " + newMessagesCount.toString() );
             funcs.conditionalLog("SUCCESS");
 
-            var theResult = { allCount: allMessagesCount, newCount: newMessagesCount };
+            var theResult = { allCount: allMessagesCount, newCount: newMessagesCount, flaggedCount: flaggedMessagesCount };
 
             response.success(theResult);
         },
