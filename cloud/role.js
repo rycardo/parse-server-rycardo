@@ -56,12 +56,38 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
 {
     funcs.conditionalLog("addCurrentUserToRoleWithName started");
 
-    if ( ( request.user === undefined ) || ( request.user === null ) )
+    if ( ( request.user === undefined ) ||
+         ( request.user === null ) ||
+         ( request.params.roleName === undefined ) ||
+         ( request.params.roleName === null ) )
     {
         response.error("Missing Required Parameters");
         return;
     }
 
+    /*
+     * var roleName    = request.params.roleName;
+     * var userId      = request.params.userId;
+     */
+
+    Parse.Cloud.run("addUserWithIdToRoleWithName",
+    {
+        userId: request.user.id,
+        roleName: request.params.roleName
+
+    },
+    {
+        useMasterKey: true,
+        success: function(addResult)
+        {
+            response.success(true);
+        },
+        error: function(addError)
+        {
+            response.error(addError);
+        }
+    });
+    /*
     funcs.conditionalLog("Getting params.");
 
     var roleName    = request.params.roleName;
@@ -131,12 +157,13 @@ Parse.Cloud.define("addCurrentUserToRoleWithName", function(request, response)
             response.error(queryError);
         }
     });
+    */
 });
 
 
 ///////////////////////////////////////
 //
-// addCurrentUserToRoleWithName
+// addUserWithIdToRoleWithName
 //
 // Params:
 // userId
