@@ -220,26 +220,48 @@ Parse.Cloud.define("addUserWithIdToRoleWithName", function(request, response)
 
             funcs.conditionalLog("2.1");
 
-            usersRelation.push(request.user);
+            var addUserQuery    = new Parse.Query(Parse.User);
 
-            roleResult.save(null,
+            funcs.conditionalLog("2.2 get user object to add");
+
+            addUserQuery.get(userId,
             {
                 useMasterKey: true,
-                success: function(saveObject)
+                success: function(addUserResult)
                 {
-                    // The save was successful.
-                    funcs.conditionalLog("3 success saving user to role");
-                    response.success(true);
+                    funcs.conditionalLog("2.3 was able to get user");
+
+                    usersRelation.add(addUserResult);
+
+                    funcs.conditionalLog("2.4 added user to relation");
+
+                    roleResult.save(null,
+                    {
+                        useMasterKey: true,
+                        success: function(saveResult)
+                        {
+                            // The save was successful.
+                            funcs.conditionalLog("3 success saving user to role");
+                            response.success(true);
+                        },
+                        error: function(saveError)
+                        {
+                            // The save failed.
+                            funcs.conditionalLog("4 error saving role");
+                            funcs.conditionalLog("it might be if the user was already included");
+                            funcs.conditionalLog("the save wouldn't success, because the user");
+                            funcs.conditionalLog("wasn't added, therefor the role not changed.");
+                            funcs.conditionalLog("check this.");
+                            response.error(saveError);
+                        }
+                    });
                 },
-                error: function(saveError)
+                error: function(addUserError)
                 {
-                    // The save failed.
-                    funcs.conditionalLog("4 error saving role");
-                    funcs.conditionalLog("it might be if the user was already included");
-                    funcs.conditionalLog("the save wouldn't success, because the user");
-                    funcs.conditionalLog("wasn't added, therefor the role not changed.");
-                    funcs.conditionalLog("check this.");
-                    response.error(saveError);
+                    // Query Failed
+                    funcs.conditionalLog("5 Add User Get Failed");
+                    funcs.conditionalLog(addUserError);
+                    response.error(addUserError);
                 }
             });
         },
