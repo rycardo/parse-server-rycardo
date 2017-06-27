@@ -308,9 +308,15 @@ Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
                         funcs.conditionalLog("Version 1 User");
 
                         theResult   = {
+                                        "action"        : CONST.ACTION_USER_CONVERT,
+                                        "description"   : "Found user matching email address, first, and last names, convert user."
+                                      };
+                        /*
+                        theResult   = {
                                         action : ( CONST.ACTION_USER_CONVERT | CONST.ACTION_USER_VERIFY ),
                                         description : "Found user matching email address, first, and last names, verify and convert."
                                       };
+                        */
                         response.success(theResult);
                     }
                     else if ( userVersion === 2 )
