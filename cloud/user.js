@@ -1,0 +1,1682 @@
+const CONST = require("./const.js");
+var funcs = require("./funcs.js");
+
+///////////////////////////////////////
+//
+// determineHowToHandleUserWith
+//
+// Params:
+// emailAddress
+// phoneNumber
+// verificationCode
+// firstName
+// lastName
+//
+// Success Response:
+// Dictionary:
+// action       Action Responses, see constants
+// description  A description (non-static text) of action
+// error        If a non-fatal error happened, it may be included
+//
+// sessionToken is include when CONST.ACTION_USER_LOGGED_IN
+///////////////////////////////////////
+Parse.Cloud.define("determineHowToHandleUserWith", function(request, response)
+{
+/*
+                                    EmailAddress:(NSString *)emailAddress
+									 phoneNumber:(NSString *)phoneNumber
+								verificationCode:(NSString *)verificationCode
+									   firstName:(NSString *)firstName
+										lastName:(NSString *)lastName
+*/
+    funcs.conditionalLog("*");
+    funcs.conditionalLog("*");
+    funcs.conditionalLog("determineHowToHandleUserWith has begun.");
+    funcs.conditionalLog("*");
+    funcs.conditionalLog("*");
+
+    if ( ( request.params.emailAddress === undefined ) ||
+         ( request.params.phoneNumber === undefined  ) ||
+         ( request.params.firstName === undefined    ) ||
+         ( request.params.lastName === undefined     ) )
+    {
+        response.error("Missing Required Parameters.");
+    }
+
+    funcs.conditionalLog("1");
+
+    var verificationCode    = "";
+    if ( request.params.verificationCode.length > 0 )
+    {
+        verificationCode    = request.params.verificationCode;
+        verificationCode    = verificationCode.replace(/\D/g, "");
+    }
+
+    funcs.conditionalLog("2");
+
+    var pmPhoneNumber       = request.params.phoneNumber;
+    pmPhoneNumber           = pmPhoneNumber.replace(/\D/g, "");
+
+    var pmEmailAddress      = request.params.emailAddress;
+    var pmFirstName         = request.params.firstName;
+    var pmLastName          = request.params.lastName;
+
+    var theResult           = {};
+
+    funcs.conditionalLog("3");
+
+    if ( request.user )
+    {
+        // Current User Passed
+        funcs.conditionalLog("Current User Passed");
+
+        var cuFirstName     = request.user.get("firstName");
+        var cuLastName      = request.user.get("lastName");
+
+        // Current User Exists, compare information
+        if ( request.user.username === pmEmailAddress )
+        {
+            funcs.conditionalLog("Username is email address");
+
+            if ( ( cuFirstName === pmFirstName ) &&
+                 ( cuLastName === pmLastName ) )
+            {
+                // First and Last Names match
+                funcs.conditionalLog("First and Last names match");
+                funcs.conditionalLog("Convert User to Version 2");
+
+                theResult   = {
+                                action : ( CONST.ACTION_USER_CONVERT ),
+                                description: "Convert user to version 2"
+                              };
+            }
+            else
+            {
+                // First and Last Names don't match
+                funcs.conditionalLog("First and Last names don't match");
+                funcs.conditionalLog("Convert User after Verifying");
+
+                theResult   = {
+                                action : ( CONST.ACTION_USER_CONVERT | CONST.ACTION_USER_VERIFY ),
+                                description: "Convert user to version 1; Verify user"
+                              };
+            }
+            response.success(theResult);
+        }
+        else if ( request.user.username === pmPhoneNumber )
+        {
+            // Username is Phone Number
+            if ( ( cuFirstName === pmFirstName  ) &&
+                 ( cuLastName === pmLastName    ) )
+            {
+                // First and Last Names match
+                funcs.conditionalLog("First and Last names match");
+
+                if ( verificationCode.length > 0 )
+                {
+                    // Have a verification code, attempt to login
+                    funcs.conditionalLog("Have a Verification Code");
+
+                    var username    = pmPhoneNumber;
+                    var token       = process.env.USER_SERVICE_TOKEN;
+                    var password    = token + "-" + verificationCode;
+
+                    Parse.User.logIn(username, password,
+                    {
+                        success: function(tempUser)
+                        {
+                            // Was able to login with the passed verification code, so have the correct user
+                            theResult   = {
+                                            action : ( CONST.ACTION_USER_ACTIVE | CONST.ACTION_USER_LOGGED_IN ),
+                                            description : "Current User Verified",
+                                            sessionToken : tempUser.getSessionToken()
+                                          };
+                            response.success(theResult);
+                        },
+                        error: function(tempUser, error)
+                        {
+                            // The login failed. Check error to see why.
+                            theResult   = {
+                                            action: ( CONST.ACTION_USER_VERIFY |
+                                                      CONST.ACTION_USER_INVALID_VCODE ),
+                                            description: "Verify User",
+                                            parseError: error
+                                          };
+                            response.success(theResult);
+                        }
+                    });
+                }
+                else
+                {
+                    // No Verification Code
+                    try
+                    {
+                        var userVerify  = CONST.ACTION_USER_VERIFY.toString();
+
+                        funcs.conditionalLog("Verify User:");
+                        funcs.conditionalLog(userVerify);
+                        theResult   = {
+                                    action : ( CONST.ACTION_USER_VERIFY ),
+                                    description: "Verify User"
+                                      };
+                        response.success(theResult);
+                    }
+                    catch (e)
+                    {
+                        funcs.conditionalLog("Error with CONST.ACTION_USER_VERIFY");
+                        response.error(e);
+                    }
+                    finally {}
+                    /*
+                    theResult   = {
+                                    action : ( CONST.ACTION_USER_VERIFY ),
+                                    description: "Verify User"
+                                  };
+                    */
+                }
+            }
+            else
+            {
+                // First and Last Names don't match
+                theResult   = {
+                                action : ( CONST.ACTION_USER_VERIFY ),
+                                description: "Verify User"
+                              };
+                response.success(theResult);
+            }
+        }
+    }
+
+    funcs.conditionalLog("4");
+
+    // Either
+    // No Current User Passed
+    // Or Current User Doesn't Match Passed Info
+    // Check Passed Info
+
+    var phoneQuery          = new Parse.Query(Parse.User);
+    phoneQuery.equalTo("phoneNumber", pmPhoneNumber);
+
+    funcs.conditionalLog("5");
+
+    var emailQuery          = new Parse.Query(Parse.User);
+    emailQuery.equalTo("email", pmEmailAddress);
+
+    funcs.conditionalLog("6");
+
+    var orQuery             = Parse.Query.or(phoneQuery, emailQuery);
+    orQuery.find(
+    {
+        useMasterKey: true,
+        success: function(usersResults)
+        {
+            funcs.conditionalLog("or S 1");
+
+            var userCountString = usersResults.length.toString();
+
+            funcs.conditionalLog(userCountString + " users found");
+
+            if ( usersResults.length === 0 )
+            {
+                funcs.conditionalLog("or S 1.1");
+
+                theResult   = {
+                                action : ( CONST.ACTION_USER_CREATE ),
+                                description : "No user found with username as email address or phone number"
+                              };
+                funcs.conditionalLog("or S 1.2");
+
+                response.success(theResult);
+            }
+            else
+            {
+                // query found one or more users
+
+                funcs.conditionalLog("or S 2");
+
+                var foundUser       = null;
+                var userVersion     = 0;
+
+                funcs.conditionalLog("Comparing To:");
+                funcs.conditionalLog("email [" + pmEmailAddress + "]");
+                funcs.conditionalLog("phone [" + pmPhoneNumber + "]");
+                funcs.conditionalLog("first [" + pmFirstName + "]");
+                funcs.conditionalLog("last [" + pmLastName + "]");
+
+                for ( uIdx = 0; uIdx < usersResults.length; uIdx = (uIdx + 1) )
+                {
+                    // Loop through matching users (should only be 0, 1, or 2)
+                    var thisUser    = usersResults[uIdx];
+                    var tuUsername  = thisUser.get("username");
+                    var tuFirstname = thisUser.get("firstName");
+                    var tuLastName  = thisUser.get("lastName");
+
+                    funcs.conditionalLog("tuF [" + tuFirstname + "]");
+                    funcs.conditionalLog("tuL [" + tuLastName + "]");
+                    funcs.conditionalLog("tuU [" + tuUsername + "]");
+
+                    if ( tuUsername === pmPhoneNumber )
+                    {
+                        // Username matches phone Number
+                        funcs.conditionalLog("Username matches phone number");
+
+                        if ( ( tuFirstname === pmFirstName ) &&
+                             ( tuLastName  === pmLastName  ) )
+                        {
+                            funcs.conditionalLog("Found User");
+                            // First and Last Names match, and have Verification Code
+                            // Assign to foundUser, then verify credentials
+                            foundUser   = thisUser;
+                            userVersion = 2;
+                            break;
+                        }
+                    }
+                    else if ( tuUsername === pmEmailAddress )
+                    {
+                        // Username matches emailAddress
+                        funcs.conditionalLog("username matches email address");
+
+                        if ( ( tuFirstname === pmFirstName ) &&
+                             ( tuLastName  === pmLastName ) )
+                        {
+                            // First and Last Names match,
+                            // Assign to foundUser, then verify credentials
+                            funcs.conditionalLog("Found User");
+
+                            foundUser   = thisUser;
+                            userVersion = 1;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // Nothing to do if email and phone don't match
+                        // Although should never get here since the orQuery is for them
+                        console.log("Check This Function, shouldn't get this code");
+                    }
+                }
+
+                funcs.conditionalLog("7");
+
+                if ( foundUser !== null )
+                {
+                    funcs.conditionalLog("Have a user");
+
+                    if ( userVersion === 1 )
+                    {
+                        // User found, with email address as username
+                        funcs.conditionalLog("Version 1 User");
+
+                        theResult   = {
+                                        "action"        : CONST.ACTION_USER_CONVERT,
+                                        "description"   : "Found user matching email address, first, and last names, convert user."
+                                      };
+                        /*
+                        theResult   = {
+                                        action : ( CONST.ACTION_USER_CONVERT | CONST.ACTION_USER_VERIFY ),
+                                        description : "Found user matching email address, first, and last names, verify and convert."
+                                      };
+                        */
+                        response.success(theResult);
+                    }
+                    else if ( userVersion === 2 )
+                    {
+                        // User found, with phone number as username
+                        funcs.conditionalLog("Version 2 User");
+
+                        if ( verificationCode.length > 0 )
+                        {
+                            funcs.conditionalLog("Have a Verification Code");
+
+                            var username    = pmPhoneNumber;
+                            var token       = process.env.USER_SERVICE_TOKEN;
+                            var password    = token + "-" + verificationCode;
+
+                            Parse.User.logIn(username, password,
+                            {
+                                success: function(tempUser)
+                                {
+                                    // Was able to login with the passed verification code, so have the correct user
+                                    theResult   = {
+                                                    action : ( CONST.ACTION_USER_LOGGED_IN ),
+                                                    description : "Current User Verified",
+                                                    sessionToken : tempUser.getSessionToken()
+                                                  };
+                                    response.success(theResult);
+                                },
+                                error: function(tempUser, tempError)
+                                {
+                                    // The login failed. Check error to see why.
+                                    theResult   = {
+                                                    action: ( CONST.ACTION_USER_VERIFY ),
+                                                    description: "Verify User",
+                                                    error: tempError
+                                                  };
+                                    response.success(theResult);
+                                }
+                            });
+                        }
+                        else
+                        {
+                            // No Verification Code
+                            funcs.conditionalLog("No Verification Code");
+
+                            theResult   = {
+                                            action : ( CONST.ACTION_USER_VERIFY ),
+                                            description: "Verify User"
+                                          };
+                            response.success(theResult);
+                        }
+                    }
+                }
+                else
+                {
+                    // No User Found,
+                    // Think I can advise to createResult
+                    funcs.conditionalLog("No User Found");
+
+                    theResult   = {
+                                    action: ( CONST.ACTION_USER_CREATE ),
+                                    description: "No User Found"
+                                  };
+                    response.success(theResult);
+                }
+            }
+        },
+        error: function(usersError)
+        {
+            console.log("Error in orQuery");
+            console.log(usersError);
+
+            response.error(usersError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// getUserIdForUserWithPhoneNumberEmailAddress
+//
+// Params:
+// phoneNumber (10 digit for North America)
+// emailAddress
+//
+// Response:
+// STRING PFUser objectId
+//
+///////////////////////////////////////
+Parse.Cloud.define("getUserIdForUserWithPhoneNumberEmailAddress", function(request, response)
+{
+    // Get User's objectId (aka UserId)
+    var User            = Parse.Object.extend("_User");
+    var userQuery       = new Parse.Query(User);
+    userQuery.equalTo("username", request.params.phoneNumber);
+    userQuery.equalTo("email", request.params.emailAddress);
+    userQuery.find(
+    {
+        useMasterKey: true,
+        success: function(userResult)
+        {
+            var foundUser = userResult[0];
+            response.success(foundUser.id);
+            // above was foundUser.objectId
+        },
+        error: function(userError)
+        {
+            funcs.conditionalLog("user query error");
+            funcs.conditionalLog(userError);
+            response.error(userError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// getUserWithUserId
+//
+// Params:
+// userId
+//
+// Response:
+// PFUser object
+//
+///////////////////////////////////////
+Parse.Cloud.define("getUserWithId", function(request, response)
+{
+    var userIdParam = request.params.userId;
+
+    // Check if email exists and return associated user
+    Parse.Cloud.run("userWithUserIdExists",
+    {
+        userId: userIdParam
+    },
+    {
+        useMasterKey: true,
+        success: function(existsResult)
+        {
+            if ( JSON.parse(existsResult) )
+            {
+                // Get user with id
+                var User          = Parse.Object.extend("_User");
+                var userQuery     = new Parse.Query(User);
+                userQuery.get(userIdParam,
+                {
+                    useMasterKey: true,
+                    success: function(userResult)
+                    {
+                        response.success(userResult);
+                    },
+                    error: function(userError)
+                    {
+                        console.log("user query error");
+                        console.log(userError);
+                        response.error(userError);
+                    }
+                });
+            }
+            else
+            {
+                response.error("no user found with that ID");
+            }
+        },
+        error: function(existsError)
+        {
+            console.log("exists error");
+            console.log(existsError);
+            response.error(existsError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// getUserIdForUserWithPhoneNumberEmailAddress
+//
+///////////////////////////////////////
+Parse.Cloud.define("getUserIdForUserWithPhoneNumberEmailAddress", function(request, response)
+{
+    // Get User's objectId (aka UserId)
+    var User            = Parse.Object.extend("_User");
+    var userQuery       = new Parse.Query(User);
+    userQuery.equalTo("username", request.params.phoneNumber);
+    userQuery.equalTo("email", request.params.emailAddress);
+    userQuery.find(
+    {
+        useMasterKey: true,
+        success: function(userResult)
+        {
+            var foundUser = userResult[0];
+            response.success(foundUser.id);
+            // above was foundUser.objectId
+        },
+        error: function(userError)
+        {
+            funcs.conditionalLog("user query error");
+            funcs.conditionalLog(userError);
+            response.error(userError);
+        }
+    });
+});
+
+
+
+///////////////////////////////////////
+//
+// getUsernameAndIdForUserWithPhoneNumberEmailAddress
+//
+// Params:
+// phoneNumber
+// emailAddress
+//
+// Response:
+// Dictionary
+// userCount            NUMBER  Number of users that match
+// foundPhoneNumber     BOOL    whether a user with this phone number exists
+// foundEmailAddress    BOOL    whether a user with this email address exists
+// matchedBoth          BOOL    whether a user with both exists
+// description          STRING
+// username             STRING
+// userId               STRING  User's objectId
+//
+///////////////////////////////////////
+Parse.Cloud.define("getUsernameAndIdForUserWithPhoneNumberEmailAddress", function(request, response)
+{
+    // Get User's objectId (aka UserId)
+    //var User            = Parse.Object.extend("_User");
+    //var userQuery       = new Parse.Query(User);
+    var phoneNumber     = request.params.phoneNumber;
+    var emailAddress    = request.params.emailAddress;
+
+    var phoneQuery      = new Parse.Query(Parse.User);
+    phoneQuery.equalTo("phoneNumber", request.params.phoneNumber);
+
+    var emailQuery      = new Parse.Query(Parse.User);
+    emailQuery.equalTo("email", request.params.emailAddress);
+
+    var orQuery         = Parse.Query.or(phoneQuery, emailQuery);
+    orQuery.find(
+    {
+        useMasterKey: true,
+        success: function(userResults)
+        {
+            var theResult   = null;
+
+            if ( userResults.length === 0 )
+            {
+                theResult =
+                {
+                    userCount : 0,
+                    foundPhoneNumber : false,
+                    foundEmailAddress : false,
+                    matchedBoth : false,
+                    description : "No user found with passed phoneNumber or passed emailAddress"
+                };
+                response.success(theResult);
+            }
+            else
+            {
+                var foundPhone  = false;
+                var foundEmail  = false;
+                var count       = userResults.length;
+
+                for ( uIdx = 0; uIdx < userResults.length; uIdx += 1 )
+                {
+                    var thisUser    = userResults[uIdx];
+                    var thisPhone   = thisUser.get("phoneNumber");
+                    var thisEmail   = thisUser.get("email");
+
+                    if ( ( thisEmail === request.params.emailAddress ) &&
+                         ( thisPhone === request.params.phoneNumber  ) )
+                    {
+                        theResult   =
+                        {
+                            userCount : count,
+                            foundPhoneNumber : true,
+                            foundEmailAddress : true,
+                            matchedBoth : true,
+                            description : "Found user with passed phoneNumber and passed emailAddress",
+                            username : thisUser.get("username"),
+                            userId : thisUser.id
+                        };
+
+                        response.success(theResult);
+                    }
+                    else if ( thisEmail === request.params.emailAddress )
+                    {
+                        foundEmail = true;
+                    }
+                    else if ( thisPhone === request.params.phoneNumber )
+                    {
+                        foundPhone = true;
+                    }
+                // End of For Loop
+                }
+
+                theResult =
+                {
+                    userCount : count,
+                    foundPhoneNumber : foundPhone,
+                    foundEmailAddress : foundEmail,
+                    matchedBoth : false,
+                    description: "No user found with both passed phoneNumber and passed emailAddress"
+                };
+                response.success(theResult);
+            }
+        },
+        error: function(userError)
+        {
+            funcs.conditionalLog("user query error");
+            funcs.conditionalLog(userError);
+            response.error(userError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// loginUser
+//
+// Params:
+// phoneNumber      STRING (North America 10 digits)
+// verificationCode STRING  verification code (4 - 6 digits)
+//
+// Response:
+// STRING   The user's session token
+//
+///////////////////////////////////////
+Parse.Cloud.define("loginUser", function(request, response)
+{
+    if ( ( request.params.phoneNumber === undefined ) ||
+         ( request.params.phoneNumber.length !== 10 ) ||
+         ( request.params.verificationCode === undefined ) ||
+         ( request.params.verificationCode.length < 4 ) ||
+         ( request.params.verificationCode.length > 6 ) )
+    {
+        return response.error("Missing or Invalid Parameters. Expected 10 digit phoneNumber and 4 - 6 digit verificationCode.");
+    }
+
+    funcs.conditionalLog("phoneNumber:");
+    funcs.conditionalLog(request.params.phoneNumber);
+    funcs.conditionalLog("verificationCode:");
+    funcs.conditionalLog(request.params.verificationCode);
+
+    // Phone Number
+    var phoneNumber             = "";
+    if ( request.params.phoneNumber )
+    {
+        phoneNumber             = request.params.phoneNumber;
+        phoneNumber             = phoneNumber.replace(/\D/g, "");
+    }
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    // Verification Code
+    var verificationCode        = "";
+    if ( request.params.verificationCode )
+    {
+        var verificationCode    = request.params.verificationCode;
+        verificationCode        = verificationCode.replace(/\D/g, "");
+    }
+    funcs.conditionalLog("verificationCode [" + verificationCode + "]");
+
+    // User Service Token
+    var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+
+    Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
+    {
+        response.success(user.getSessionToken());
+    }
+    ,function (loginError)
+    {
+    response.error(loginError);
+    });
+});
+
+
+///////////////////////////////////////
+//
+// nameForUserWithObjectId
+//
+// Params:
+// objectId STRING PFUser objectId
+//
+// Reponse:
+// STRING   User's full name
+//
+///////////////////////////////////////
+Parse.Cloud.define("nameForUserWithObjectId", function(request, response)
+{
+    //Parse.Cloud.useMasterKey();
+
+    var User = Parse.Object.extend("_User");
+    var query = new Parse.Query(User);
+    query.get(request.params.objectId,
+    {
+        useMasterKey: true,
+        success: function(object)
+        {
+            // object is an instance of Parse.Object.
+            var firstName = object.get("firstName");
+            if ( firstName === null )
+            {
+                firstName = "";
+            }
+            var lastName = object.get("lastName");
+            if ( lastName === null )
+            {
+                lastName = "";
+            }
+            var fullName = firstName.trim() + " " + lastName.trim();
+
+            response.success(fullName.trim());
+        },
+        error: function(error)
+        {
+            console.log("unable to get user with object id");
+            console.log(error);
+            response.error("unable to get user with object id: " + error);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// resetVerificationCode
+//
+// NOTE:
+// May not use this, look at StepOne and StepTwo instead
+// The problem with this, someone else could trigger your account
+// To be reset, intentionally or not, then you are locked out
+//
+// Params:
+// emailAddress
+// phoneNumber
+//
+// Response:
+// STRING   new Verification Code
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCode", function(request, response)
+{
+    funcs.conditionalLog("Starting resetVerificationCode");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            funcs.conditionalLog("query successful.");
+            funcs.conditionalLog(results.length + " users found");
+
+            if ( results.length === 0 )
+            {
+                funcs.conditionalLog("No users found to reset");
+
+                var theDesc   = "No users found to reset";
+                var theResult = { description: theDesc };
+
+                response.error(theResult);
+            }
+            else
+            {
+                funcs.conditionalLog("reset first user");
+
+                var firstUser = results[0];
+
+                var userServiceToken = process.env.USER_SERVICE_TOKEN;
+                var random  = funcs.randomNumberWithNumberOfDigits(5);
+
+                var newPassword = userServiceToken + "-" + random;
+
+                firstUser.set("password", newPassword);
+                firstUser.set("gbAssist","RESET");
+                firstUser.save(null,
+                {
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        funcs.conditionalLog("User Verification Code Reset.");
+                        //var theResult = { verificationCode: random };
+                        response.success(random);
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error("Save was not successful: " + saveError);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful! ");
+            console.log(queryError);
+            response.error("Query find not successful: " + queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeStepOne
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCodeStepOne", function(request, response)
+{
+    funcs.conditionalLog("Starting resetVerificationCodeStepOne");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            funcs.conditionalLog("query successful.");
+            funcs.conditionalLog(results.length + " users found");
+
+            if ( results.length === 0 )
+            {
+                funcs.conditionalLog("No users found to reset");
+
+                var theDesc   = "No users found to reset";
+                response.error(theDesc);
+            }
+            else
+            {
+                funcs.conditionalLog("reset first user");
+
+                var firstUser = results[0];
+
+                var vcode  = funcs.randomNumberWithNumberOfDigits(5);
+
+                firstUser.set("verificationCode", vcode);
+                firstUser.set("gbAssist","RESET1");
+                firstUser.save(null,
+                {
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        funcs.conditionalLog("User Verification Code Saved, sending text.");
+                        // Send Text
+                        Parse.Cloud.run("sendVerificationCodeBySmsToPhoneNumber",
+                        {
+                            phoneNumber: phoneNumber,
+                            verificationCode: vcode
+                        },
+                        {
+                            useMasterKey: true,
+                            success: function(smsResult)
+                            {
+                                funcs.conditionalLog("SMS Sent");
+                                funcs.conditionalLog(smsResult);
+                                response.success(true);
+                            },
+                            error: function(smsError)
+                            {
+                                console.log("Error sending SMS");
+                                console.log(smsError);
+                                response.error(smsError);
+                            }
+                        });
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error(saveError);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful! ");
+            console.log(queryError);
+            response.error("Query find not successful: " + queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeStepTwo
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCodeStepTwo", function(request, response)
+{
+    funcs.conditionalLog("Starting resetVerificationCode");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+    var verificationCode = request.params.verificationCode;
+
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("verificationCode [" + verificationCode + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.equalTo("verificationCode", verificationCode);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            funcs.conditionalLog("query successful.");
+            funcs.conditionalLog(results.length + " users found");
+
+            if ( results.length === 0 )
+            {
+                funcs.conditionalLog("No users found to reset");
+
+                var theDesc   = "No users found to reset";
+                var theResult = { description: theDesc };
+
+                response.error(theResult);
+            }
+            else
+            {
+                funcs.conditionalLog("reset first user");
+
+                var firstUser           = results[0];
+
+                var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+                var newPassword         = userServiceToken + "-" + verificationCode;
+
+                firstUser.set("password", newPassword);
+                firstUser.set("gbAssist","RESET");
+                firstUser.set("verificationCode","");
+
+                firstUser.save(null,
+                {
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        funcs.conditionalLog("User Verification Reset Finished.");
+                        var theResult = { success: true };
+                        response.success(theResult);
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error(saveError);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful! ");
+            console.log(queryError);
+            response.error("Query find not successful: " + queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// verifyVerificationCode
+//
+///////////////////////////////////////
+Parse.Cloud.define("verifyVerificationCode", function(request, response)
+{
+    funcs.conditionalLog("Starting verifyVerificationCode");
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+    var verificationCode = request.params.verificationCode;
+
+    var mask             = "XXXXXXXX";
+    mask                 = mask.substr(0,verificationCode.length);
+
+    funcs.conditionalLog("emailAddress     [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber      [" + phoneNumber + "]");
+    funcs.conditionalLog("verificationCode [" + mask + "]");
+
+    var query = new Parse.Query(Parse.User);
+
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
+    query.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            funcs.conditionalLog("query successful.");
+            funcs.conditionalLog(results.length + " users found");
+
+            var theDesc;
+            var theResult;
+
+            if ( results.length === 0 )
+            {
+                funcs.conditionalLog("No users found to verify");
+
+                theDesc             = "No users found to verify";
+                response.error(theDesc);
+            }
+            else
+            {
+                funcs.conditionalLog("found a user, so attempt login");
+
+                var userServiceToken    = process.env.USER_SERVICE_TOKEN;
+                var password            = userServiceToken + "-" + verificationCode;
+
+                Parse.User.logIn(phoneNumber, password,
+                {
+                    success: function (user)
+                    {
+                        response.success(true);
+                    },
+                    error: function (loginError)
+                    {
+                        response.success(false);
+                    }
+                });
+            }
+        },
+        error: function(queryError)
+        {
+            console.log("Query find not successful!");
+            console.log(queryError);
+            response.error(queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// userWithUserIdExists
+//
+// Params:
+// userId
+//
+// Response:
+// BOOL whether user exists or not
+//
+///////////////////////////////////////
+Parse.Cloud.define("userWithUserIdExists", function(request, response)
+{
+    var userId = request.params.userId;
+
+    funcs.conditionalLog("userWithUserIdExists called");
+    funcs.conditionalLog("with params:");
+    funcs.conditionalLog("userId [" + userId + "]");
+
+    if (userId === null || userId === "")
+    {
+        response.error("Must provide userId");
+        return;
+    }
+
+    funcs.conditionalLog("continuing...");
+
+    var User         = Parse.Object.extend("_User");
+    var userQuery    = new Parse.Query(User);
+    userQuery.equalTo("objectId", userId);
+    userQuery.count(
+    {
+        useMasterKey: true,
+        success: function(countResult)
+        {
+            if ( countResult > 0 )
+            {
+                response.success(true);
+            }
+            else
+            {
+                response.success(false);
+            }
+        },
+        error: function(countError)
+        {
+            console.log("count error");
+            console.log(countError);
+            response.error(countError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// getChannelsOfUserWithUserId
+//
+// Params:
+// UserId
+//
+// Response:
+// ARRAY the channels
+//
+///////////////////////////////////////
+Parse.Cloud.define("getChannelsOfUserWithUserId", function(request, response)
+{
+    funcs.conditionalLog("getChannelsOfUserWithUserId");
+
+    var userId      = request.params.userId;
+
+    funcs.conditionalLog("0 with userId [" + userId + "]");
+
+    var Installation= Parse.Object.extend(Parse.Installation);
+    //var User        = Parse.Object.extend(Parse.User);
+
+    var installQuery= new Parse.Query(Installation);
+    installQuery.equalTo("userId", userId);
+    //var innerQuery  = new Parse.Query(User);
+    //innerQuery.equalTo("id", userId);
+
+    //installQuery.matchesQuery("users", innerQuery);
+
+    funcs.conditionalLog("1 about to find");
+
+    installQuery.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            var theCount = results.length.toString();
+
+            funcs.conditionalLog("2 success getting results");
+            funcs.conditionalLog("with " + theCount + " results");
+
+            var channelsResult = [];
+
+            if ( results.length > 0 )
+            {
+                funcs.conditionalLog("3 results has more than 0");
+
+                for ( rIdx = 0; rIdx < results.length; rIdx += 1 )
+                {
+                    var theTemp = rIdx.toString();
+
+                    funcs.conditionalLog("4 is index " + theTemp);
+
+                    var pfInstallation = results[rIdx];
+
+                    funcs.conditionalLog("4.1 have pfInstallation");
+
+                    var theChannels = pfInstallation.get("channels");
+
+                    theTemp     = channelsResult.length.toString();
+
+                    funcs.conditionalLog("5 about to push " + theTemp + " channels");
+                    for ( cIdx = 0; cIdx < theChannels.length; cIdx += 1 )
+                    {
+                        var theChannel = theChannels[cIdx];
+
+                        channelsResult.push(theChannel);
+                    }
+
+                    theTemp     = channelsResult.length.toString();
+
+                    funcs.conditionalLog("6 just pushed, now there are " + theTemp);
+                }
+            }
+
+            funcs.conditionalLog("7 finished with results, channelsResult:");
+            funcs.conditionalLog(channelsResult);
+
+            response.success(channelsResult);
+        },
+        error: function (queryError)
+        {
+            funcs.conditionalLog("8 query Error");
+            funcs.conditionalLog(queryError);
+
+            response.error(queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// getNamesOfRolesCurrentUserBelongsTo
+//
+// Params:
+// Current User
+//
+// Response:
+// ARRAY the role names
+//
+///////////////////////////////////////
+Parse.Cloud.define("getRoleNamesOfCurrentUser", function(request, response)
+{
+    funcs.conditionalLog("getRoleNamesOfCurrentUser");
+
+    var userId      = request.user.id;
+
+    funcs.conditionalLog("0 with userId [" + userId + "]");
+
+    var Role        = Parse.Object.extend(Parse.Role);
+    var User        = Parse.Object.extend(Parse.User);
+
+    var roleQuery   = new Parse.Query(Role);
+
+    var innerQuery  = new Parse.Query(User);
+    innerQuery.equalTo("id", userId);
+
+    roleQuery.matchesQuery("users", innerQuery);
+
+    funcs.conditionalLog("1 about to find");
+
+    roleQuery.find(
+    {
+        useMasterKey:  true,
+        success: function(results)
+        {
+            var theCount = results.length.toString();
+
+            funcs.conditionalLog("2 success getting results");
+            funcs.conditionalLog("with " + theCount + " results");
+
+            var namesResult = [];
+
+            if ( results.length > 0 )
+            {
+                funcs.conditionalLog("3 results has more than 0");
+
+                for ( rIdx = 0; rIdx < results.length; rIdx += 1 )
+                {
+                    var theTemp = rIdx.toString();
+
+                    funcs.conditionalLog("4 is index " + theTemp);
+
+                    var theRole = results[rIdx];
+
+                    funcs.conditionalLog("4.1 have theRole");
+
+                    var theName = theRole.get("name");
+
+                    theTemp     = namesResult.length.toString();
+
+                    funcs.conditionalLog("5 about to push, there are " + theTemp);
+
+                    namesResult.push(theName);
+
+                    theTemp     = namesResult.length.toString();
+
+                    funcs.conditionalLog("6 just pushed, now there are " + theTemp);
+                }
+            }
+
+            funcs.conditionalLog("7 finished with results, namesResult:");
+            funcs.conditionalLog(namesResult);
+
+            response.success(namesResult);
+        },
+        error: function (queryError)
+        {
+            funcs.conditionalLog("8 query Error");
+            funcs.conditionalLog(queryError);
+
+            response.error(queryError);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// modifyChannelsOfUserWithUserId
+//
+// Params:
+// userId         String PFUser.objectId
+// addChannels    Array channels to add
+// removeChannels Array channels to remove
+//
+// NOTE:
+// addChannels or removeChannels is required
+// both can be included as well
+//
+// Response:
+// ARRAY the channels after modified
+//
+///////////////////////////////////////
+Parse.Cloud.define("modifyChannelsOfUserWithUserId", function(request, response)
+{
+    funcs.conditionalLog("modifyChannelsOfUserWithUserId");
+
+    if ( ( ( request.params.addChannels === undefined ) &&
+         ( request.params.removeChannels === undefined ) ) ||
+       ( request.params.userId === undefined ) )
+    {
+        response.error("missing required parameters");
+    }
+
+    var addChannelsEh       = false;
+    var removeChannelsEh    = false;
+
+    if ( request.params.addChannels !== undefined )
+    {
+        addChannelsEh       = true;
+    }
+    if ( request.params.removeChannels !== undefined )
+    {
+        removeChannelsEh    = true;
+    }
+
+    var userId      = request.params.userId;
+
+    funcs.conditionalLog("0 with userId [" + userId + "]");
+
+    var Installation= Parse.Object.extend(Parse.Installation);
+    var installQuery= new Parse.Query(Installation);
+    installQuery.equalTo("userId", userId);
+
+    funcs.conditionalLog("1 about to find");
+
+    installQuery.find(
+    {
+        useMasterKey: true,
+        success: function(results)
+        {
+            var theCount = results.length.toString();
+
+            funcs.conditionalLog("2 success getting results");
+            funcs.conditionalLog("with " + theCount + " results");
+
+            if ( results.length > 0 )
+            {
+                funcs.conditionalLog("3 results has more than 0");
+
+                for ( rIdx = 0; rIdx < results.length; rIdx += 1 )
+                {
+                    var theTemp = rIdx.toString();
+
+                    funcs.conditionalLog("4 is index " + theTemp);
+
+                    var pfInstallation = results[rIdx];
+
+                    funcs.conditionalLog("4.1 have pfInstallation");
+
+                    var totalCount  = 0;
+
+                    if ( removeChannelsEh === true )
+                    {
+                        var removeChannels  = request.params.removeChannels;
+
+                        funcs.conditionalLog("4.2 about to remove channels");
+
+                        totalCount += removeChannels.length;
+
+                        if ( removeChannels.length > 0 )
+                        {
+                            for ( cIdx = 0; cIdx < removeChannels.length; cIdx += 1 )
+                            {
+                                var rChannel = removeChannels[cIdx];
+                                pfInstallation.remove("channels",rChannel);
+                            }
+                        }
+
+                        funcs.conditionalLog("4.3 finished removing channels");
+                    }
+
+                    if ( addChannelsEh === true )
+                    {
+                        var addChannels = request.params.addChannels;
+
+                        funcs.conditionalLog("4.4 about to add channels");
+
+                        totalCount += addChannels.length;
+
+                        if ( addChannels.length > 0 )
+                        {
+                            for ( cIdx = 0; cIdx < addChannels.length; cIdx += 1 )
+                            {
+                                var aChannel = addChannels[cIdx];
+                                pfInstallation.addUnique("channels",aChannel);
+                            }
+                        }
+
+                        funcs.conditionalLog("4.5 finished adding channels");
+                    }
+
+                    funcs.conditionalLog("5 finished modifying " + totalCount.toString() + " channels");
+                }
+
+                funcs.conditionalLog("6 about to save");
+
+                Parse.Object.saveAll(results,
+                {
+                    useMasterKey: true,
+                    success: function(saveResults)
+                    {
+                        // All the objects were saved.
+                        funcs.conditionalLog("7 Saves were successful");
+                        funcs.conditionalLog("7.1 Getting Channels");
+
+                        Parse.Cloud.run("getChannelsOfUserWithUserId",
+                        {
+                            userId: request.params.userId
+                        },
+                        {
+                            useMasterKey: true,
+                            success: function(getResult)
+                            {
+                                response.success(getResult);
+                            },
+                            error: function(getError)
+                            {
+                                response.error(getError);
+                            }
+                        });
+                    },
+                    error: function(saveError)
+                    {
+                        // An error occurred while saving one of the objects.
+                        funcs.conditionalLog("7.2 Error saving Installation objects");
+                        funcs.conditionalLog(saveError);
+                        response.error(saveError);
+                    }
+                });
+            }
+            else
+            {
+                // Query Successful, but no Results Count
+                funcs.conditionalLog("8.1 Query returned no results");
+                response.error("No Installations Found for userId");
+            }
+        },
+        error: function (queryError)
+        {
+            funcs.conditionalLog("8.2 query Error");
+            funcs.conditionalLog(queryError);
+
+            response.error(queryError);
+        }
+    });
+});
+
+
+
+/*
+Parse.Cloud.define("getNamesOfRolesCurrentUserBelongsTo", function(request, response)
+{
+    funcs.conditionalLog("getNamesOfRolesCurrentUserBelongsTo started");
+    //response.error("The method is not functional yet, needs to be debugged.");
+
+    var Role        = Parse.Object.extend(Parse.Role);
+    var roleQuery   = new Parse.Query(Role);
+
+    var innerQuery  = new Parse.Query(Parse.User);
+    innerQuery.equalTo("id", request.user.objectId);
+
+    roleQuery.matchesQuery("users", innerQuery);
+
+    var namesResult = [];
+
+    funcs.conditionalLog("1");
+
+    roleQuery.each(
+        function(roleQueryObject)
+        {
+            // Base Role
+            funcs.conditionalLog("2");
+
+            var theName     = roleQueryObject.get("name");
+
+            namesResult.push(theName);
+
+            funcs.conditionalLog("3 pushed " + theName);
+
+            var roleRelation = roleQueryObject.relation("roles");
+
+            funcs.conditionalLog("4 have roleRelation");
+
+            var relationQuery   = roleRelation.query;
+
+            funcs.conditionalLog("Created relationQuery from roleRelation");
+
+            relationQuery.each(
+                function(relationQueryObject)
+                {
+                    // do stuff
+                    // push the foos to an array to have them acessable later
+                    funcs.conditionalLog("4.1 in relationQueryObject function");
+
+                    var rqoObjectId  = relationQueryObject.get("id");
+
+                    funcs.conditionalLog("4.2 rqoObjectId is " + rqoObjectId);
+
+                    var rqoName      = relationQueryObject.get("name");
+
+                    funcs.conditionalLog("4.3 rqoName is " + rqoName);
+
+                    namesResult.push(rqoName);
+
+                    funcs.conditionalLog("4.4 pushed name to namesResult");
+
+                    return Parse.Promise.as(relationQueryObject);
+                }
+            );
+
+            funcs.conditionalLog("Returning roleQueryObject");
+                        // just to return something successfully.
+                        // The iteration will only continue
+                        // if a promise is returned successfully
+                        // https://parse.com/docs/js/api/classes/Parse.Query.html#methods_each
+            return Parse.Promise.as(roleQueryObject);
+        }
+    ).then(
+        function()
+        {
+            funcs.conditionalLog("In Success then block, returning namesResult:");
+            funcs.conditionalLog(namesResult);
+
+            response.success(namesResult);
+        },
+        function(thenError)
+        {
+            funcs.conditionalLog("In error then block, returning thenError:");
+            funcs.conditionalLog(thenError);
+
+            response.error(thenError);
+        }
+    );
+});
+*/
+
+/*
+Parse.Cloud.define("getNamesOfRolesForUser", function(request, response)
+{
+    funcs.conditionalLog("In getNamesOfRolesForUser");
+
+    if ( request.user === undefined || request.user === null )
+    {
+        funcs.conditionalLog("No User passed, unable to continue");
+        response.error("No User passed");
+        return;
+    }
+
+    funcs.conditionalLog("1");
+
+    var roleNamesResult = new Array();
+
+    var Role        = Parse.Object.extend(Parse.Role);
+    var roleQuery   = new Parse.Query(Role);
+    roleQuery.includeKey("users");
+
+    funcs.conditionalLog("2");
+
+    var innerQuery  = new Parse.Query(Parse.User);
+    innerQuery.equalTo("id", request.user.objectId);
+
+    roleQuery.matchesQuery("users", innerQuery);
+
+    roleQuery.find().then(function(roleQueryResults)
+    {
+        funcs.conditionalLog("3");
+
+        var cbCallBack      = _.after(roleResults.length, function()
+        {
+            // Call Back Data
+            funcs.conditionalLog("4");
+
+            response.success(roleNamesResult);
+        });
+
+        _.each(roleResults, function(role)
+        {
+            // Get the relations
+            funcs.conditionalLog("5");
+
+            roleNamesResult.push(
+            {
+                role.get("name")
+            });
+
+            var innerRoles    = role.relation("roles");
+
+            funcs.conditionalLog("6");
+
+            innerRoles.query().find().then(function(innerRoles)
+            {
+                funcs.conditionalLog("7");
+
+                roleNamesResult.push(
+                {
+                    role.get("name")
+                });
+
+                funcs.conditionalLog("8");
+
+                cbCallBack();
+
+                funcs.conditionalLog("9");
+
+            });
+        });
+    });
+});
+*/
+
+/*
+	// Using PFQuery
+	[roleQuery whereKey:@"users"
+				equalTo:[PFUser objectWithoutDataWithObjectId:PFUser.currentUser.objectId]];
+	[roleQuery findObjectsInBackgroundWithBlock:^(NSArray<PFRole *>* _Nullable objects,
+												  NSError * _Nullable error)
+	{
+		if ( error )
+		{
+			XQLog(@"Error with my query:\n%@\n%@", error.description, error.userInfo);
+		}
+
+		for (PFObject *role in objects)
+		{
+			[role fetchIfNeeded];
+			NSString *roleName	= role[@"name"];
+			XQLog(@"Main Role: %@", roleName);
+			[belongsTo addObject:roleName];
+
+			PFRelation *rolesRelation	= role[@"roles"];
+			PFQuery *innerQuery = [rolesRelation query];
+
+			[innerQuery findObjectsInBackgroundWithBlock:^(NSArray<PFRole *> * _Nullable objects,
+														   NSError * _Nullable error)
+			{
+				for (PFRole *inRole in objects)
+				{
+					[inRole fetchIfNeeded];
+					NSString *inRoleName	= inRole[@"name"];
+					XQLog(@"\tInner Role: %@", inRoleName);
+					[belongsTo addObject:inRoleName];
+				}
+			}];
+		}
+	}];
+
+});
+*/

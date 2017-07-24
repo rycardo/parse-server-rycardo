@@ -47,11 +47,49 @@
  *
  */
 
-//do I need to require app.js?
-//require("./cloud/app.js");
+/*
+ * Includes
+ */
+// Constants
+const CONST = require("./const.js");
+//const FUNCS = require("./funcs.js");
+
+// next line errors out
+//require('./funcs.js')();
+// internal/private functions
+//require("./funcs.js");
+var funcs = require('./funcs.js');
+
+// Barbers and Services
+require("./barber.js");
+
+// Messages Related
+require("./message.js");
+
+// Products and Cart Related
+require("./product.js");
+
+// Role and Permissions Related
+require("./role.js");
+
+// Sending Texts
+require("./twilio.js");
+
+// Users and User Related
+require("./user.js");
 
 // Twilio Code
-require("./twilio.js");
+//require("./twilio.js");
+
+//imported from require("twilio.js");
+
+var twilioAccountSid        = process.env.TWILIO_ACCOUNT_SID;
+var twilioAccountToken      = process.env.TWILIO_ACCOUNT_TOKEN;
+var twilioPort              = process.env.TWILIO_PORT           || 1338;
+var twilioURL               = process.env.TWILIO_URL            || "127.0.0.1";
+var twilioMount             = process.env.TWILIO_MOUNT          || "/";
+var twilioSendingNumber     = process.env.TWILIO_PHONE_NUMBER;
+
 
 //////////////////////////////////////
 //
@@ -60,7 +98,10 @@ require("./twilio.js");
 //////////////////////////////////////
 Parse.Cloud.define("hello", function(request, response)
 {
-    response.success("I am not really dreaming of being a website, instead I am dreaming of being the back end to an app... SUCCESS!");
+    var theResult   = "I am not really dreaming of being a website, instead I am dreaming of being the back end to an app... SUCCESS!";
+
+    funcs.conditionalLog(theResult);
+    response.success(theResult);
 });
 
 
@@ -71,472 +112,69 @@ Parse.Cloud.define("hello", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("status", function(request, response)
 {
-    response.success("Up, Plateau, Valid");
-});
+    funcs.conditionalLog("status - check by app");
 
+    var theRandom       = funcs.randomNumberWithNumberOfDigits(3);
+    var randomText      = theRandom.toString();
 
-///////////////////////////////////////
-//
-// barberIdForBarberFirstNameLastName
-//
-///////////////////////////////////////
-Parse.Cloud.define("barberIdForBarberFirstNameLastName", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    var pFirstName = request.params.firstName;
-    var pLastName  = request.params.lastName
+    funcs.conditionalLog("status - The random number is " + randomText + "");
 
-    var query = new Parse.Query("Barbers");
-    query.equalTo("firstName", pFirstName);
-    query.equalTo("lastName", pLastName);
-    query.equalTo("isActive", true);
-    query.find(
+    var theRelease      = null;
+    var hrv             = process.env.HEROKU_RELEASE_VERSION;
+
+    funcs.conditionalLog("status - release " + hrv);
+
+    if ( ( hrv === undefined ) || ( hrv === null ) )
     {
-        useMasterKey: true,
-        success: function(results)
-        {
-            if ( results.length == 1 )
-            {
-                var barberId = results[0].id;
-                response.success(barberId);
-            }
-            else if ( results.length > 1 )
-            {
-                response.error("more than one barber found");
-            }
-            else
-            {
-                response.error("no barbers found with that name");
-            }
-        },
-        error: function(error)
-        {
-            response.error("barber name lookup failed: " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// barberIdForBarberName
-//
-///////////////////////////////////////
-Parse.Cloud.define("barberIdForBarberName", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    var pBarberName = request.params.barberName;
-
-    var query = new Parse.Query("Barbers");
-    query.equalTo("barberName", pBarberName);
-    query.equalTo("isActive", true);
-    query.find(
-    {
-        useMasterKey: true,
-        success: function(results)
-        {
-            if ( results.length == 1 )
-            {
-                var barberId = results[0].id;
-                response.success(barberId);
-            }
-            else if ( results.length > 1 )
-            {
-                response.error("more than one barber found");
-            }
-            else
-            {
-                response.error("no barbers found with that name");
-            }
-        },
-        error: function(error)
-        {
-            response.error("barber name lookup failed: " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// userWithUserIdExists
-//
-///////////////////////////////////////
-Parse.Cloud.define("userWithUserIdExists", function(request, response)
-{
-    var userId = request.params.userId;
-
-    console.log('userWithUserIdExists called');
-    console.log('with params:');
-    console.log('userId [' + userId + ']');
-
-    if (userId != null && userId !== "")
-    {
-        response.error("Must provide userId");
-        return;
+        theRelease      = "";
     }
-
-    console.log('continuing...');
-
-    var User         = Parse.Object.extend("_User");
-    var userQuery    = new Parse.Query(User);
-    userQuery.equalTo("objectId", userId);
-    userQuery.count(
+    else
     {
-        useMasterKey: true,
-        success: function(countResult)
-        {
-            if ( countResult > 0 )
-            {
-                response.success("true");
-            }
-            else
-            {
-                response.success("false");
-            }
-        },
-        error: function(countError)
-        {
-            response.error(countError);
-        }
-    });
+        theRelease      = "XQ" + hrv.toUpperCase() + "4" + " " + theRandom.toString();
+    }
+    var theNickname     = process.env.SERVER_NICKNAME;
+
+    funcs.conditionalLog("status - nickname " + theNickname);
+
+    var theResponse     = "Up, " + theNickname + ", Valid, " + theRelease;
+
+    response.success(theResponse);
 });
 
 
 ///////////////////////////////////////
 //
-// getUserWithUserId
+// testConstants
 //
 ///////////////////////////////////////
-Parse.Cloud.define("getUserWithId", function(request, response)
+Parse.Cloud.define("testConstants", function(request, response)
 {
-    var userIdParam = request.params.userId;
+    funcs.conditionalLog("1");
 
-    // Check if email exists and return associated user
-    Parse.Cloud.run("userWithUserIdExists",
+    try
     {
-        userId: userIdParam
-    },
+        var theCreate   = CONST.ACTION_USER_CREATE;
+
+        funcs.conditionalLog("2");
+
+        var theVerify   = CONST.ACTION_USER_VERIFY;
+
+        funcs.conditionalLog("3");
+
+        response.success(theVerify|theCreate);
+    }
+    catch (e)
     {
-        useMasterKey: true,
-        success: function(existsResult)
-        {
-            if ( JSON.parse(existsResult) )
-            {
-                // Get user with id
-                var User          = Parse.Object.extend("_User");
-                var userQuery     = new Parse.Query(User);
-                userQuery.get(userIdParam,
-                {
-                    useMasterKey: true,
-                    success: function(userResult)
-                    {
-                        response.success(userResult);
-                    },
-                    error: function(userError)
-                    {
-                        response.error(userError);
-                    }
-                });
-            }
-            else
-            {
-                response.error("no user found with that ID");
-            }
-        },
-        error: function(existsError)
-        {
-            response.error(existsError);
-        }
-    });
+        funcs.conditionalLog("4");
+        funcs.conditionalLog(e);
+
+        response.error(e);
+    }
+    finally
+    {
+        // Nothing here
+    }
 });
-
-
-///////////////////////////////////////
-//
-// canReplyToUserWithId
-//
-///////////////////////////////////////
-Parse.Cloud.define("canReplyToUserWithId", function(request, response)
-{
-    console.log("canReplyToUserWithId " + request.params.userId);
-
-    var User  = Parse.Object.extend("_User");
-    var query = new Parse.Query(User);
-    query.equalTo("objectId", request.params.userId);
-    query.get(
-    {
-        useMasterKey: true,
-        success: function(result)
-        {
-            var canReply = result.get("allowsMessages");
-            if ( canReply == null )
-            {
-                canReply = false;
-            }
-            response.success(canReply);
-        },
-        error: function(error)
-        {
-            console.log("ERROR querying user");
-            console.log(error);
-            response.error("user lookup failed");
-        }
-    });
-});
-
-Parse.Cloud.define("canReplyToUserWithId_B", function(request, response)
-{
-    console.log("canReplyToUserWithId_B " + request.params.userId);
-
-    var query = new Parse.Query("_User");
-    console.log("1");
-    query.equalTo("objectId", request.params.userId);
-    console.log("2");
-    query.find(
-    {
-        useMasterKey: true,
-        success: function(results)
-        {
-            console.log("3");
-            if ( results.length == 1 )
-            {
-                console.log("4");
-                var canReply = results[0].get("allowsMessages");
-                if ( canReply == null )
-                {
-                    console.log("5");
-                    canReply = false;
-                }
-                console.log("6 can reply:");
-                console.log(canReply);
-                response.success(canReply);
-            }
-            else if ( results.length > 1 )
-            {
-                console.log("more than one user found");
-                response.error("more than one user found");
-            }
-            else
-            {
-                console.log("no user found");
-                response.error("no user found with that objectId");
-            }
-        },
-        error: function(error)
-        {
-            console.log("error quering user " + request.params.userId);
-            console.log(error);
-            response.error("user lookup failed");
-        }
-    });
-});
-
-///////////////////////////////////////
-//
-// doesMessageToUserWithNoRepeatHashExist
-//
-///////////////////////////////////////
-Parse.Cloud.define("doesMessageToUserWithNoRepeatHashExist", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-
-    var userId = request.params.userId;
-    var nrHash = request.params.noRepeat;
-
-    var query = new Parse.Query("Messages");
-    query.equalTo("userID", request.params.userId);
-    query.equalTo("noRepeat", request.params.noRepeat);
-    query.find(
-    {
-    	useMasterKey: true,
-        success: function(results)
-        {
-            if ( results.length == 0 )
-            {
-                response.success(false);
-            }
-            else
-            {
-                response.success(true);
-            }
-        },
-        error: function(error)
-        {
-            response.error("message lookup failed: " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// nameForUserWithObjectId
-//
-///////////////////////////////////////
-Parse.Cloud.define("nameForUserWithObjectId", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-
-    var User = Parse.Object.extend("_User");
-    var query = new Parse.Query(User);
-    query.get(request.params.objectId,
-    {
-    	useMasterKey: true,
-        success: function(object)
-        {
-            // object is an instance of Parse.Object.
-            var firstName = object.get("firstName");
-            if ( firstName == null )
-            {
-                firstName = "";
-            }
-            var lastName = object.get("lastName");
-            if ( lastName == null )
-            {
-                lastName = "";
-            }
-            var fullName = firstName.trim() + " " + lastName.trim();
-
-            response.success(fullName.trim());
-        },
-        error: function(error)
-        {
-            // error is an instance of Parse.Error.
-            response.error("unable to get user with object id: " + error);
-        }
-    });
-});
-
-///////////////////////////////////////
-//
-// serviceIdForBarberNameAndServiceName
-//
-///////////////////////////////////////
-Parse.Cloud.define("serviceIdForBarberNameAndServiceName", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-
-    var query = new Parse.Query("Services");
-    query.equalTo("barberName", request.params.barberName);
-    query.equalTo("serviceName", request.params.serviceName);
-    query.find(
-    {
-    	useMasterKey: true,
-        success: function(results)
-        {
-            if ( results.length == 1 )
-            {
-                var service = results[0];
-                var isActive = service.get("isActive");
-                var serviceId = "";
-                if ( isActive == true )
-                {
-                    serviceId = service.id;
-                }
-                else
-                {
-                    var replacement = service.get("replacement");
-                    if ( replacement != null )
-                    {
-                        serviceId = replacement.id;
-                    }
-                    else
-                    {
-                        serviceId = null;
-                    }
-                }
-                response.success(serviceId);
-            }
-            else if ( results.length > 1 )
-            {
-                response.error("more than one service found");
-            }
-            else
-            {
-                response.error("no services found for barber name and service name");
-            }
-        },
-        error: function(error)
-        {
-            response.error("service name lookup failed: " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// serviceIdForServiceIdReplacement
-//
-///////////////////////////////////////
-Parse.Cloud.define("serviceIdForServiceIdReplacement", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    // changed equalTo objectId to id 2016 11 07
-    var query = new Parse.Query("Services");
-    query.equalTo("id", request.params.serviceId);
-    query.equalTo("isActive", false);
-    query.find(
-    {
-    	useMasterKey: true,
-        success: function(results)
-        {
-            if ( results.length == 0 )
-            {
-                response.success(request.params.serviceId);
-            }
-            else
-            {
-                var replacement = results[0].get("replacement");
-                response.success(replacement.id);
-            }
-        },
-        error: function(error)
-        {
-            response.error("service id replacement lookup failed: " + error);
-        }
-    });
-});
-
-///////////////////////////////////////
-//
-// servicesForBarberId
-//
-///////////////////////////////////////
-Parse.Cloud.define("servicesForBarberId", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    // changed objectId to id
-    var query = new Parse.Query("Barbers");
-    query.equalTo("id", request.params.barber);
-    query.find(
-    {
-    	useMasterKey: true,
-        success: function(results)
-        {
-            var relation = results[0].get("services");
-            var relationQuery = relation.query;
-            relationQuery.equalTo("isActive", true);
-            relationQuery.find(
-            {
-                success: function(results)
-                {
-                    response.success(results);
-                },
-                error: function(error)
-                {
-                    response.error("services lookup failed: " + error);
-                }
-            });
-        },
-        error: function(error2)
-        {
-            response.error("barber lookup failed " + error2);
-        }
-    });
-});
-
 
 ///////////////////////////////////////
 //
@@ -552,7 +190,7 @@ Parse.Cloud.define("incrementNewAppointmentTally", function(request, response)
 
     query.find(
     {
-    	useMasterKey: true,
+        useMasterKey: true,
         success: function(results)
         {
             var resultObject = results[0];
@@ -567,6 +205,8 @@ Parse.Cloud.define("incrementNewAppointmentTally", function(request, response)
         },
         error: function(error)
         {
+            console.log("query error");
+            console.log(error);
             response.error(error);
         }
     });
@@ -575,446 +215,179 @@ Parse.Cloud.define("incrementNewAppointmentTally", function(request, response)
 
 ///////////////////////////////////////
 //
-// getUnreadMessageCount
+// getTestDictionary
 //
 ///////////////////////////////////////
-Parse.Cloud.define("getUnreadMessageCount", function(request, response)
+Parse.Cloud.define("getTestDictionary", function(request, response)
 {
-    //Parse.Cloud.useMasterKey();
+    funcs.conditionalLog("getTestDictionary");
 
-    // Unread Messages
-    var query = new Parse.Query("Messages");
-    query.equalTo("recipientID", request.params.installId);
-    query.doesNotExist("readAt");
+    var theString   = "This is a string";
+    var theNumber   = 420;
+    var theStringArray = ["A","B","C","D"];
+    var theNumberArray = [1,2,3,4,5];
+    var trueEh = false;
 
-    console.log("Getting Unread Messages Count for recipient [" + request.params.installId + "]");
+    funcs.conditionalLog("Just before creating dictionary");
 
-    query.find(
-    {
-    	useMasterKey: true,
-        success: function(results)
-        {
-            console.log("SUCCESS: ");
-            response.success(results.count);
-        },
-        error: function(error)
-        {
-            console.log("ERROR: ");
-            response.error("unable to get unread messages: " + error);
-        }
-    });
+    var theResult = { aString: theString, aNumber: theNumber, anArray: theStringArray, secondArray: theNumberArray, aBool: trueEh };
+
+    funcs.conditionalLog("Just after creating dictionary");
+
+    response.success(theResult);
 });
 
 
 ///////////////////////////////////////
 //
-// getMessageCount
+// getTestArray
 //
 ///////////////////////////////////////
-Parse.Cloud.define("getMessageCount", function(request, response)
+Parse.Cloud.define("getTestArray", function(request, response)
 {
-    //Parse.Cloud.useMasterKey();
+    funcs.conditionalLog("getTestArray");
 
-    //Parse.Cloud.useMasterKey();
-    // Unread Messages
+    var theStringArray = ["A","B","C","D"];
 
-    var query = new Parse.Query("Messages");
-    query.equalTo("recipientID", request.params.installId);
-
-    console.log("Getting Messages Count for recipient [" + request.params.installId + "]");
-
-    query.find(
+    if ( theStringArray.contains("A") )
     {
-        useMasterKey: true,
-        success: function(results)
-        {
-            console.log("SUCCESS: ");
-            response.success(results.count);
-        },
-        error: function(error)
-        {
-            console.log("ERROR: ");
-            response.error("unable to get messages: " + error);
-        }
-    });
+        theStringArray.add("Found A");
+    }
+    else
+    {
+        theStringArray.add("Didn't Find A");
+    }
+    if ( theStringArray.contains("Z") )
+    {
+        theStringArray.add("Found Z");
+    }
+    else
+    {
+        theStringArray.add("Didn't Find Z");
+    }
+    funcs.conditionalLog("Just before creating dictionary");
+
+    theStringArray.addUnique("A");
+    theStringArray.addUnique("C");
+
+    funcs.conditionalLog("Just after creating array tests");
+
+    response.success(theStringArray);
 });
 
 
 ///////////////////////////////////////
 //
-// getMessagesCount
+// convertUsernameToBackToEmail
+// Allows the app to convert again
+// This should only be necesasary for me testing.
 //
 ///////////////////////////////////////
-Parse.Cloud.define("getMessagesCount", function(request, response)
+Parse.Cloud.define("convertUsernameBackToEmail", function(request, response)
 {
     //Parse.Cloud.useMasterKey();
-    // Unread Messages
-    var receiverID    = request.params.receiverID;
+    // depreciated, add:
+    // useMasterKey: true,
+    // above your success: lines.
 
-    var query         = new Parse.Query("Messages");
-    query.equalTo("receiverID", receiverID);
+    funcs.conditionalLog("Starting convertUsernameBackToEmail");
 
-    console.log("Getting Messages Count for user [" + receiverID + "]");
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+    var passHash         = request.params.hashed;
 
-    query.find(
+    if ( ( emailAddress.length === 0 ) ||
+         ( phoneNumber.length === 0  ) ||
+         ( passHash.length === 0 ) )
     {
-        useMasterKey: true,
-        success: function(results)
-        {
-            var allCount = results.count;
-            var newCount = 0;
-
-            var message = null;
-
-            for ( mIdx = 0; mIdx < results.count; mIdx += 1 )
-            {
-                message = results[mIdx];
-                if ( message.has("readAt") )
-                {
-                    // not new
-                }
-                else
-                {
-                    newCount += 1;
-                }
-            }
-            console.log("messages count: " + allCount.toString() );
-            console.log("unread count:   " + newCount.toString() );
-            console.log("SUCCESS");
-            var theResult = "{'allCount': " + allCount + ",'newCount': " + newCount + "}";
-
-            response.success(theResult);
-        },
-        error: function(error)
-        {
-            console.log("ERROR: ");
-            console.log(error);
-            response.error("unable to get messages: " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// loginUser
-//
-///////////////////////////////////////
-Parse.Cloud.define("loginUser", function(request, response)
-{
-    // Phone Number
-    var phoneNumber        = request.params.phoneNumber;
-    phoneNumber        = phoneNumber.replace(/\D/g, "");
-
-    // Verification Code
-    var verificationCode     = request.params.verificationCode;
-    verificationCode     = verificationCode.replace(/\D/g, "");
-
-    // User Service Token
-    var userServiceToken    = process.env.USER_SERVICE_TOKEN;
-
-    if (!phoneNumber || phoneNumber.length != 10)
-    {
-        return response.error("Phone Number missing or invalid length");
+        response.error("missing information");
     }
 
-    if (!verificationCode || verificationCode.length < 4 || verificationCode.length > 6)
-    {
-        return response.error("Verification Code missing or invalid length");
-    }
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
 
-    Parse.User.logIn(phoneNumber, userServiceToken + "-" + verificationCode).then(function (user)
-    {
-        response.success(user.getSessionToken());
-    }
-    ,function (loginError)
-    {
-        response.error(loginError);
-    });
-});
+    var query = new Parse.Query(Parse.User);
 
-
-///////////////////////////////////////
-//
-// convertMessagesFromDeviceToUser
-//
-///////////////////////////////////////
-Parse.Cloud.define("convertMessagesFromDeviceToUser", function(request, response)
-{
-response.error("depreciated function, with same params, use all 3 of these instead: convertMessagesFromDeviceRecipientToUserReceiver, convertMessagesFromUserRecipientToUserReceiver, convertMessagesFromUserUserToUserReceiver");
-    //Parse.Cloud.useMasterKey();
-    //
-    // All Messages
-    //var installId = request.params.installId;
-    //var userId = request.params.userId;
-    //
-    //var query = new Parse.Query("Messages");
-    //query.equalTo("recipientID", installId);
-    //query.doesNotExist("userID");
-    //query.find(
-    //{
-    //    useMasterKey: true,
-    //    success: function(results)
-    //    {
-    //        console.log("Testing Converting");
-    //        console.log("found: " + results.length);
-    //        if ( results.length == 0 )
-    //        {
-    //            response.success("no messages to convert");
-    //            //conditionalLog("none to convert");
-    //        }
-    //        else
-    //        {
-    //            for ( m = 0; m < results.length; m += 1 )
-    //            {
-    //                //conditionalLog(results[m].objectId);
-    //                if ( m == 0 )
-    //                {
-    //                    results[m].set("userID", userId);
-    //                    results[m].save();
-    //                }
-    //            }
-    //            var count = results.length;
-    //            var countStr  = count.toString();
-    //            var reply = "converted " + countStr + " messages";
-    //            response.success(reply);
-    //        }
-    //    },
-    //    error: function(error)
-    //    {
-    //        response.error("unable to convert messages " + error);
-    //    }
-    //});
-});
-
-
-///////////////////////////////////////
-//
-// convertMessagesFromDeviceRecipientToUserReceiver
-//
-///////////////////////////////////////
-Parse.Cloud.define("convertMessagesFromDeviceRecipientToUserReceiver", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    //
-    // All Messages
-    var installId    = request.params.installId;
-    var userId        = request.params.userId;
-
-    var query        = new Parse.Query("Messages");
-    query.equalTo("recipientID", installId);
-    query.doesNotExist("receiverID");
+    query.equalTo("username", phoneNumber);
+    query.equalTo("email", emailAddress);
     query.find(
     {
         useMasterKey: true,
         success: function(results)
         {
-            var foundStr = results.length.toString();
-            console.log("Converting from Install ID In recipientID to User ID in receiverID");
-            console.log("found: " + foundStr);
+            funcs.conditionalLog("find with phone number in username was successful.");
+            funcs.conditionalLog(results.length + " records found");
 
-            if ( results.length == 0 )
+            if ( results.length === 0 )
             {
-                response.success("no messages to convert");
-                //conditionalLog("none to convert");
+                funcs.conditionalLog("No records found to convert");
+                var theResponse =
+                    {
+                        description : "No records found to convert"
+                    };
+                // The above was 'description' : 'No r....ert'
+                response.success(theResponse);
             }
             else
             {
-                var msgId = null;
+                funcs.conditionalLog("convert only first user, remove the remaining");
+                // Create New User copying from first
+                // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
+                // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
+                // email, userRole (pointer)
 
-                for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
+                var firstUser       = results[0];
+                var fuEmailAddress  = firstUser.get("email");
+                var fuUserFirstName = firstUser.get("firstName");
+                var fuInstalloids   = firstUser.get("installoids");
+                var fuUserLastName  = firstUser.get("lastName");
+                var fuUserStaffId   = firstUser.get("staffID");
+                var fuTheUsername   = firstUser.get("username");
+
+                funcs.conditionalLog("Can update user:");
+
+                funcs.conditionalLog("email:      " + fuEmailAddress);
+                funcs.conditionalLog("firstName:  " + fuUserFirstName);
+                funcs.conditionalLog("installoids:" + fuInstalloids);
+                funcs.conditionalLog("lastName:   " + fuUserLastName);
+                funcs.conditionalLog("staffId:    " + fuUserStaffId);
+                funcs.conditionalLog("username:   " + fuTheUsername);
+
+                //firstUser.set("verificationCode", random);
+                firstUser.set("gbAssist","REVERTED");
+                firstUser.set("username", emailAddress);
+                firstUser.set("password", passHash);
+                firstUser.save(null,
                 {
-                    msgId = results[mIdx].objectId;
-                    console.log("converting msg " + msgId);
-                    results[mIdx].set("userID", "-not-used-");
-                    results[mIdx].set("recipientID", "-not-used-");
-                    results[mIdx].set("receiverID", userId);
-                    results[mIdx].save();
-                }
-                var count        = results.length;
-                var countStr    = count.toString();
-                var reply        = "converted " + countStr + " messages";
-                response.success(reply);
+                    useMasterKey: true,
+                    success: function(savedUser)
+                    {
+                        funcs.conditionalLog("User saved CONVERTED.");
+                        var userResponse = { email : fuEmailAddress,
+                                             firstName : fuUserFirstName,
+                                             installoids : fuInstalloids,
+                                             lastName : fuUserLastName,
+                                             staffId : fuUserStaffId,
+                                             username : fuTheUsername,
+                                             confirmation : 0,
+                                             transaction : 0,
+                                             description : "confirmed" };
+
+                        response.success(userResponse);
+                    },
+                    error: function(saveError)
+                    {
+                        console.log("unable to save user");
+                        console.log(saveError);
+                        response.error("Save was not successful: " + saveError);
+                    }
+                });
             }
         },
-        error: function(error)
+        error: function(queryError)
         {
-            response.error("unable to convert messages " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// convertMessagesFromUserRecipientToUserReceiver
-//
-///////////////////////////////////////
-Parse.Cloud.define("convertMessagesFromUserRecipientToUserReceiver", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    //
-    // All Messages
-    var installId    = request.params.installId;
-    var userId        = request.params.userId;
-
-    var query        = new Parse.Query("Messages");
-    query.equalTo("recipientID", userId);
-    query.doesNotExist("receiverID");
-    query.find(
-    {
-        useMasterKey: true,
-        success: function(results)
-        {
-            var foundStr = results.length.toString();
-            console.log("Converting from User ID in recipientID to receiverID");
-            console.log("found: " + foundStr);
-            if ( results.length == 0 )
-            {
-                response.success("no messages to convert");
-                //conditionalLog("none to convert");
-            }
-            else
-            {
-                for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
-                {
-                    var msgId = results[mIdx].objectId;
-                    console.log("converting msg " + msgId);
-                    results[mIdx].set("userID", "-not-used-");
-                    results[mIdx].set("recipientID", "-not-used-");
-                    results[mIdx].set("receiverID", userId);
-                    results[mIdx].save();
-                }
-
-                var count        = results.length;
-                var countStr    = count.toString();
-                var reply        = "converted " + countStr + " messages";
-                response.success(reply);
-            }
-        },
-        error: function(error)
-        {
-            response.error("unable to convert messages " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// convertMessagesFromUserIDToReceiverID
-//
-///////////////////////////////////////
-Parse.Cloud.define("convertMessagesFromUserUserToUserReceiver", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    //
-    // All Messages
-    var installId    = request.params.installId;
-    var userId        = request.params.userId;
-
-    var query        = new Parse.Query("Messages");
-    query.equalTo("userID", userId);
-    query.doesNotExist("receiverID");
-    query.find(
-    {
-        useMasterKey: true,
-        success: function(results)
-        {
-            var foundStr = results.length.toString();
-            console.log("Converting from User ID in userID to receiverID");
-            console.log("found: " + foundStr);
-            if ( results.length == 0 )
-            {
-                response.success("no messages to convert");
-                //conditionalLog("none to convert");
-            }
-            else
-            {
-                for ( mIdx = 0; mIdx < results.length; mIdx += 1 )
-                {
-                    var msgId = results[mIdx].objectId;
-                    console.log("converting msg " + msgId);
-                    results[mIdx].set("userID", "-not-used-");
-                    results[mIdx].set("recipientID", "-not-used-");
-                    results[mIdx].set("receiverID", userId);
-                    results[mIdx].save();
-                }
-
-                var count        = results.length;
-                var countStr    = count.toString();
-                var reply        = "converted " + countStr + " messages";
-                response.success(reply);
-            }
-        },
-        error: function(error)
-        {
-            response.error("unable to convert messages " + error);
-        }
-    });
-});
-
-
-///////////////////////////////////////
-//
-// convertProductsCartToUserId
-//
-///////////////////////////////////////
-Parse.Cloud.define("convertProductsCartToUserId", function(request, response)
-{
-    //Parse.Cloud.useMasterKey();
-    //
-    // All Messages
-    var installId    = request.params.installId;
-    var userId        = request.params.userId;
-
-    var query        = new Parse.Query("Carts");
-    query.equalTo("installationId", installId);
-    query.doesNotExist("userId");
-    query.find(
-    {
-        useMasterKey: true,
-        success: function(results)
-        {
-            var foundStr = results.length.toString();
-            console.log("Converting Products Cart from Install ID to User ID");
-            console.log("found: " + foundStr);
-            if ( results.length == 0 )
-            {
-                response.success("no carts to convert");
-            }
-            else
-            {
-                var cart = results[0];
-                var notUsedArray = ["-not-used-"];
-
-                cart.set("installationId", "-not-used-");
-                cart.set("productIds",notUsedArray);
-                cart.set("userId",userId);
-                cart.save();
-
-                for ( cIdx = 1; idx < results.length; idx += 1 )
-                {
-                    var delCart = results[cIdx];
-                    delCart.destroy({});
-                }
-                var count        = results.length;
-                var countStr    = count.toString();
-                var reply         = "";
-                if ( count == 1 )
-                {
-                    reply = "the products cart was converted.";
-                }
-                else
-                {
-                    reply = "the first of " + countStr + " products carts was converted, others deleted.";
-                }
-                response.success(reply);
-            }
-        },
-        error: function(error)
-        {
-            response.error("unable to convert products cart " + error);
+            console.log("Query find not successful! " + queryError);
+            response.error("Query find not successful: " + queryError);
         }
     });
 });
@@ -1032,13 +405,13 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
     // useMasterKey: true,
     // above your success: lines.
 
-    console.log("Starting convertUsernameToPhoneNumber");
+    funcs.conditionalLog("Starting convertUsernameToPhoneNumber");
 
     var emailAddress     = request.params.emailAddress;
     var phoneNumber      = request.params.phoneNumber;
 
-    console.log("emailAddress [" + emailAddress + "]");
-    console.log("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
 
     var User  = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
@@ -1049,69 +422,62 @@ Parse.Cloud.define("convertUsernameToPhoneNumber", function(request, response)
         useMasterKey: true,
         success: function(results)
         {
-            console.log("find with email address in username was successful.");
-            console.log(results.length + " records found");
+            funcs.conditionalLog("find with email address in username was successful.");
+            funcs.conditionalLog(results.length + " records found");
 
-            if ( results.length == 0 )
+            if ( results.length === 0 )
             {
-                console.log("No records found to convert");
+                funcs.conditionalLog("No records found to convert");
                 response.success( "{ 'description' : 'No records found to convert' }" );
             }
             else
             {
-                console.log("convert only first user, remove the remaining");
+                funcs.conditionalLog("convert only first user, remove the remaining");
                 // Create New User copying from first
                 // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
                 // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
                 // email, userRole (pointer)
-                var firstUser = results[0];
 
-                //var messaging    = firstUser.get("allowsMessages");
-                //var barberName     = firstUser.get("barberName");
-                var emailAddress= firstUser.get("email");
-                var firstName     = firstUser.get("firstName");
-                //var friends    = firstUser.get("friendsRelation");
-                var installoids = firstUser.get("installoids");
-                //var isStaff    = firstUser.get("isStaffMember");
-                var lastName     = firstUser.get("lastName");
-                //var lastSeen    = firstUser.get("lastSeen");
-                //var phoneNumber    = firstUser.get("phoneNumber");
-                var staffId    = firstUser.get("staffID");
-                //var userId     = firstUser.get("id");
-                var username    = firstUser.get("username");
-                //var userRole    = firstUser.get("userRole);
+                var firstUser       = results[0];
+                var fuEmailAddress  = firstUser.get("email");
+                var fuUserFirstName = firstUser.get("firstName");
+                var fuInstalloids   = firstUser.get("installoids");
+                var fuUserLastName  = firstUser.get("lastName");
+                var fuUserStaffId   = firstUser.get("staffID");
+                var fuTheUsername   = firstUser.get("username");
 
-                console.log("Can update user:");
+                funcs.conditionalLog("Can update user:");
 
-                console.log("email:      " + emailAddress);
-                console.log("firstName:  " + firstName);
-                console.log("installoids:" + installoids);
-                console.log("lastName:   " + lastName);
-                console.log("staffId:    " + staffId);
-                console.log("username:   " + username);
+                funcs.conditionalLog("email:      " + fuEmailAddress);
+                funcs.conditionalLog("firstName:  " + fuUserFirstName);
+                funcs.conditionalLog("installoids:" + fuInstalloids);
+                funcs.conditionalLog("lastName:   " + fuUserLastName);
+                funcs.conditionalLog("staffId:    " + fuUserStaffId);
+                funcs.conditionalLog("username:   " + fuTheUsername);
 
-                var userServiceToken = process.env.USER_SERVICE_TOKEN;
+                var userServiceToken    = process.env.USER_SERVICE_TOKEN;
 
-                console.log("token length: " + userServiceToken.length);
+                funcs.conditionalLog("token length: " + userServiceToken.length);
 
-                var random  = randomNumberWithNumberOfDigits(5);
+                var random  = funcs.randomNumberWithNumberOfDigits(5);
 
-                firstUser.set("gbAssist","CONVERTED")
+                //firstUser.set("verificationCode", random);
+                firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
                 {
                     useMasterKey: true,
                     success: function(savedUser)
                     {
-                        console.log("User saved CONVERTED.");
-                        var userResponse = "{ 'email'        : '" + emailAddress     +
-                                          "', 'firstName'    : '" + firstName        +
-                                          "', 'installoids'  : '" + installoids      +
-                                          "', 'lastName'     : '" + lastName         +
-                                          "', 'staffId'      : '" + staffId          +
-                                          "', 'username'     : '" + username         +
-                                          "', 'confirmation' : '" + verification     +
-                                          "', 'transaction'  : '" + userServiceToken +
-                                          "', 'description'  : 'confirmed' }";
+                        funcs.conditionalLog("User saved CONVERTED.");
+                        var userResponse = { email : fuEmailAddress,
+                                             firstName : fuUserFirstName,
+                                             installoids : fuInstalloids,
+                                             lastName : fuUserLastName,
+                                             staffId : fuUserStaffId,
+                                             username : fuTheUsername,
+                                             confirmation : random,
+                                             transaction : userServiceToken,
+                                             description : "confirmed" };
 
                         response.success(userResponse);
                     },
@@ -1145,88 +511,78 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
     // useMasterKey: true,
     // above your success: lines.
 
-    console.log("Starting resetUserToVersionOne");
-
-    var emailAddress     = request.params.emailAddress;
-    var hashed			 = request.params.hashed
-    var phoneNumber      = request.params.phoneNumber;
-
-    console.log("emailAddress [" + emailAddress + "]");
-    console.log("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("Starting resetUserToVersionOne");
+    funcs.conditionalLog("emailAddress [" + request.params.emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + request.params.phoneNumber + "]");
 
     var User  = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
 
-    query.equalTo("username", phoneNumber);
-    query.equalTo("", emailAddress);
+    query.equalTo("username", request.params.phoneNumber);
+    query.equalTo("", request.params.emailAddress);
     query.find(
     {
         useMasterKey: true,
         success: function(results)
         {
-            console.log("find with email address in username was successful.");
-            console.log(results.length + " records found");
+            funcs.conditionalLog("find with email address in username was successful.");
+            funcs.conditionalLog(results.length + " records found");
 
-            if ( results.length == 0 )
+            if ( results.length === 0 )
             {
-                console.log("No records found to convert");
-                response.success( "{ 'description' : 'No records found to convert' }" );
+                funcs.conditionalLog("No records found to convert");
+                var theResult = { description : "No records found to convert" };
+
+                response.success(theResult);
             }
             else
             {
-                console.log("convert only first user, remove the remaining");
+                funcs.conditionalLog("convert only first user, remove the remaining");
                 // Create New User copying from first
                 // lastName, installoids, barberName, isStaffMember, lastSeen, friendsRelation,
                 // username, allowsMessages, phoneNumber, language, firstname, password, staffID,
                 // email, userRole (pointer)
                 var firstUser = results[0];
 
-                //var messaging    = firstUser.get("allowsMessages");
-                //var barberName     = firstUser.get("barberName");
-                var emailAddress= firstUser.get("email");
-                var firstName     = firstUser.get("firstName");
-                //var friends    = firstUser.get("friendsRelation");
-                var installoids = firstUser.get("installoids");
-                //var isStaff    = firstUser.get("isStaffMember");
-                var lastName     = firstUser.get("lastName");
-                //var lastSeen    = firstUser.get("lastSeen");
-                //var phoneNumber    = firstUser.get("phoneNumber");
-                var staffId    = firstUser.get("staffID");
-                //var userId     = firstUser.get("id");
-                var username    = firstUser.get("username");
-                //var userRole    = firstUser.get("userRole);
+                var emailAddress    = firstUser.get("email");
+                var userFirstName   = firstUser.get("firstName");
+                var installoids     = firstUser.get("installoids");
+                var userLastName    = firstUser.get("lastName");
+                var userStaffId     = firstUser.get("staffID");
+                var theUsername     = firstUser.get("username");
 
-                console.log("Can update user:");
+                funcs.conditionalLog("Can update user:");
 
-                console.log("email:      " + emailAddress);
-                console.log("firstName:  " + firstName);
-                console.log("installoids:" + installoids);
-                console.log("lastName:   " + lastName);
-                console.log("staffId:    " + staffId);
-                console.log("username:   " + username);
+                funcs.conditionalLog("email:      " + emailAddress);
+                funcs.conditionalLog("firstName:  " + userFirstName);
+                funcs.conditionalLog("installoids:" + installoids);
+                funcs.conditionalLog("lastName:   " + userLastName);
+                funcs.conditionalLog("staffId:    " + userStaffId);
+                funcs.conditionalLog("username:   " + theUsername);
 
                 var userServiceToken = process.env.USER_SERVICE_TOKEN;
 
-                console.log("token length: " + userServiceToken.length);
+                funcs.conditionalLog("token length: " + userServiceToken.length);
 
-                var random  = randomNumberWithNumberOfDigits(5);
+                var random  = funcs.randomNumberWithNumberOfDigits(5);
 
-                firstUser.set("gbAssist","CONVERTED")
+                firstUser.set("gbAssist","CONVERTED");
                 firstUser.save(null,
                 {
                     useMasterKey: true,
                     success: function(savedUser)
                     {
-                        console.log("User saved CONVERTED.");
-                        var userResponse = "{ 'email'        : '" + emailAddress     +
-                                          "', 'firstName'    : '" + firstName        +
-                                          "', 'installoids'  : '" + installoids      +
-                                          "', 'lastName'     : '" + lastName         +
-                                          "', 'staffId'      : '" + staffId          +
-                                          "', 'username'     : '" + username         +
-                                          "', 'confirmation' : '" + verification     +
-                                          "', 'transaction'  : '" + userServiceToken +
-                                          "', 'description'  : 'confirmed' }";
+                        funcs.conditionalLog("User saved CONVERTED.");
+
+                        var userResponse = { email : emailAddress,
+                                             firstName : userFirstName,
+                                             installoids : installoids,
+                                             lastName : userLastName,
+                                             staffId : userStaffId,
+                                             username : theUsername,
+                                             confirmation : random,
+                                             transaction : userServiceToken,
+                                             description : "confirmed" };
 
                         response.success(userResponse);
                     },
@@ -1255,9 +611,9 @@ Parse.Cloud.define("resetUserToVersionOne", function(request, response)
 ///////////////////////////////////////
 Parse.Cloud.define("getVerificationCode", function(request, response)
 {
-    var verification     = randomNumberWithNumberOfDigits(5);
-    var token         = process.env.USER_SERVICE_TOKEN;
-    var newPassword        = token + "-" + verification;
+    var verification    = funcs.randomNumberWithNumberOfDigits(5);
+    var token           = process.env.USER_SERVICE_TOKEN;
+    var newPassword     = token + "-" + verification;
 
     response.success(newPassword);
 });
@@ -1287,16 +643,16 @@ Parse.Cloud.define("createMessageForUser", function(request, response)
     var msgSubtitle        = request.params.subtitle;
     var msgBody            = request.params.body;
 
-    console.log('createMessageForUser called');
-    console.log('with params:');
-    console.log('senderID [' + msgSenderId + '], receiverID [' + msgReceiverID + '], title [' + msgTitle + '], subtitle [' + msgSubtitle + '], body [' + msgBody + ']');
+    funcs.conditionalLog("createMessageForUser called");
+    funcs.conditionalLog("with params:");
+    funcs.conditionalLog("senderID [" + msgSenderID + "], receiverID [" + msgReceiverID + "], title [" + msgTitle + "], subtitle [" + msgSubtitle + "], body [" + msgBody + "]");
 
     Parse.Cloud.run("userWithUserIdExists",
     {
         userId: msgReceiverID
     },
     {
-        userMasterKey: true,
+        useMasterKey: true,
         success: function(existsResult)
         {
             if ( JSON.parse(existsResult) )
@@ -1318,13 +674,17 @@ Parse.Cloud.define("createMessageForUser", function(request, response)
                     },
                     error: function(saveError)
                     {
-                        response.error(setError);
+                        console.log("save error");
+                        console.log(saveError);
+                        response.error(saveError);
                     }
                 });
             }
         },
         error: function(existsError)
         {
+            console.log("exists error");
+            console.log(existsError);
             response.error(existsError);
         }
     });
@@ -1344,11 +704,11 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
     var pMsgSubtitle    = request.params.subtitle;
     var pMsgBody        = request.params.body;
 
-    var receivingUser    = null;
+    //var receivingUser    = null;
 
-    console.log('saveMessageForUserThenNotify called');
-    console.log('with params:');
-    console.log('senderID [' + pSenderId + '], receiverID [' + pReceiverID + '], title [' + pMsgTitle + '], subtitle [' + pMsgSubtitle + '], body [' + pMsgBody + ']');
+    funcs.conditionalLog("saveMessageForUserThenNotify called");
+    funcs.conditionalLog("with params:");
+    funcs.conditionalLog("senderID [" + pSenderID + "], receiverID [" + pReceiverID + "], title [" + pMsgTitle + "], subtitle [" + pMsgSubtitle + "], body [" + pMsgBody + "]");
 
     Parse.Cloud.run("createMessageForUser",
     {
@@ -1367,7 +727,7 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
                 // Create User Query
                 var User            = Parse.Object.extend("_User");
                 var userQuery        = new Parse.Query(User);
-                userQuery.equalTo("objectId", receiverId);
+                userQuery.equalTo("objectId", pReceiverID);
 
                 //maybe:var pushQuery = new Parse.Query(Parse.Installation);
                 var Installation    = Parse.Object.extend("_Installation");
@@ -1390,9 +750,9 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
                         category : categoryId,
                         alert:
                         {
-                            title:        msgTitle,
-                            subtitle:    msgSubtitle,
-                            body:        msgBody
+                            title:        pMsgTitle,
+                            subtitle:    pMsgSubtitle,
+                            body:        pMsgBody
                         },
                         badge: badgeNumber,
                         sound : soundName
@@ -1406,6 +766,8 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
                     },
                     error: function(pushError)
                     {
+                        console.log("Push Error");
+                        console.log(pushError);
                         response.error(pushError);
                     }
                 });
@@ -1417,6 +779,8 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
         },
         error: function(userError)
         {
+            console.log("user error");
+            console.log(userError);
             response.error(userError);
         }
     });
@@ -1424,49 +788,897 @@ Parse.Cloud.define("saveMessageForUserThenNotify", function(request, response)
 
 
 ///////////////////////////////////////
-///////////////////////////////////////
-///////////////////////////////////////
 //
-// NOT PUBLIC - INTERNAL ONLY
+// sendVerificationCodeBySmsToPhoneNumber
 //
 ///////////////////////////////////////
-///////////////////////////////////////
-///////////////////////////////////////
-
-
-///////////////////////////////////////
-//
-// randomNumberWithNumberOfDigits - not public
-//
-///////////////////////////////////////
-function randomNumberWithNumberOfDigits(numDigits)
+Parse.Cloud.define("sendVerificationCodeBySmsToPhoneNumber", function(request, response)
 {
-    var num = "";
+    var verificationCode    = request.params.verificationCode;
+    var phoneNumber         = request.params.phoneNumber;
 
-    for(d = 0; d < numDigits; d += 1)
+    funcs.conditionalLog("sendVerificationCodeBySmsToPhoneNumber()");
+    funcs.conditionalLog("phoneNumber: " + phoneNumber + " vCode [" + verificationCode + "]");
+
+    var tAccountSid     = process.env.TWILIO_ACCOUNT_SID;
+    var tAccountToken   = process.env.TWILIO_ACCOUNT_TOKEN;
+    var tSendingNumber  = process.env.TWILIO_PHONE_NUMBER;
+    var twilio          = require("twilio")(tAccountSid,tAccountToken);
+
+    var tas = tAccountSid.substring(1,5);
+    var tat = tAccountToken.substring(1,5);
+
+    funcs.conditionalLog("account sid starts " + tas);
+    funcs.conditionalLog("account token starts " + tat);
+    funcs.conditionalLog("from phone " + tSendingNumber);
+
+    var message = "Your Verification Code for the Barbershop Deluxe app is " + verificationCode + ". You may be able to tap this link: " + "fourxq.barbershop://verify?code=" + verificationCode;
+
+    var toNumber = "";
+    if ( phoneNumber.length === 10 )
     {
-        var min = 0;
-        var max = 9;
-        var digit = Math.floor(Math.random() * (max - min + 1)) + min;
+        toNumber = "+1" + phoneNumber;
+    }
+    else if ( phoneNumber.length === 11 )
+    {
+        toNumber = "+" + phoneNumber;
+    }
+    else
+    {
+        toNumber = phoneNumber;
+    }
+    funcs.conditionalLog("about to send");
 
-        num = num + digit.toString();
+    twilio.sendMessage(
+    {
+        to: toNumber,
+        from: tSendingNumber,
+        body: message
+
+    }, function(error, responseData)
+    {
+        if (error)
+        {
+            console.log("error sending twilio message:");
+            console.log(error);
+            response.error(error);
+        }
+        else
+        {
+            funcs.conditionalLog("New Verification Code Sent");
+            funcs.conditionalLog(responseData);
+
+            response.success(responseData);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// resetVerificationCodeThenSMSToUser
+//
+///////////////////////////////////////
+Parse.Cloud.define("resetVerificationCodeThenSMSToUser", function(request, response)
+{
+    funcs.conditionalLog("resetVerificationCodeThenSMSToUser()");
+
+    var os = require("os");
+
+    var phoneNumber     = request.params.phoneNumber;
+    var emailAddress    = request.params.emailAddress;
+    var language        = request.params.language;
+    var resend          = request.params.resend;
+
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("language [" + language + "]");
+    funcs.conditionalLog("resend [" + resend + "]");
+
+    /*
+     *  1.  Get New Verification Code
+     *  2.  Update User Record With New Code
+     *  3.  Send User new code
+     *  4.  User logs in
+     */
+
+    Parse.Cloud.run("resetVerificationCode",
+    {
+        emailAddress:   emailAddress,
+        phoneNumber:    phoneNumber
+    },
+    {
+        useMasterKey: true,
+        success: function(resetResult)
+        {
+            var verificationCode = JSON.parse(resetResult);
+            var message = "Your Barbershop Deluxe app verification code is" + os.EOL + verificationCode + os.EOL + "You may be able to tap this link:" + os.EOL + "fourxq.barbershop://verify?code=" + verificationCode;
+            //var from    = twilioSendingNumber;
+
+            Parse.Cloud.run("sendSMS",
+            {
+                toNumber :  phoneNumber,
+                from:       twilioSendingNumber,
+                message:    message
+            },
+            {
+                success: function(sendResult)
+                {
+                    response.success(true);
+                },
+                error: function(errorResult)
+                {
+                    funcs.conditionalLog("Error sending message");
+                    funcs.conditionalLog(errorResult);
+                    response.error(errorResult);
+                }
+            });
+        },
+        error: function(errorResult)
+        {
+            funcs.conditionalLog("Unable to reset code");
+            funcs.conditionalLog(errorResult);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// sendPushMessageToUserWithInfo
+//
+// REQUIRED PARAMETERS:
+//
+// firstName            The first name of the user receiving the push
+// lastName             The last name of the user receiving the push
+// emailAddress         The email address of user receiving the push
+// phoneNumber          The phone number of the user receiving the push
+//
+// title                The title of the push
+// subtitle             The subtitle of the push
+// body                 The body of the push
+//
+// categoryIdentifier   This indicates which action buttons should be shown
+//                      with the push.
+//
+// RESULT:
+//
+// Successful:
+// success          true
+// result           the number of devices the push sent to
+//
+// Error:
+// success          false
+// error            the error from the server
+//
+///////////////////////////////////////
+Parse.Cloud.define("sendPushMessageToUserWithInfo", function(request, response)
+{
+    funcs.conditionalLog("Send Push 1");
+
+    if ( ( request.params.firstName.length === 0    ) ||
+         ( request.params.lastName.length === 0     ) ||
+         ( request.params.emailAddress.length === 0 ) ||
+         ( request.params.phoneNumber.length === 0  ) ||
+         ( request.params.title.length       === 0  ) ||
+         ( request.params.subtitle.length    === 0  ) ||
+         ( request.params.body.length        === 0  ) )
+    {
+        var theResult =
+            {
+                code: 4001,
+                message: "missing one or more required parameters"
+            };
+        response.error(theResult);
     }
 
-    return num;
-}
+    funcs.conditionalLog("Send Push 2");
 
+    var phoneNumber     = request.params.phoneNumber;
 
-///////////////////////////////////////
-//
-// conditionalLog - not public
-//
-///////////////////////////////////////
-function conditionalLog(logText)
-{
-    var doLog = True; //env.process.DEBUG_LOG || True;
+    var userQuery       = new Parse.Query(Parse.User);
+    userQuery.equalTo("phoneNumber", request.params.phoneNumber);
+    userQuery.equalTo("email", request.params.emailAddress);
 
-    if ( doLog == True || doLog == "True" )
+    funcs.conditionalLog("Send Push 3");
+
+    var pushQuery       = new Parse.Query(Parse.Installation);
+    pushQuery.include("currentUser");
+    pushQuery.matchesQuery("currentUser", userQuery);
+    pushQuery.equalTo("userId", "4QdhsyAE6f");
+
+    funcs.conditionalLog("Send Push 4");
+
+    var categoryIdentifier = "ca.4xq.Barbershop8.Notification-Interface-Message.notification";
+
+    if ( request.params.categoryIdentifier.length > 0 )
     {
-        console.log(logText);
+        categoryIdentifier = request.params.categoryIdentifier;
     }
-}
+
+    var pushData =
+    {
+        "aps" :
+        {
+            "category" : categoryIdentifier,
+            "alert" :
+            {
+                "title" : request.params.title,
+                "subtitle" : request.params.subtitle,
+                "body": request.params.body
+            },
+            "badge" : 3,
+            "sound" : "timbre3.caf"
+        },
+        "badge" : "Increment"
+    };
+
+    funcs.conditionalLog("Send Push 5");
+    funcs.conditionalLog("Send Push 6");
+
+    Parse.Push.send(
+    {
+        where: pushQuery,
+        data: pushData
+    },
+    {
+        useMasterKey: true,
+        success: function (pushResult)
+        {
+            funcs.conditionalLog("Send Push Success:");
+            funcs.conditionalLog(pushResult);
+
+            var theResult = pushResult["result"];
+
+            funcs.conditionalLog("Push Sent (" + theResult.toString() + ")");
+            var theResult =
+            {
+                success: true,
+                result: theResult
+            };
+            response.success(theResult);
+        },
+        error: function (pushError)
+        {
+            funcs.conditionalLog("Send Push Error");
+            funcs.conditionalLog(pushError);
+
+            var theResult =
+            {
+                success: false,
+                error: pushError
+            };
+            response.error(theResult);
+        }
+    });
+});
+
+
+///////////////////////////////////////
+//
+// pushNotificationTest
+//
+// REQUIRED PARAMETERS:
+//
+// none
+//
+// OPTIONAL PARAMTERS:
+//
+// none
+//
+//
+//
+// RESULT:
+//
+// Successful:
+// success          true
+// result           the number of devices the push sent to
+//
+// Error:
+// success          false
+// error            the error from the server
+//
+///////////////////////////////////////
+Parse.Cloud.define("pushNotificationTest", function(request, response)
+{
+    var user = request.user;
+
+    var title       = "Barbershop Deluxe app";
+    var subtitle    = "Local Database Updated.";
+    var body        = "Your copy of the Barbershop Deluxe database has been updated.";
+
+    var pushQuery = new Parse.Query(Parse.Installation);
+    pushQuery.equalTo("userId", user.id);
+
+    Parse.Push.send(
+    {
+        where: pushQuery, // Set our Installation query
+        data:
+        {
+            alert:
+            {
+                "title" : title,
+                "subtitle" : subtitle,
+                "body" : body
+            }
+        }
+    },
+    {
+        success: function()
+        {
+            console.log("#### PUSH OK");
+        },
+        error: function(error)
+        {
+            console.log("#### PUSH ERROR" + error.message);
+        },
+        useMasterKey: true
+    });
+    response.success("success");
+});
+
+///////////////////////////////////////
+//
+// sendPushNotificationWithParams
+//
+// REQUIRED PARAMETERS:
+//
+// queryClass           The name of the class for the objectId (User | Installation)
+// payload              The entire Push Payload
+//
+//
+// ATLEAST ONE REQUIRED PARAMETER:
+//
+// channels             The PFInstallation channel(s)
+//                      If you use channels, you can not use any of the below three.
+//                      However, they can be combined.
+// startObjectId        The first characters of the objectId
+// userIds              The PFUser objectIds
+// versionsMatching     The Versions Matching Dictionary
+//                      KEY one of: <,<<, <=, ==, >=, >,>>,!=
+//                      VALUE: Version Number to compare #.##?.##?#?#?#?#?
+//                      NOTE: < and << are both Less Than
+//                            > and >> are both Greater Than
+//                            use the one that makes sense to you.
+//
+//
+// OPTIONAL PARAMTERS:
+//
+// pseudoSend           Any Object Value, will run a query count instead of
+//                      sending the push.
+//
+//
+// RESULT:
+//
+// Successful:
+// success          true
+// result           the number of devices the push sent to
+//
+// Error:
+// success          false
+// error            the error from the server
+//
+///////////////////////////////////////
+Parse.Cloud.define("sendPushNotificationWithParams", function(request, response)
+{
+    funcs.conditionalLog("sendPushNotificationWithParams started");
+
+    var sendToChannels  = false;
+    var checkVersionsEh = false;
+
+    var message         = undefined;
+    var theResult       = undefined;
+    var sendChannels    = undefined;
+    var versionsMatching= undefined;
+
+    if ( ( request.params.queryClass.length    === 0 ) ||
+         ( request.params.payload.length       === 0 ) ||
+         ( request.params.queryClass           === undefined ) ||
+         ( request.params.payload              === undefined ) )
+    {
+        message = "missing one or more required parameters";
+    }
+
+    if ( ( request.params.startObjectId === undefined ) &&
+         ( request.params.userIds === undefined ) &&
+         ( request.params.channels === undefined ) &&
+         ( request.params.versionsMatching === undefined ) )
+    {
+        message = "missing matching parameters";
+    }
+
+    if ( ( request.params.startObjectId !== undefined ) &&
+         ( request.params.startObjectId.length === 0 ) )
+    {
+         message = "missing support code";
+    }
+
+    if ( ( request.params.userIds !== undefined ) &&
+         ( request.params.userIds.length === 0 ) )
+    {
+        message = "missing user ids";
+    }
+
+    if ( request.params.channels !== undefined )
+    {
+        if ( request.params.channels.length === 0 )
+        {
+            message = "missing channels";
+        }
+        else
+        {
+            sendChannels    = request.params.channels;
+            sendToChannels  = true;
+        }
+    }
+
+    if ( request.params.versionsMatching !== undefined )
+    {
+        if ( request.params.versionsMatching.length === 0 )
+        {
+            message = "missing version matching parameter(s)";
+        }
+        else
+        {
+            versionsMatching    = request.params.versionsMatching;
+            checkVersionsEh     = true;
+        }
+    }
+
+    if ( message !== undefined )
+    {
+        theResult =
+            {
+                "code": 4001,
+                "message": message
+            };
+        response.error(theResult);
+    }
+
+    funcs.conditionalLog("Send Push 1");
+
+    var sendThePush = true;
+
+    if ( request.params.pseudoSend !== undefined )
+    {
+        sendThePush = false;
+    }
+
+    funcs.conditionalLog("Send Push 2");
+
+    var payload     = request.params.payload;
+
+    var User        = Parse.Object.extend(Parse.User);
+    var Installation= Parse.Object.extend(Parse.Installation);
+
+    var userQuery   = null;
+    var installQuery= new Parse.Query(Installation);
+
+    funcs.conditionalLog("Send Push 2.1");
+
+    if ( request.params.queryClass === "User" )
+    {
+        userQuery   = new Parse.Query(User);
+
+        if ( request.params.startObjectId !== undefined )
+        {
+            userQuery.startsWith("objectId", request.params.startObjectId);
+            funcs.conditionalLog("Send Push 2.2");
+        }
+
+        installQuery.matchesQuery("currentUser", userQuery);
+
+        funcs.conditionalLog("Send Push 2.3");
+    }
+    else if ( request.params.queryClass === "Installation" )
+    {
+        funcs.conditionalLog("Send Push 2.4");
+
+        if ( request.params.userIds !== undefined )
+        {
+            installQuery.containedIn( "userId", request.params.userIds );
+            funcs.conditionalLog("Send Push 2.5");
+        }
+        else if ( request.params.startObjectId !== undefined )
+        {
+            installQuery.startsWith("objectId", request.params.startObjectId);
+            funcs.conditionalLog("Send Push 2.6");
+        }
+        else if ( checkVersionsEh === true )
+        {
+            funcs.conditionalLog("Send Push 2.6.1 about to iterate through versionsMatching");
+
+            var compareKey;
+            for ( compareKey in versionsMatching )
+            {
+                if ( versionsMatching.hasOwnProperty(compareKey) )
+                {
+                    // this will check if key is owned by data object and not by any of it's ancestors
+                    var compareVer = versionsMatching[compareKey];
+
+                    funcs.conditionalLog("CompareKey [" + compareKey + "] compareVer [" + compareVer + "]");
+                    if ( ( compareKey === ">" ) || ( compareKey === ">>" ) )
+                    {
+                        funcs.conditionalLog("Greater Than");
+                        installQuery.greaterThan("appVersion", compareVer);
+                    }
+                    else if ( compareKey === ">=" )
+                    {
+                        funcs.conditionalLog("Greater Than Or Equal To");
+                        installQuery.greaterThanOrEqualTo("appVersion", compareVer);
+                    }
+                    else if ( compareKey === "==" )
+                    {
+                        funcs.conditionalLog("Equal To");
+                        installQuery.equalTo("appVersion", compareVer);
+                    }
+                    else if ( compareKey === "<=" )
+                    {
+                        funcs.conditionalLog("Less Than Or Equal To");
+                        installQuery.lessThanOrEqualTo("appVersion", compareVer);
+                    }
+                    else if ( ( compareKey === "<" )  || ( compareKey === "<<" ) )
+                    {
+                        funcs.conditionalLog("Less Than");
+                        installQuery.lessThan("appVersion", compareVer);
+                    }
+                    else if ( compareKey === "!=" )
+                    {
+                        funcs.conditionalLog("Not Equal To");
+                        installQuery.notEqualTo("appVersion", compareVer);
+                    }
+                    else
+                    {
+                        funcs.conditionalLog("INVALID COMPARATOR!");
+                        response.error("Invalid Comparator '" + compareKey + "' For '" + compareVer + "'");
+                    }
+                }
+            }
+        }
+        funcs.conditionalLog("Send Push 2.7");
+    }
+    else
+    {
+        funcs.conditionalLog("Send Push 2.8");
+        theResult =
+            {
+                "code": 4002,
+                "message": "queryClass parameter was not User or Installation"
+            };
+        response.error(theResult);
+    }
+
+    funcs.conditionalLog("Send Push 2.9");
+
+    //TODO: Remove next line when I know this works
+    //installQuery.equalTo("userId","4QdhsyAE6f");
+
+    funcs.conditionalLog("Send Push 3");
+
+    //var pushQuery       = new Parse.Query(Parse.Installation);
+    //if ( userQuery !== null )
+    //{
+    //    installQuery.include("currentUser");
+    //    installQuery.matchesQuery("currentUser", userQuery);
+    //}
+
+    funcs.conditionalLog("Send Push 4");
+
+    var pushData = payload;
+    /*
+    {
+        "aps" :
+        {
+            "category" : categoryIdentifier,
+            "alert" :
+            {
+                "title" : request.params.title,
+                "subtitle" : request.params.subtitle,
+                "body": request.params.body
+            },
+            "badge" : 3,
+            "sound" : "timbre3.caf"
+        },
+        "badge" : "Increment"
+    };
+
+
+    {
+        aps:
+        {
+            alert:
+            {
+                title: 'App Support Message',
+                subtitle: 'Response To Support Enquiry',
+                body: 'App Support has responded to your support enquiry by email.'
+            },
+            category: 'ca.4xq.Barbershop8.Notification-Interface-Message.notification',
+            sound: 'timbre.caf'
+        },
+        badge: 'Increment'
+    }
+
+    */
+
+    funcs.conditionalLog("Send Push 5");
+
+    funcs.conditionalLog("Push Data (payload):");
+
+    funcs.conditionalLog(payload);
+
+    funcs.conditionalLog("Send Push 6");
+
+    if ( sendThePush === true )
+    {
+        if ( ( sendToChannels === true ) &&
+             ( sendChannels.length > 0 ) )
+        {
+            Parse.Push.send(
+            {
+                channels: sendChannels,
+                data: payload
+            },
+            {
+                useMasterKey: true,
+                success: function (pushResult)
+                {
+                    funcs.conditionalLog("Send Push Success:");
+                    funcs.conditionalLog(pushResult);
+
+                    var pResult = pushResult["result"];
+
+                    funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
+                    theResult =
+                    {
+                        success: true,
+                        result: pResult
+                    };
+                    response.success(theResult);
+                },
+                error: function (pushError)
+                {
+                    funcs.conditionalLog("Send Push Error");
+                    funcs.conditionalLog(pushError);
+
+                    theResult =
+                    {
+                        success: false,
+                        error: pushError
+                    };
+                    response.error(theResult);
+                }
+            });
+        }
+        else
+        {
+            Parse.Push.send(
+            {
+                where: installQuery,
+                data: payload
+            },
+            {
+                useMasterKey: true,
+                success: function (pushResult)
+                {
+                    funcs.conditionalLog("Send Push Success:");
+                    funcs.conditionalLog(pushResult);
+
+                    var pResult = pushResult["result"];
+
+                    funcs.conditionalLog("Push Sent (" + pResult.toString() + ")");
+                    theResult =
+                    {
+                        success: true,
+                        result: pResult
+                    };
+                    response.success(theResult);
+                },
+                error: function (pushError)
+                {
+                    funcs.conditionalLog("Send Push Error");
+                    funcs.conditionalLog(pushError);
+
+                    theResult =
+                    {
+                        success: false,
+                        error: pushError
+                    };
+                    response.error(theResult);
+                }
+            });
+        }
+    }
+    else
+    {
+        // sendThePush is false
+        // parameter 'pseudoSend' was sent
+        // So instead, send the count of query results
+        installQuery.count(
+        {
+            useMasterKey: true,
+            success: function(countResult)
+            {
+                funcs.conditionalLog("Count Query Result: ");
+
+                theResult =
+                {
+                    success: true,
+                    result: countResult,
+                    payload: pushData
+                };
+                response.success(theResult);
+            },
+            error: function(countError)
+            {
+                console.log("Count Query ERROR: ");
+                console.log(countError);
+                response.error("unable to get count: " + countError);
+            }
+        });
+    }
+});
+
+
+///////////////////////////////////////
+//
+// Twilio Functions
+//
+///////////////////////////////////////
+
+// Non Parse functions can be found in twilio.js
+
+
+///////////////////////////////////////
+//
+// getTwilioPhoneNumber
+//
+///////////////////////////////////////
+Parse.Cloud.define("getTwilioPhoneNumber", function(request, response)
+{
+    funcs.conditionalLog("getTwilioPhoneNumber");
+
+    response.success(twilioSendingNumber);
+});
+
+
+///////////////////////////////////////
+//
+// sendVerificationCodeToUserWithPhoneNumberEmailAddress
+//
+///////////////////////////////////////
+Parse.Cloud.define("sendVerificationCodeToUserWithPhoneNumberEmailAddress", function(request, response)
+{
+    var theUser        = request.user;
+
+    var emailAddress     = request.params.emailAddress;
+    var phoneNumber      = request.params.phoneNumber;
+
+    funcs.conditionalLog("emailAddress [" + emailAddress + "]");
+    funcs.conditionalLog("phoneNumber [" + phoneNumber + "]");
+
+    if ( theUser === null )
+    {
+        var query = new Parse.Query(Parse.User);
+
+        query.equalTo("username",phoneNumber);
+        query.equalTo("email",emailAddress);
+
+        funcs.conditionalLog("starting query");
+
+        query.find(
+        {
+            useMasterKey: true,
+            success: function(results)
+            {
+                if ( results.length > 0 )
+                {
+                    funcs.conditionalLog("I have a user");
+                    var qUser        = results[0];
+
+                    funcs.conditionalLog(qUser.username);
+
+                    var password    = qUser.get("password");
+                    var passLength  = password.length.toString();
+
+                    funcs.conditionalLog("pass length is " + passLength);
+                    //funcs.conditionalLog(password.length.toString);
+
+                    if ( password.length > 0 )
+                    {
+                        var code        = password.substring(-5);
+                        funcs.conditionalLog("I have a code ");
+                        funcs.conditionalLog(code);
+                        sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+                        response.success(true);
+                    }
+                    else
+                    {
+                        response.error("no code-check cloud P L E 0");
+
+                    }
+                }
+                else
+                {
+                    funcs.conditionalLog("I do not have a user");
+                    response.success(false);
+                }
+            },
+            error: function(queryError)
+            {
+                console.log("error with query:");
+                console.log(queryError);
+                response.error(queryError);
+            }
+        });
+    }
+    else
+    {
+        var reqUsername     = theUser.get("username");
+        var reqPhoneNumber  = theUser.get("phoneNumber");
+        var reqEmailAddress = theUser.get ("email");
+
+        if ( ( ( reqUsername === phoneNumber ) ||
+               ( reqPhoneNumber === phoneNumber ) ) &&
+             ( reqEmailAddress === emailAddress ) )
+        {
+
+            funcs.conditionalLog("user was in request");
+            var password    = theUser.get("password");
+            var code        = password.substring(-5);
+            sendVerificationCodeBySmsToPhoneNumber(code, phoneNumber);
+            response.success(true);
+        }
+        else
+        {
+            response.error("not current user");
+        }
+    }
+});
+
+
+///////////////////////////////////////
+//
+// sendSMS
+//
+///////////////////////////////////////
+Parse.Cloud.define("sendSMS", function(request, response)
+{
+    //Parse.Cloud.useMasterKey();
+
+    funcs.conditionalLog("sendSMS with:");
+    funcs.conditionalLog("toNumber: " + request.params.toNumber);
+    funcs.conditionalLog("message: " + request.params.message);
+    funcs.conditionalLog("from: " + twilioSendingNumber);
+
+    var tas = twilioAccountSid.substring(1,5);
+    var tat = twilioAccountToken.substring(1,5);
+
+    funcs.conditionalLog("account sid starts " + tas);
+    funcs.conditionalLog("account token starts " + tat);
+
+    var twilio      = require("twilio")(twilioAccountSid,twilioAccountToken);
+    var to          = request.params.toNumber;
+    var message     = request.params.message;
+
+    twilio.sendMessage(
+    {
+        to: to,
+        from: twilioSendingNumber,
+        body: message
+
+    }, function(error, responseData)
+    {
+        if (error)
+        {
+            console.log("error with sendSMS:");
+            console.log(error);
+            response.error(error);
+        }
+        else
+        {
+            funcs.conditionalLog("success with sendSMS:");
+            funcs.conditionalLog(responseData);
+            response.success(responseData);
+        }
+    });
+});
