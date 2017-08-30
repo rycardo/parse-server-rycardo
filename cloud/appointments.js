@@ -359,12 +359,20 @@ Parse.Cloud.define("removeAppointmentsNotInList", function(request, response)
         response.error("Missing or Invalid parameters.");
     }
 
-    var AvailableAppointment = Parse.Object.extend("AvailableAppointment");
-    var query = new Parse.Query(AvailableAppointment);
-    query.notContainedIn("objectId",request.params.appointmentIds);
+    var AvailableAppointment    = Parse.Object.extend("AvailableAppointment");
+    var cutDateTime             = new Date();
+    var minutes                 = cutDateTime.getMinutes();
+    minutes                     -= 15;
+    cutDateTime.setMinutes(minutes);
 
-    query.equalTo("objectId", request.params.userId);
-    query.find(
+    var pastQuery   = new Parse.Query(AvailableAppointment);
+    pastQuery.lessThan("dateTime", cutDateTime);
+
+    var notInQuery  = new Parse.Query(AvailableAppointment);
+    notInQuery.notContainedIn("objectId",request.params.appointmentIds);
+
+    var orQuery = Parse.Query.or(pastQuery, notInQuery);
+    orQuery.find(
     {
         useMasterKey: true,
         success: function(queryResults)
