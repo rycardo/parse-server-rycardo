@@ -60,6 +60,9 @@ const CONST = require("./const.js");
 //require("./funcs.js");
 var funcs = require('./funcs.js');
 
+// Appointments Related
+require("./appointments.js");
+
 // Barbers and Services
 require("./barber.js");
 
