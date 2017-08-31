@@ -90,11 +90,12 @@ var twilioURL               = process.env.TWILIO_URL            || "127.0.0.1";
 var twilioMount             = process.env.TWILIO_MOUNT          || "/";
 var twilioSendingNumber     = process.env.TWILIO_PHONE_NUMBER;
 
-
+// Prototypes
+//
 Date.prototype.atMidnight = Date.prototype.atMidnight || function()
 {
-    var dateMidnight    = this;
-
+    //var dateMidnight    = this;
+    var dateMidnight     = { this };
     dateMidnight.setHours(0);
     dateMidnight.setMinutes(0);
     dateMidnight.setSeconds(0);
