@@ -95,10 +95,13 @@ var twilioSendingNumber     = process.env.TWILIO_PHONE_NUMBER;
 Date.prototype.atMidnight = Date.prototype.atMidnight || function()
 {
     //var dateMidnight    = this;
-    var dateMidnight     = { this };
-    dateMidnight.setHours(0);
-    dateMidnight.setMinutes(0);
-    dateMidnight.setSeconds(0);
+    console.log("test 1");
+    var dateMidnight     = { ...this };
+    console.log("test 2");
+    dateMidnight.setHours(0, 0, 0);
+    console.log("test 3");
+    //dateMidnight.setMinutes(0);
+    //dateMidnight.setSeconds(0);
 
     return dateMidnight;
 };
