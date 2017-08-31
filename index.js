@@ -162,6 +162,12 @@ var httpServer  = require("http").createServer(app);
 
 httpServer.listen(port, function()
 {
+    var currentDate = new Date();
+    var atMidnight  = currentDate.atMidnight();
+    console.log("currentDate is:");
+    console.log(currentDate);
+    console.log("atMidnight is:");
+    console.log(atMidnight);
     console.log("parse-server is now running on port " + port + ".");
 });
 

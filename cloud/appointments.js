@@ -279,12 +279,19 @@ Parse.Cloud.define("refreshAvailableAppointments", function(request, response)
     var eachTotal                   = pAppointments.length;
     var eachIndex                   = 0;
 
-    var validAppointments  = [];
-
+    var validAppointments           = [];
+    var checkedDates                = [];
     pAppointments.forEach( function(apptDict, index)
     {
         funcs.conditionalLog("Updating " + eachIndex.toString() + " of " + eachTotal.toString());
 
+        var dateAtMidnight  = apptDict["dateTime"].atMidnight();
+        var needToAdd       = checkedDates.doesNotContain(dateAtMidnight);
+
+        if ( needToAdd === true )
+        {
+            checkedDates.push(dateAtMidnight);
+        }
         // Loop through the passed appointment dictionaries
         // Creating and updating gets the appointmentId, then remove any that aren't
         // in those
@@ -333,7 +340,8 @@ Parse.Cloud.define("refreshAvailableAppointments", function(request, response)
                 {
                     Parse.Cloud.run("removeAppointmentsNotInList",
                     {
-                        appointmentIds : validAppointments
+                        appointmentIds: validAppointments,
+                        dates: checkedDates
                     },
                     {
                         useMasterKey: true,
@@ -352,9 +360,24 @@ Parse.Cloud.define("refreshAvailableAppointments", function(request, response)
     });
 });
 
+
+///////////////////////////////////////
+//
+// removeAppointmentsNotInList
+//
+// Params:
+// appointmentIds   Array  <String>
+// dates            Array   <Date> (at midnight)
+//
+// Response:
+// Error        Error info
+// Success      BOOL
+//
+///////////////////////////////////////
 Parse.Cloud.define("removeAppointmentsNotInList", function(request, response)
 {
-    if ( request.params.appointmentIds === undefined )
+    if ( ( request.params.appointmentIds === undefined ) ||
+         ( request.params.dates == undefined ) )
     {
         response.error("Missing or Invalid parameters.");
     }
@@ -377,24 +400,30 @@ Parse.Cloud.define("removeAppointmentsNotInList", function(request, response)
         useMasterKey: true,
         success: function(queryResults)
         {
-            // remove
-            queryResults.forEach( function(queryObject,index)
+            // Check if should remove
+            queryResults.forEach( function(appointmentObject,index)
             {
-                queryObject.destroy(
+                var apptDateMidnight    = appointmentObject["dateTime"].atMidnight();
+                var dateContained       = request.params.dates.contains(apptDateMidnight);
+
+                if ( dateContained === true )
                 {
-                    useMasterKey: true,
-                    success: function(removedObject)
+                    appointmentObject.destroy(
                     {
-                        // The object was deleted from the Parse Cloud.
-                        funcs.conditionalLog("removed object " + removedObject.id);
-                    },
-                    error: function(errorObject, error)
-                    {
-                        console.log("unable to remove object:");
-                        console.log(errorObject);
-                        console.log(error);
-                    }
-                });
+                        useMasterKey: true,
+                        success: function(removedObject)
+                        {
+                            // The object was deleted from the Parse Cloud.
+                            funcs.conditionalLog("removed object " + removedObject.id);
+                        },
+                        error: function(errorObject, error)
+                        {
+                            console.log("unable to remove object:");
+                            console.log(errorObject);
+                            console.log(error);
+                        }
+                    });
+                }
             });
         },
         error: function(queryError)

@@ -54,11 +54,8 @@
 const CONST = require("./const.js");
 //const FUNCS = require("./funcs.js");
 
-// next line errors out
-//require('./funcs.js')();
-// internal/private functions
-//require("./funcs.js");
-var funcs = require('./funcs.js');
+// Helper Functions
+var funcs = require("./funcs.js");
 
 // Appointments Related
 require("./appointments.js");
@@ -93,6 +90,47 @@ var twilioURL               = process.env.TWILIO_URL            || "127.0.0.1";
 var twilioMount             = process.env.TWILIO_MOUNT          || "/";
 var twilioSendingNumber     = process.env.TWILIO_PHONE_NUMBER;
 
+
+Date.prototype.atMidnight = Date.prototype.atMidnight || function()
+{
+    var dateMidnight    = this;
+
+    dateMidnight.setHours(0);
+    dateMidnight.setMinutes(0);
+    dateMidnight.setSeconds(0);
+
+    return dateMidnight;
+};
+
+Array.prototype.contains = Array.prototype.contains || function(lookFor)
+{
+    var index     = 0;
+    var length    = this.length;
+
+    for (index = 0; index < length; index += 1)
+    {
+        if (this[index] == lookFor)
+        {
+            return true;
+        }
+    }
+    return false;
+};
+
+Array.prototype.doesNotContain = Array.prototype.doesNotContain || function(lookFor)
+{
+    var index     = 0;
+    var length    = this.length;
+
+    for (index = 0; index < length; index += 1)
+    {
+        if (this[index] == lookFor)
+        {
+            return false;
+        }
+    }
+    return true;
+};
 
 //////////////////////////////////////
 //
