@@ -61,13 +61,13 @@ var api = new ParseServer(
 		ios:
 		[
 			{
-				pfx:		__dirname + '/push_bin/ca.4xq.Barbershop8.Push_Development_Expires_2017-12-12.p12',
+				pfx:		__dirname + '/push_bin/ca.4xq.Barbershop8.Push_Production_Expires_2019-05-02.p12',
 				passphrase:	process.env.PUSH_DEVELOPMENT_P12_PASSPHRASE,
 				bundleId:	'ca.4xq.Barbershop8',
 				production:	false
 			},
 			{
-				pfx:		__dirname + '/push_bin/ca.4xq.Barbershop8.Push_Production_Expires_2017-10-06.p12',
+				pfx:		__dirname + '/push_bin/ca.4xq.Barbershop8.Push_Production_Expires_2019-05-02.p12',
 				passphrase:	process.env.PUSH_PRODUCTION_P12_PASSPHRASE,
 				bundleId:	'ca.4xq.Barbershop8',
 				production:	true
